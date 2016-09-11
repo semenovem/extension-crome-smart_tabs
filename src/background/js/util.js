@@ -23,7 +23,7 @@ app.util = {
      * @private
      */
     compareTabs(arr0, arr1) {
-        let similar = {
+        const similar = {
             tabs0: arr0.length,
             tabs1: arr1.filter(tab => !tab.closed).length,
             closed1: 0,

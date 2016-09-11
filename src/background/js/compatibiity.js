@@ -10,7 +10,7 @@ app.compatibility = {
      * @type {object}
      */
     _app: null,
-    // </
+    // </debug>
 
     /**
      * Проверка совместимости приложения с платформой
@@ -18,19 +18,31 @@ app.compatibility = {
      */
     check() {
         return new Promise((resolve, reject) => {
-            try {
-                if (typeof window.chrome === 'undefined') {
-                    throw('нет объекта chrome');
-                }
 
-                if (typeof window.chrome.tabs === 'undefined') {
-                    throw('нет объекта chrome.tabs');
-                }
-                app.chrome = window.chrome;
-                app.chromeTabs = window.chrome.tabs;
-                resolve(this._app);
+            if (typeof window.chrome === 'undefined') {
+                reject('нет объекта chrome');
             }
-            catch (e) {
+
+            if (typeof window.chrome.tabs === 'undefined') {
+                reject('нет объекта chrome.tabs');
+            }
+
+            // проверка localStorage
+            if (typeof window.localStorage === 'undefined') {
+                reject('нет объекта localStorage');
+            }
+            const test = 'test_' + Math.random();
+            localStorage.setItem('_test', test);
+            if (localStorage.getItem('_test') !== test) {
+                reject('ошибка при записи в localStorage');
+            }
+
+            app.chrome = window.chrome;
+            app.chromeTabs = window.chrome.tabs;
+            resolve(this._app);
+
+        })
+            .catch(e => {
                 this._app.log.error({
                     // <debug>
                     name: 'Совместимость с платформой',
@@ -40,8 +52,7 @@ app.compatibility = {
                     code: 0,
                     event: e
                 });
-                reject(e);
-            }
-        });
+                throw(e);
+            });
     }
 };

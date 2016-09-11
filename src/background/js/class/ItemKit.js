@@ -10,14 +10,14 @@ app.ItemKit = function(raw, store) {
     // </debug>
 
     /**
-     *
+     * todo убрать использование store, можно заменить на collect
      * @class app.Store
      * @type {object}
      */
     this.store = store;
 
     /**
-     * получение полей из модели, которые должны быть у экземпляра
+     * получение полей, которые должны быть у экземпляра
      *
      */
     this.fields
@@ -43,8 +43,6 @@ app.ItemKit = function(raw, store) {
         this._stateReadyReject = reject;
     });
 
-    // todo тестовая задержка
-    //    setTimeout(this.setModify.bind(this, true), 800 + 190 * Math.random());
 
 };
 

@@ -148,20 +148,20 @@ app.ItemTab.prototype = {
      * Изменение состояния вкладки
      * обратно открыться она может если открывается тот же адрес в новой вкладке
      * или открывается из истории
-     * @param closed
+     * @param {boolean} closed
      */
     setClosed(closed) {
-        if (this.closed ^ closed) {
-            this.setModify(true);
+        if (this.closed !== closed) {
+            this.modify();
         }
         this.closed = closed;
     },
 
     /**
-     * @param modify
+     * Произошло изменение объекта
      */
-    setModify(modify) {
-        modify && this.kit && this.kit.setModify(true);
+    modify() {
+        this.kit && this.kit.modify();
     },
 
     /**
@@ -170,6 +170,6 @@ app.ItemTab.prototype = {
      */
     changedUrl(url) {
         this.url = url;
-        this.setModify(true);
+        this.modify();
     }
 };

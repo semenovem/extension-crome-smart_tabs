@@ -1,5 +1,5 @@
 /**
- * закрытие приложения
+ * Закрытие приложения
  * @function
  * @param {object} opts
  */
@@ -12,7 +12,7 @@ app.closing = function(opts = {}) {
     switch (opts.type) {
 
         // приложение упало
-        case 'crach':
+        case 'crash':
 
             // разрешение на отправку сообщения о падении
             if (this.setup.get('reportCrash')) {

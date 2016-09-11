@@ -23,8 +23,8 @@ app.ItemKit.prototype = {
         },
 
         {   // ссылка на объект, отвечающий за сохранение
-            name: 'recordId',
-            type: 'string',
+            name: 'record',
+            type: 'object',
             persist: false
         },
 
@@ -35,7 +35,7 @@ app.ItemKit.prototype = {
         },
 
         {   // есть ли необходимость сохранить данные
-            name: 'modify',
+            name: 'isModify',
             type: 'boolean',
             persist: false,
             default: false
@@ -47,7 +47,6 @@ app.ItemKit.prototype = {
             persist: false,
             default: 0
         },
-
 
         {   // окно активно
             name: 'active',
@@ -164,7 +163,7 @@ app.ItemKit.prototype = {
      * Готовый объект содержит:
      * - обязательные поля при сериализации
      * - поля, значения которых отличаются от default
-     * @returns {object}
+     * @return {object}
      */
     getRaw() {
         let raw = this.fields.reduce((raw, field) => {
@@ -196,7 +195,7 @@ app.ItemKit.prototype = {
         if (!this.hasTabById(tab.id)) {
             this.tabs.push(tab);
             tab.setKit(this);
-            this.setModify(true);
+            this.modify();
         }
         return this;
     },
@@ -206,7 +205,7 @@ app.ItemKit.prototype = {
      * @param tab
      */
     removeTab(tab) {
-        this.setModify(true);
+        this.modify();
         console.log('remove tab', tab);
         return this;
     },
@@ -237,12 +236,12 @@ app.ItemKit.prototype = {
 
     /**
      * Произошли изменения в данных, если true - нужно их сохранить
-     * @param {boolean} modify
-     * @returns {object}
+     * @return {object}
      */
-    setModify(modify) {
+    modify() {
         this.modifyLastTime = Date.now();
-        if (!this.modify && (this.modify = modify)) {
+        if (!this.isModify) {
+            this.isModify = true;
             this._timeoutBeforeSave(this._timeoutSave);
         }
         return this;
@@ -257,25 +256,24 @@ app.ItemKit.prototype = {
         setTimeout(() => {
             let timeout = this._timeoutSave,
                 diff = Date.now() - this.modifyLastTime;
-            diff < timeout ? this._timeoutBeforeSave(timeout - diff) : this.saveModify();
+            diff < timeout && diff > 50 ? this._timeoutBeforeSave(timeout - diff) : this.save();
         }, timeout);
     },
 
     /**
      * Сохранить изменения
      */
-    saveModify() {
-        this.modify = false;
-
-        if (this.recordId) {
-            this.store.saveRawOpen(this.getRaw(), this.recordId);
-        }
-        else {
+    save() {
+        if (this.record) {
+            this.record.save();
+            this.isModify = false;
+        } else {
             this.store.mapping(this)
-                .then(recordId => {
-                    this.recordId = recordId || (this.setModify(true) && ('kit_open_' + this.id));
+                .then(record => {
+                    this.record = record;
+                    this._stateReadyResolve();
+                    this.isModify = false;
                 })
-                .then(() => this._stateReadyResolve())
                 .catch(e => this._stateReadyReject(e))
                 .then(() => {
                     delete this._stateReadyResolve;

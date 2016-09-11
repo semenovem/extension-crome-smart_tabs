@@ -26,13 +26,18 @@ gulp.task('build', ['build-clear'], function() {
 			'src/background/js/class/itemKitPrototype.js',
 			'src/background/js/class/ItemTab.js',
 			'src/background/js/class/itemTabPrototype.js',
+            // controller
             'src/background/js/controller/main.js',
-
+            // store
+            'src/background/js/store/main.js',
+            'src/background/js/store/open.js',
+            'src/background/js/store/recent.js',
+            'src/background/js/store/history.js',
 
             // дальше не важно
             'src/background/js/collect/*.js',
             'src/background/js/api/*.js',
-            'src/background/js/store/*.js',
+
 
 
 			'src/background/js/*.js'
