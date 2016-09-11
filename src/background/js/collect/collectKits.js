@@ -32,7 +32,7 @@ app.collectKits = {
      */
     createItem(raw) {
         let item;
-        if (this._app.itemKitModel.validateToCreate(raw)) {
+        if (this._app.ItemKit.prototype.validateToCreate(raw)) {
             item = new this._app.ItemKit(raw, this._app.store);
             this._items[raw.id] = item;
         }

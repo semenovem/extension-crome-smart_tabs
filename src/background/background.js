@@ -26,59 +26,43 @@ var app = {
      */
     setup: null,
 
-    /**
-     * Объект записи в store для открытого окна браузера
-     * @file js/ItemRecord.js
-     * @constructor
-     */
-    ItemRecord: null,
 
     /**
      * Constructor for tab
-     * @file js/ItemTab.js
+     * @file js/class/ItemTab.js
      * @constructor
      */
     ItemTab: null,
 
     /**
      * Constructor win
-     * @file js/ItemKit.js
+     * @file js/class/ItemKit.js
      * @constructor
      */
     ItemKit: null,
 
-    /**
-     * модель данных
-     * @type {object}
-     */
-    itemKitModel: null,
 
-    /**
-     * модель данных
-     * @type {object}
-     */
-    itemTabModel: null,
-
-    /**
-     * Коллекция записей данных
-     * @type {object}
-     * @file js/collectTabs.js
-     */
-    collectRecords: null,
 
     /**
      * Коллекция вкладок
      * @type {object}
-     * @file js/collectTabs.js
+     * @file js/collect/collectTabs.js
      */
     collectTabs: null,
 
     /**
      * Коллекция окон
      * @type {object}
-     * @file js/collectKits.js
+     * @file js/collect/collectKits.js
      */
     collectKits: null,
+
+    /**
+     * @type {object} контроллер
+     * @file js/controller/main.js
+     */
+    controller: null,
+
 
     /**
      * Хранение данных
@@ -109,13 +93,10 @@ var app = {
     chromeTabs: null,
 
     /**
-     * Инициализация
-     * дочерние объекты:
-     * получают свойство _app = this
-     * у методов init контекст привязан bind, а после исполнения, его можно удалить
+     * Выполенение инициализации (вызов методов init) для всех классов
+     * @private
      */
-    init() {
-
+    _executionInit() {
         for (let k in this) {
             if (!this.hasOwnProperty(k) || Array.isArray(this[k])) {
                 continue;
@@ -129,13 +110,24 @@ var app = {
                 }
             }
         }
+    },
+
+    /**
+     * Инициализация
+     * дочерние объекты:
+     * получают свойство _app = this
+     * у методов init контекст привязан bind, а после исполнения, его можно удалить
+     */
+    init() {
+        this._executionInit();
 
         // все init выполнены до этой строчки и удалены из объектов
         this.compatibility.check()
             .then(this.setup.getData.bind(this.setup))
             .then(() => new Promise(resolve => setTimeout(resolve, this.setup.get('timeoutAppLaunch'))))
-            .then(this.collectController.synxCurrentOpenKits.bind(this.collectController))
-            .then(this.collectController.openSavedKits.bind(this.collectController))
+
+            .then(this.controller.synxCurrentOpenKits.bind(this.controller))
+            .then(this.controller.openSavedKits.bind(this.controller))
 
             .then(
                 () => {
@@ -143,7 +135,7 @@ var app = {
                 }
             )
             // подписка на события вкладок
-            .then(this.collectController.subscribe.bind(this.collectController))
+            .then(this.controller.subscribe.bind(this.controller))
 
             .catch(e => {
                 this.log.error({

@@ -263,7 +263,7 @@ app.store = {
         let raw;
         try {
             raw = JSON.parse(text);
-            if (!this._app.itemKitModel.validateAfterRestore(raw)) {
+            if (!this._app.ItemKit.prototype.validateAfterRestore(raw)) {
                 throw 'объект не проходит валидацию';
             }
         }

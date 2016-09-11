@@ -32,7 +32,7 @@ app.collectTabs = {
      */
     createItem(raw) {
         let item;
-        if (this._app.itemTabModel.validateToCreate(raw)) {
+        if (this._app.ItemTab.prototype.validateToCreate(raw)) {
             item = new this._app.ItemTab(raw);
             this._items[item.id] = item;
         }

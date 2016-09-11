@@ -1,7 +1,7 @@
 /**
  * Контроллер для окон, вкладок
  */
-app.collectController = {
+app.controller = {
     // <debug>
     $className: 'СollectController',
 
@@ -159,7 +159,7 @@ app.collectController = {
                 favIconUrl: typeof item.favIconUrl === 'string' ? item.favIconUrl : '',
                 url: item.url
 
-                //todo сохранить сырые данные для отладки
+                // todo сохранить сырые данные для отладки
                 ,
                 _$raw: item
             });
