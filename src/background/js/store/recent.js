@@ -1,7 +1,7 @@
 /**
  * @type {object} хранение недавно закрытых окон/вкладок
  */
-app.store.recent = {
+app.storeRecent = {
 
 
 
@@ -29,8 +29,7 @@ app.store.recent = {
                         arr = JSON.parse(data);
                     }
                     if (Array.isArray(arr)) {
-                        //items = arr.map(str => this._app.itemKitModel.getRaw(str))
-                        //    .filter(item => item);
+
 
                         // сохранили в кеш
                         if (items.length) {

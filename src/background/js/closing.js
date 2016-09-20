@@ -7,7 +7,7 @@ app.closing = function(opts = {}) {
     console.log('закрытие');
 
     // снять обработчики
-    this.collectController.unsubscribe('all');
+  //  this.controllerEvent.unsubscribe('all');
 
     switch (opts.type) {
 

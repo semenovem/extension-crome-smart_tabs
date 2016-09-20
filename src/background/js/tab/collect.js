@@ -1,9 +1,9 @@
 /**
  * Операции со вкладками
  */
-app.collectTabs = {
+app.tabCollect = {
     // <debug>
-    $className: 'CollectTabs',
+    $className: 'tabCollect',
 
     /**
      * Объект приложения
@@ -28,14 +28,12 @@ app.collectTabs = {
     /**
      * Создание экземпляра
      * @param {object} raw
-     * @returns {object|null}
+     * @return {object}
      */
     createItem(raw) {
         let item;
-        if (this._app.ItemTab.prototype.validateToCreate(raw)) {
-            item = new this._app.ItemTab(raw);
-            this._items[item.id] = item;
-        }
+        item = new this._app.TabItem(raw);
+        this._items[item.id] = item;
         return item;
     },
 
@@ -68,27 +66,6 @@ app.collectTabs = {
      */
     isById(id) {
         return id in this._items;
-    },
-
-    /**
-     * Открытие вкладки браузера
-     * @param opts
-     * @returns {Promise}
-     */
-    create(opts) {
-        return new Promise((resolve, reject) => {
-            let item = this.createItem(opts);
-
-            if (item) {
-                resolve(item);
-            } else {
-                reject(false);
-            }
-        });
-    },
-
-    remove() {
-
     }
 
 };

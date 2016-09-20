@@ -21,28 +21,23 @@ gulp.task('build', ['build-clear'], function() {
 	// js background
 	gulp.src([
 			'src/background/*.js',
-            // важна последовательность подключения файлов
-			'src/background/js/class/ItemKit.js',
-			'src/background/js/class/itemKitPrototype.js',
-			'src/background/js/class/ItemTab.js',
-			'src/background/js/class/itemTabPrototype.js',
-            // controller
-            'src/background/js/controller/main.js',
-            // store
-            'src/background/js/store/main.js',
-            'src/background/js/store/open.js',
-            'src/background/js/store/recent.js',
-            'src/background/js/store/history.js',
+            // данные kit
+            'src/background/js/kit/Item.js',
+            'src/background/js/kit/itemPrototype.js',
+            'src/background/js/kit/collect.js',
+            'src/background/js/kit/conv.js',
+            // tab
+            'src/background/js/tab/Item.js',
+            'src/background/js/tab/itemPrototype.js',
+            'src/background/js/tab/collect.js',
+            'src/background/js/tab/conv.js',
 
-            // дальше не важно
-            'src/background/js/collect/*.js',
+
+            'src/background/js/controller/*.js',
+            'src/background/js/store/*.js',
             'src/background/js/api/*.js',
-
-
-
 			'src/background/js/*.js'
-		//	'src/background/js/kit/*.js',
-		//	'src/background/js/tab/*.js'
+
 		])
 		.pipe(plugins.concat('background.js'))
             // для chrome 52 не нужен

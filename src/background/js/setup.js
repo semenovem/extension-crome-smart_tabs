@@ -4,30 +4,26 @@
 app.setup = {
     // <debug>
     $className: 'Setup',
-    // </debug>
 
     /**
      * Объект приложения
      * @type {object}
      */
     _app: null,
+    // </debug>
 
     /**
      * Показывает, что данные были изменены и необходимо сохранение
      */
-    modify: false,
+    _isModify: false,
+
 
     /**
-     * Инициализация объекта
+     * Подготовка настроек. Получить данные из store
+     * @return {Promise}
      */
-    init() {},
-
-    /**
-     * получить данные из store
-     * @returns {Promise}
-     */
-    getData() {
-        return this._app.store.readSetup()
+    prep() {
+        return this._app.storeSetup.get()
             .then(data => this._data = data);
     },
 
@@ -36,7 +32,7 @@ app.setup = {
      * @param {string} name
      */
     get(name) {
-        return name in this._data ? this._data[name] : this._dataDefault[name];
+        return name in this._data ? this._data[name] : this._default[name];
     },
 
     /**
@@ -50,7 +46,7 @@ app.setup = {
             name: name,
             value: value
         });
-        this.modify = true;
+        this._isModify = true;
     },
 
     /**
@@ -68,13 +64,13 @@ app.setup = {
      * Значения настроек по умолчанию
      * @type {object}
      */
-    _dataDefault: {
+    _default: {
 
         /**
          * задержка запуска приложения
          * @type {number}
          */
-        timeoutAppLaunch: 1,  // todo для релиза поставить 1000
+        timeoutAppLaunch: 100,  // todo для релиза поставить 1000 - 5000
 
         /**
          * задержка обработки события создания новой вкладки
@@ -103,7 +99,42 @@ app.setup = {
          * todo - еще не определился
          * @type {boolean}
          */
-        saveError: false
+        saveError: false,
+
+
+        global: {
+
+
+            kit: {
+                // закрытые вкладки сохраняются.
+                history: true
+            },
+
+            tab: {
+                // история
+                history: true
+            }
+
+
+        },
+
+
+        kit: {
+            track: false,       // отслеживать. есть хоть у одной вкладки есть track:true
+
+
+            tabHistory: false   // сохранять историю
+        },
+
+
+        tab: {
+            track: true,        // отслеживать url
+            history: true       // сохранять историю
+        }
+
+
 
     }
 };
+
+

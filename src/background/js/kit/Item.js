@@ -1,27 +1,34 @@
 /**
  * Constructor win
  * @param {object} raw
- * @param {object} store
+ * @param {object} app
  * @constructor
  */
-app.ItemKit = function(raw, store) {
+app.KitItem = function(raw, app) {
     // <debug>
-    this.$className = 'ItemKit';
+    this.$className = 'KitItem';
     // </debug>
+
+    /**
+     * Объект приложения
+     * @type {Object}
+     * @private
+     */
+    this._app = app;
 
     /**
      * todo убрать использование store, можно заменить на collect
      * @class app.Store
      * @type {object}
      */
-    this.store = store;
+    this._store = app.storeOpen;
 
     /**
-     * получение полей, которые должны быть у экземпляра
+     * Получение полей, которые должны быть у экземпляра
      *
      */
     this.fields
-        .filter(field => field.requireForCreate === true || 'default' in field)
+        .filter(field => field.requireNew === true || 'default' in field)
         .forEach(field => {
             let name = field.name;
             this[name] = name in raw ? raw[name] : field.default;
@@ -35,12 +42,12 @@ app.ItemKit = function(raw, store) {
     // todo еще обработать объекты вкладок, они будут передаватся с сохранениями
 
     /**
-     * состояние экземпляра. Промис выпролнится после нахождения / создания записи в store
+     * Состояние экземпляра. Промис выполниться после нахождения / создания записи в store
      * @type {Promise}
      */
-    this._stateReady = new Promise((resolve, reject) => {
-        this._stateReadyResolve = resolve;
-        this._stateReadyReject = reject;
+    this._condition = new Promise((resolve, reject) => {
+        this._conditionResolve = resolve;
+        this._conditionReject = reject;
     });
 
 

@@ -3,16 +3,16 @@
  * @param {object} raw
  * @constructor
  */
-app.ItemTab = function(raw) {
+app.TabItem = function(raw) {
     // <debug>
-    this.$className = 'ItemTab';
+    this.$className = 'TabItem';
     // </debug>
 
     /**
      * получение полей из модели, которые должны быть у экземпляра
      */
     this.fields
-        .filter(field => field.requireForCreate === true || 'default' in field)
+        .filter(field => field.requireNew === true || 'default' in field)
         .forEach(field => {
             let name = field.name;
             this[name] = name in raw ? raw[name] : field.default;

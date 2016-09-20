@@ -2,10 +2,6 @@
  * Объект приложения
  */
 var app = {
-    // <debug>
-    $className: 'App',
-    // </debug>
-
     /**
      * название в глобальной области видимости
      * @type {string}
@@ -26,56 +22,96 @@ var app = {
      */
     setup: null,
 
-
     /**
      * Constructor for tab
-     * @file js/class/ItemTab.js
+     * @file js/tab/Item.js
      * @constructor
      */
-    ItemTab: null,
+    TabItem: null,
 
     /**
      * Constructor win
-     * @file js/class/ItemKit.js
+     * @file js/kit/Item.js
      * @constructor
      */
-    ItemKit: null,
-
-
+    KitItem: null,
 
     /**
      * Коллекция вкладок
      * @type {object}
-     * @file js/collect/collectTabs.js
+     * @file js/tab/collect.js
      */
-    collectTabs: null,
+    tabCollect: null,
 
     /**
      * Коллекция окон
      * @type {object}
-     * @file js/collect/collectKits.js
+     * @file js/kit/collect.js
      */
-    collectKits: null,
+    kitCollect: null,
+
+
+
+
+    // todo появилось несколько контроллеров
+    /**
+     * @type {object} контроллер событий окон и вкладок
+     * @file js/controller/event.js
+     */
+    controllerEvent: null,
 
     /**
-     * @type {object} контроллер
-     * @file js/controller/main.js
+     * @type {object} cинхронизация состояний окон и сохраненных данных
+     * @file js/controller/synx.js
      */
-    controller: null,
+    controllerSynx: null,
 
 
     /**
-     * Хранение данных
+     * @type {object} контроллер программного открытия окон и вкладок
+     * @file js/controller/open.js
+     */
+    controllerOpen: null,
+
+
+
+
+    /**
+     * Хранение настроек приложения
      * @type {object}
-     * @file js/store.js
+     * @file js/store/setup.js
      */
-    store: null,
+    storeSetup: null,
+
+    /**
+     * Хранение данных открытых окон
+     * @type {object}
+     * @file js/store/open.js
+     */
+    storeOpen: null,
+
+    /**
+     * Хранение данных о недавно закрытых окнах
+     * @type {object}
+     * @file js/store/open.js
+     */
+    storeRecent: null,
 
     /**
      * Ведение логов, регистрация ошибок
      * @file js/log.js
      */
     log: null,
+
+    /**
+     * Конвертация данных. todo изменить название - привязать к событиям
+     * @file js/log.js
+     */
+    convert: null,
+
+
+
+
 
     // ссылки на глобальные объекты
     // значения в них устанавливаются при проверке на совместимость "compatibility"
@@ -93,49 +129,82 @@ var app = {
     chromeTabs: null,
 
     /**
+     * api browser chrome. Manage windows
+     * creates this property "compatibility"
+     */
+    chromeWindows: null,
+    // </debug>
+
+    /**
      * Выполенение инициализации (вызов методов init) для всех классов
+     * После выполнения - удаляем init
+     *
+     * у дочерних объектов методы имеют контекст своего объекта
      * @private
      */
     _executionInit() {
-        for (let k in this) {
-            if (!this.hasOwnProperty(k) || Array.isArray(this[k])) {
-                continue;
-            }
-            let obj = this[k];
-            if (obj && typeof obj === 'object') {
-                obj._app = this;
-                if (typeof obj.init === 'function') {
-                    obj.init.call(obj);
-                    delete obj.init;
+        return new Promise(resolve => {
+            for (let k in this) {
+                if (!this.hasOwnProperty(k) || Array.isArray(this[k])) {
+                    continue;
                 }
+                let obj = this[k];
+                if (obj && typeof obj === 'object') {
+                    obj._app = this;
+
+                    this._binding(obj);
+
+                    if (typeof obj.init === 'function') {
+                        obj.init.call(obj);
+                        delete obj.init;
+                    }
+                }
+            }
+            resolve();
+        });
+    },
+
+    /**
+     * Биндинг методов объекта
+     * @param {object} obj
+     * @private
+     */
+    _binding(obj) {
+        for (let key in obj) {
+            if (obj.hasOwnProperty(key) && typeof obj[key] === 'function') {
+                obj[key] = obj[key].bind(obj);
             }
         }
     },
 
     /**
+     * Задержка перед запуском приложения
+     * @return {Promise} void
+     * @private
+     */
+    _timeout() {
+        return new Promise(resolve => {
+            setTimeout(resolve, this.setup.get('timeoutAppLaunch'));
+        });
+    },
+
+    /**
      * Инициализация
-     * дочерние объекты:
-     * получают свойство _app = this
-     * у методов init контекст привязан bind, а после исполнения, его можно удалить
      */
     init() {
-        this._executionInit();
-
-        // все init выполнены до этой строчки и удалены из объектов
-        this.compatibility.check()
-            .then(this.setup.getData.bind(this.setup))
-            .then(() => new Promise(resolve => setTimeout(resolve, this.setup.get('timeoutAppLaunch'))))
-
-            .then(this.controller.synxCurrentOpenKits.bind(this.controller))
-            .then(this.controller.openSavedKits.bind(this.controller))
+        this._executionInit()
+            .then(this.compatibility.check)
+            .then(this.setup.prep)
+            .then(this._timeout.bind(this))
+            .then(this.controllerEvent.subscribe)
+            .then(this.controllerSynx.openedKits)
+         //   .then(this.controllerOpen.savedKits)
 
             .then(
                 () => {
-                    console.log('this', this.collectKits._items);
+                    console.log('\n\nthis', this.kitCollect._items);
                 }
             )
-            // подписка на события вкладок
-            .then(this.controller.subscribe.bind(this.controller))
 
             .catch(e => {
                 this.log.error({
@@ -151,6 +220,11 @@ var app = {
                     type: 'crash'
                 });
             });
+
+        delete this.init;
+        delete this._binding;
+        delete this._timeout;
+        delete this._executionInit;
     }
 };
 

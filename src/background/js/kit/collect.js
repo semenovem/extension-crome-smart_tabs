@@ -1,41 +1,41 @@
 /**
  * Операции с окнами
  */
-app.collectKits = {
+app.kitCollect = {
     // <debug>
-    $className: 'CollectKits',
+    $className: 'kitCollect',
 
     /**
      * Объект приложения
      * @type {object}
      */
     _app: null,
+    // </debug>
 
     /**
      * Список окон
      * @type {object}
      */
-    _items: null,
-    // </debug>
-
-    /**
-     * Инициализация объекта
-     */
-    init() {
-        this._items = Object.create(null);
-    },
+    _items: Object.create(null),
 
     /**
      * Создание экземпляра
      * @param {object} raw
-     * @returns {object}
+     * @return {object}
      */
     createItem(raw) {
         let item;
-        if (this._app.ItemKit.prototype.validateToCreate(raw)) {
-            item = new this._app.ItemKit(raw, this._app.store);
-            this._items[raw.id] = item;
-        }
+
+        item = new this._app.KitItem(raw, this._app);
+        this._items[raw.id] = item;
+
+        //// если переданы данные вкладок
+        //if ('tabs' in raw && Array.isArray(raw.tabs)) {
+        //    raw.tabs.forEach(tabRaw => {
+        //        const tab = this._app.tabCollect.createItem(tabRaw);
+        //        tab && item.addTab(tab);
+        //    });
+        //}
         return item;
     },
 
@@ -48,7 +48,7 @@ app.collectKits = {
         const item = this._items[id];
         if (item) {
             delete this._items[id];
-            item.tabs.forEach(tab => this._app.collectTabs.removeItem(tab));
+            item.tabs.forEach(tab => this._app.tabCollect.removeItem(tab));
         }
         return item || null;
     },
