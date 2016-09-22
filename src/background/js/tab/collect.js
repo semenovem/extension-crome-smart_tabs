@@ -1,41 +1,32 @@
 /**
  * Операции со вкладками
  */
-app.collectTabs = {
+app.tabCollect = {
     // <debug>
-    $className: 'CollectTabs',
+    $className: 'tabCollect',
 
     /**
      * Объект приложения
      * @type {object}
      */
     _app: null,
+    // </debug>
 
     /**
      * Список tabs
      * @type {object}
      */
-    _items: null,
-    // </debug>
-
-    /**
-     * Инициализация объекта
-     */
-    init() {
-        this._items = Object.create(null);
-    },
+    _items: Object.create(null),
 
     /**
      * Создание экземпляра
      * @param {object} raw
-     * @returns {object|null}
+     * @return {object}
      */
     createItem(raw) {
         let item;
-        if (this._app.ItemTab.prototype.validateToCreate(raw)) {
-            item = new this._app.ItemTab(raw);
-            this._items[item.id] = item;
-        }
+        item = new this._app.TabItem(raw);
+        this._items[item.id] = item;
         return item;
     },
 
@@ -71,24 +62,22 @@ app.collectTabs = {
     },
 
     /**
-     * Открытие вкладки браузера
-     * @param opts
-     * @returns {Promise}
+     * Получить вкладки, принадлежащие окну
+     * @param {object} kit объект окна браузера
      */
-    create(opts) {
-        return new Promise((resolve, reject) => {
-            let item = this.createItem(opts);
-
-            if (item) {
-                resolve(item);
-            } else {
-                reject(false);
+    getByKit(kit) {
+        const items = this._items;
+        const tabs = [];
+        for (let id in items) {
+            if (items[id].getKit() === kit) {
+                tabs.push(items[id]);
             }
-        });
-    },
-
-    remove() {
-
+        }
+        return tabs;
     }
+
+
+
+
 
 };

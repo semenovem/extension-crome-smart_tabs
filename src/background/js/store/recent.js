@@ -1,7 +1,7 @@
 /**
  * @type {object} хранение недавно закрытых окон/вкладок
  */
-app.store.recent = {
+app.storeRecent = {
 
 
 
@@ -29,8 +29,7 @@ app.store.recent = {
                         arr = JSON.parse(data);
                     }
                     if (Array.isArray(arr)) {
-                        //items = arr.map(str => this._app.itemKitModel.getRaw(str))
-                        //    .filter(item => item);
+
 
                         // сохранили в кеш
                         if (items.length) {
@@ -39,7 +38,7 @@ app.store.recent = {
                     }
                 }
                 catch (e) {
-                    this._app.log.msg({
+                    this._app.log({
                         name: 'Получение сохраненных данных недавно закрытых окон браузера',
                         msg: 'Запись в localStorage не валидна'
                     });

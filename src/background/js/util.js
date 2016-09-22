@@ -13,87 +13,34 @@ app.util = {
     _app: null,
     // </debug>
 
+
     /**
-     * Вычисление соответствия двух наборов вкладок
-     * Сравнение по url
-     * Пропускать записи, у которых есть closed = true
-     * @param {Array} arr0 первый набор вкладок - вкладки браузера
-     * @param {Array} arr1 второй набор - сохраненные вкладки
-     * @returns {object} соответствие - 1 полное соответствие 0 - ничего не совпадает
-     * @private
+     * Получить значение, вложенное в другие объекты
+     * @example получим html, из объекта такой структуры: players.noautoplay.html
+     *
+     * @param {string} props строка вида "players.noautoplay.html" - путь к значению в объекте
+     * @param {object} obj объект, из которого достаем данные
+     * @return {{value: *, exist: boolean}} полученное значение и инфо - доступно ли свойство
      */
-    compareTabs(arr0, arr1) {
-        const similar = {
-            tabs0: arr0.length,
-            tabs1: arr1.filter(tab => !tab.closed).length,
-            closed1: 0,
-            match: false,
-            equal: 0,
-            different: 0
-        };
-        similar.closed1 = arr1.length - similar.tabs1;
-
-        // копии исходных массивов
-     //   let tabs0;
-        let tabs1 = arr1.slice();
-
-        // <debug>
-        let i = false;
-        //        i && (this._trace = '......................................................\n');
-        // </debug>
-
-        // Итерация первого массива
-        arr0.filter(tab0 => {
-
-            // Итерация копии второго массива
-            let found = tabs1.some((tab1, ind) => {
-                let found = this._compareTab(tab0, tab1);
-                if (found) {
-                    tabs1.splice(ind, 1);   // удалить найденный элемент
+    getDeepProp(props, obj) {
+        let exist = true;
+        const value = props.split('.')
+            .reduce((obj, key) => {
+                let result = false;
+                if (obj && typeof obj === 'object') {
+                    result = key in obj ? obj[key] : exist = false;
                 }
-                return found;
-            });
+                return result;
+            }, obj);
 
-            if (found) {
-                similar.equal++;
-            }
-            return !found;
-        });
-
-        similar.different = Math.max(similar.tabs0, similar.tabs1) - similar.equal;
-
-        // полное соответствие
-        if (!similar.different) {
-            similar.match = true;
-        }
-
-
-        // <debug>
-        else {
-            //      i && console.log (this._trace);
-            i && console.log('......................................................', similar);
-        }
-        // </debug>
-
-        return similar;
+        return {
+            value: value,
+            exist: exist
+        };
     },
 
-    /**
-     * Сравнение 2-х вкладок
-     * @param tab0
-     * @param tab1
-     * @private
-     */
-    _compareTab(tab0, tab1) {
 
-        // <debug>
-        //    this._trace += (tab0.url === tab1.url) + '' + ' \n';
-        //    this._trace += tab0.url + '\n';
-        //    this._trace += tab1.url + '\n\n';
-        // </debug>
 
-        return tab0.url === tab1.url;
-    }
 
 };
 

@@ -1,43 +1,10 @@
 /**
- * logs, processing errors
- * @class app.Log
+ * Логгирование событий приложения
  */
-app.log = {
-    // <debug>
-    $className: 'Log',
+app.log = function(opts) {
 
-    /**
-     * Объект приложения
-     * @type {object}
-     */
-    _app: null,
-    // </debug>
 
-    /**
-     * Инициализация объекта
-     */
-    init() {},
+    console.warn('....', opts);
 
-    /**
-     * Регистрация ошибки
-     * @param data
-     * @returns {*}
-     */
-    error(data) {
 
-        console.log('log.error: ', data);
-
-        return data;
-    },
-
-    /**
-     * сообщение
-     * @param data
-     */
-    msg(data) {
-        console.log('log.msg: ', data);
-    }
 };
-
-
-

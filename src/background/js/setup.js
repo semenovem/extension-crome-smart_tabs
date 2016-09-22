@@ -4,39 +4,44 @@
 app.setup = {
     // <debug>
     $className: 'Setup',
-    // </debug>
 
     /**
      * Объект приложения
      * @type {object}
      */
     _app: null,
+    // </debug>
 
     /**
      * Показывает, что данные были изменены и необходимо сохранение
      */
-    modify: false,
+    _isModify: false,
 
     /**
-     * Инициализация объекта
+     * Подготовка настроек. Получить данные из store
+     * @return {Promise}
      */
-    init() {},
-
-    /**
-     * получить данные из store
-     * @returns {Promise}
-     */
-    getData() {
-        return this._app.store.readSetup()
+    prep() {
+        return this._app.storeSetup.get()
             .then(data => this._data = data);
     },
 
     /**
      * Получение значения
-     * @param {string} name
+     * @param {string} propName
      */
-    get(name) {
-        return name in this._data ? this._data[name] : this._dataDefault[name];
+    get(propName) {
+        let result = this._app.util.getDeepProp(propName, this._data);
+        if (result.exist) {
+            return result.value;
+        }
+        result = this._app.util.getDeepProp(propName, this._default);
+
+        if (result.exist) {
+            return result.value;
+        }
+        // todo зафиксировать, что не смогли найти запрошенное свойство
+       // return name in this._data ? this._data[name] : this._default[name];
     },
 
     /**
@@ -45,12 +50,13 @@ app.setup = {
      * @param {*} value
      */
     set(name, value) {
+        // сделать запись во вложенные объекты типа 'prop.ext.one'
         this._data[name] = value;
         this._change.push({
             name: name,
             value: value
         });
-        this.modify = true;
+        this._isModify = true;
     },
 
     /**
@@ -68,19 +74,43 @@ app.setup = {
      * Значения настроек по умолчанию
      * @type {object}
      */
-    _dataDefault: {
-
+    _default: {
         /**
-         * задержка запуска приложения
-         * @type {number}
+         * ожидания
          */
-        timeoutAppLaunch: 1,  // todo для релиза поставить 1000
+        timeout: {
 
-        /**
-         * задержка обработки события создания новой вкладки
-         * @type {number}
-         */
-        timeoutOnTabCreate: 100,
+            /**
+             * @type {object} приложение
+             */
+            app: {
+                /**
+                 *  // todo для релиза поставить 1000 - 5000
+                 * @type {number} задержка запуска приложения
+                 */
+                launch: 1000
+            },
+
+            /**
+             * @type {object} окно
+             */
+            kit: {
+                beforeSave: 1000
+            },
+
+            /**
+             * @type {object} вкладка
+             */
+            tab: {
+                onCreate: 100
+            }
+        },
+
+
+
+
+
+
 
         /**
          * Настройки можно сохранять в localStorage
@@ -103,7 +133,34 @@ app.setup = {
          * todo - еще не определился
          * @type {boolean}
          */
-        saveError: false
+        saveError: false,
+
+        global: {
+
+            kit: {
+                // закрытые вкладки сохраняются.
+                history: true
+            },
+
+            tab: {
+                // история
+                history: true
+            }
+
+        },
+
+        kit: {
+            track: false,       // отслеживать. есть хоть у одной вкладки есть track:true
+
+            tabHistory: false   // сохранять историю
+        },
+
+        tab: {
+            track: true,        // отслеживать url
+            history: true       // сохранять историю
+        }
 
     }
 };
+
+

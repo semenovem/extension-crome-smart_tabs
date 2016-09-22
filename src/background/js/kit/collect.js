@@ -1,54 +1,45 @@
 /**
  * Операции с окнами
  */
-app.collectKits = {
+app.kitCollect = {
     // <debug>
-    $className: 'CollectKits',
+    $className: 'kitCollect',
 
     /**
      * Объект приложения
      * @type {object}
      */
     _app: null,
+    // </debug>
 
     /**
      * Список окон
      * @type {object}
      */
-    _items: null,
-    // </debug>
-
-    /**
-     * Инициализация объекта
-     */
-    init() {
-        this._items = Object.create(null);
-    },
+    _items: Object.create(null),
 
     /**
      * Создание экземпляра
      * @param {object} raw
-     * @returns {object}
+     * @return {object}
      */
     createItem(raw) {
         let item;
-        if (this._app.ItemKit.prototype.validateToCreate(raw)) {
-            item = new this._app.ItemKit(raw, this._app.store);
-            this._items[raw.id] = item;
-        }
+        item = new this._app.KitItem(raw, this._app);
+        this._items[item.getId()] = item;
         return item;
     },
 
     /**
      * Удаление объекта (окно браузера) при его закрытии
      * @param {number} id
-     * @returns {object}
+     * @return {object}
      */
     removeItem(id) {
         const item = this._items[id];
         if (item) {
             delete this._items[id];
-            item.tabs.forEach(tab => this._app.collectTabs.removeItem(tab));
+            item.tabs.forEach(tab => this._app.tabCollect.removeItem(tab));
         }
         return item || null;
     },
@@ -56,32 +47,26 @@ app.collectKits = {
     /**
      * Получить kit по id
      * @param {number} id
-     * @returns {object|undefined}
+     * @return {object|undefined}
      */
     getById(id) {
         return this._items[id];
     },
 
     /**
-     * проверить существование kit по id
+     * Проверить существование kit по id
      * @param id
-     * @returns {boolean}
+     * @return {boolean}
      */
     isById(id) {
         return id in this._items;
     },
 
     /**
-     * получить все окна
-     * @returns {Array}
+     * Получить все окна
+     * @return {Array}
      */
     getItemsInArray() {
         return Object.keys(this._items).map(key => this._items[key]);
     }
-
-
-
-    // открытие окон браузера, сохраненные в предыдущую сессию
-    // это запускается после того, как все
-
 };
