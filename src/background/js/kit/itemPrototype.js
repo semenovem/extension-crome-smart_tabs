@@ -4,9 +4,9 @@
 app.KitItem.prototype = {
 
     /**
-     * задержка перед сохранением состояния
+     * @type {number|null} задержка перед сохранением состояния
      */
-    _timeoutSave: 1000,
+    _TIMEOUT_BEFORE_SAVE: null,
 
 
     /**
@@ -128,17 +128,6 @@ app.KitItem.prototype = {
             }
         },
 
-
-        // ### Вкладки
-        {   // список
-            name: 'tabs',
-            isArray: true,
-            special: true,
-            normalize(val) {
-                return Array.isArray(val) ? val : [];
-            }
-        },
-
         {   // номер активной вкладки
             name: 'tabActive',
             type: 'number',
@@ -206,78 +195,6 @@ app.KitItem.prototype = {
 
 
     // ################################################
-    // операции со вкладками
-    // ################################################
-
-    ///**
-    // * добавить вкладку
-    // * @param tab
-    // */
-    //addTab(tab) {
-    //    if (!this.hasTabById(tab.id)) {
-    //        this.tabs.push(tab);
-    //        tab.setKit(this);
-    //        this.modify();
-    //
-    //    }
-    //    return this;
-    //},
-    //
-    ///**
-    // * убрать вкладку из окна
-    // * @param tab
-    // */
-    //removeTab(tab) {
-    //    this.modify();
-    //    console.log('remove tab', tab);
-    //    return this;
-    //},
-    //
-    ///**
-    // * проверка наличия вкладки
-    // * @param {object} tab объект вкладки - экземпляр @class KitItem
-    // * @returns {boolean}
-    // */
-    //hasTab(tab) {
-    //    return this.tabs.indexOf(tab) !== -1;
-    //},
-    //
-    ///**
-    // * проверка наличия вкладки
-    // * @param id
-    // * @returns {boolean}
-    // */
-    //hasTabById(id) {
-    //    return this.tabs.some(tab => tab.id === id);
-    //},
-    //
-    ///**
-    // * Установить активную вкладку (номер)
-    // * @param tab
-    // * @returns {object}
-    // */
-    //setTabActive(tab) {
-    //    this.tabActive = this.tabs.indexOf(tab);
-    //    this.modify();
-    //    return this;
-    //},
-    //
-    ///**
-    // * Получить номер активной вкладки
-    // * @returns {number|*}
-    // */
-    //getTabActive() {
-    //    return this.tabActive;
-    //},
-    //
-
-
-
-
-
-
-
-    // ################################################
     // модификация объекта
     // ################################################
 
@@ -289,7 +206,7 @@ app.KitItem.prototype = {
         this.modifyLastTime = Date.now();
         if (!this.isModify) {
             this.isModify = true;
-            this._timeoutBeforeSave(this._timeoutSave);
+            this._timeoutBeforeSave(this._TIMEOUT_BEFORE_SAVE);
         }
         return this;
     },
@@ -301,8 +218,8 @@ app.KitItem.prototype = {
      */
     _timeoutBeforeSave(timeout) {
         setTimeout(() => {
-            let timeout = this._timeoutSave,
-                diff = Date.now() - this.modifyLastTime;
+            const timeout = this._TIMEOUT_BEFORE_SAVE;
+            const diff = Date.now() - this.modifyLastTime;
             diff < timeout && diff > 50 ? this._timeoutBeforeSave(timeout - diff) : this.save();
         }, timeout);
     },
@@ -312,10 +229,15 @@ app.KitItem.prototype = {
      */
     save() {
         // перед сохранением - синхронизировать вкладки
-        this._app.browserApi.kit(this.id)
-            .then(re => {
-                console.log ('log', re);
-            });
+        //this._app.browserApi.kit(this.id)
+        //    .then(re => {
+        //        console.log ('log', re);
+        //    });
+
+        this._app.controllerSynx.kit(this.id);
+
+        this._app.controllerMapping.record(this);
+
         this._conditionResolve();
 
         //if (this._record) {
@@ -341,7 +263,6 @@ app.KitItem.prototype = {
      * @return {Promise} промис готовности - найден или создан объект в store для сохранения
      */
     getCondition() {
-        console.log (345, this);
         return this._condition;
     },
 
@@ -361,13 +282,10 @@ app.KitItem.prototype = {
     setRecord(record) {
         this._record = record;
         this._conditionResolve();
-        delete this._store;
         delete this._conditionResolve;
         delete this._conditionReject;
 
         record.getKit() !== this && record.set(this);
         return this;
     }
-
-
 };

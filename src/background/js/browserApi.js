@@ -33,7 +33,7 @@ app.browserApi = {
             )
         })
             .then(eventKits => {
-               const kitsRaw = eventKits.map(this._kit).filter(kit => kit);
+                const kitsRaw = eventKits.map(this._kit).filter(kit => kit);
                 if (!kitsRaw.length) {
                     throw {
                         name: 'Данные всех окон не прошли валидацию'
@@ -43,9 +43,6 @@ app.browserApi = {
             })
             .catch(this._failure);
     },
-
-
-
 
     /**
      * Получить информацию по окну и вкладкам
@@ -115,23 +112,16 @@ app.browserApi = {
      * @private
      */
     _failure(e) {
-        console.warn ('browserApi: ', e);
+        console.warn('browserApi: ', e);
 
         // записать в log событие
         // вернут null
         return Promise.reject(null);
     },
 
-
-
-
-
-
-
     // ################################################
     // методы конвертации
     // ################################################
-
 
     /**
      * Конвертация объекта, возвращенного событием браузерного api в программный
@@ -170,10 +160,6 @@ app.browserApi = {
         // todo сделать логирование ошибок валидации
     },
 
-
-
-    
-    
     /**
      * Конвертация массива вкладок
      * @param {*} eventTabs
@@ -221,6 +207,3 @@ app.browserApi = {
         // todo сделать логирование ошибок валидации
     }
 };
-
-
-

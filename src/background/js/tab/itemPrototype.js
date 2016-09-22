@@ -3,7 +3,6 @@
  */
 app.TabItem.prototype = {
 
-
     /**
      * поля объекта
      * @type {object}
@@ -31,7 +30,6 @@ app.TabItem.prototype = {
             }
         },
 
-
         {   // сохранение истории
             name: 'history',
             type: 'boolean',
@@ -41,7 +39,6 @@ app.TabItem.prototype = {
                 return typeof val === 'boolean' ? val : Boolean(val);
             }
         },
-
 
         {   // адрес
             name: 'url',
@@ -74,51 +71,13 @@ app.TabItem.prototype = {
         }
     ],
 
-
-
-
-    // ################################################
-    // валидация, экспорт/импорт
-    // ################################################
-
-    ///**
-    // * Валидация при создании
-    // * @param {object} raw
-    // * @returns {boolean}
-    // */
-    //validateToCreate(raw) {
-    //    return raw && typeof raw === 'object'
-    //        && this.validateTypeFields(raw)
-    //        && this.fields
-    //            .filter(field => field.requireForCreate === true)
-    //            .every(field => field.name in raw);
-    //},
-    //
-    //
-    ///**
-    // * Проверка типов полей
-    // * @param {object} raw
-    // * @returns {boolean}
-    // */
-    //validateTypeFields(raw) {
-    //    return this.fields
-    //        .filter(field => 'type' in field && field.name in raw)
-    //        .every(field => field.type === typeof raw[field.name]);
-    //},
-    //
-    ///**
-    // * Приведение полей в соответствие с типом
-    // * @param {object} obj объект, у которого изменяем поля
-    // */
-    //normalize(obj) {
-    //    obj && typeof obj === 'object' && this.fields
-    //        .filter(field => field.name in obj && typeof field.normalize === 'function')
-    //        .forEach(field => {
-    //            const name = field.name;
-    //            obj[name] = field.normalize(obj[name]);
-    //        });
-    //    return obj;
-    //},
+    /**
+     * Вернуть id записи
+     * @return {string}
+     */
+    getId() {
+        return this.id;
+    },
 
     /**
      * Формирует данные для сохранения
@@ -144,26 +103,9 @@ app.TabItem.prototype = {
         return raw;
     },
 
-
-    // объединение (добавление) свойств к объекту
-    conjunction(target, source) {
-        target = Object.assign(target);
-        this.fields
-            .filter(field => field.conjunction && field.name in source)
-            .forEach(field => {
-                const name = field.name;
-                target[name] = source[name];
-            });
-        return target;
-    },
-
-
-
-
     // ################################################
     // операции с данными
     // ################################################
-
 
     /**
      * Присвоили окно
@@ -178,6 +120,15 @@ app.TabItem.prototype = {
             this.modify();
         }
     },
+    /**
+     * getter
+     * @return {object}
+     */
+    getKit() {
+        return this.kit;
+    },
+
+
 
     /**
      * Вкладка закрыта
@@ -195,8 +146,4 @@ app.TabItem.prototype = {
     modify() {
         this.kit.modify();
     }
-
-
-
-
 };

@@ -9,19 +9,17 @@ app.KitItem = function(raw, app) {
     this.$className = 'KitItem';
     // </debug>
 
+    // проверить, если свойство в prototype _TIMEOUT_BEFORE_SAVE не задано - задать
+    if (!app.KitItem._TIMEOUT_BEFORE_SAVE) {
+        app.KitItem._TIMEOUT_BEFORE_SAVE = app.setup.get('timeout.kit.beforeSave');
+    }
+
     /**
      * Объект приложения
      * @type {Object}
      * @private
      */
     this._app = app;
-
-    /**
-     * todo убрать использование store, можно заменить на collect
-     * @class app.Store
-     * @type {object}
-     */
-    this._store = app.storeOpen;
 
     /**
      * Получение полей, которые должны быть у экземпляра
@@ -35,13 +33,6 @@ app.KitItem = function(raw, app) {
         });
 
     /**
-     * Вкладки
-     * @type {Array}
-     */
-    this.tabs = [];
-    // todo еще обработать объекты вкладок, они будут передаватся с сохранениями
-
-    /**
      * Состояние экземпляра. Промис выполниться после нахождения / создания записи в store
      * @type {Promise}
      */
@@ -49,9 +40,4 @@ app.KitItem = function(raw, app) {
         this._conditionResolve = resolve;
         this._conditionReject = reject;
     });
-
-
 };
-
-
-

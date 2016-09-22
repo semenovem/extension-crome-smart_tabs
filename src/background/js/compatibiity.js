@@ -51,13 +51,9 @@ app.compatibility = {
             resolve(this._app);
         })
             .catch(e => {
-                this._app.log.error({
+                this._app.log({
                     // <debug>
-                    name: 'Совместимость с платформой',
-                    note: 'Приложение не прошло проверку на совместимость с платформой',
-                    $className: this.$className,
-                    // </debug>
-                    code: 0,
+                    name: 'Приложение не прошло проверку на совместимость с платформой',
                     event: e
                 });
                 throw(e);

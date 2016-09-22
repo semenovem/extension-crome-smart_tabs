@@ -195,9 +195,8 @@ app.storeOpen = {
         }
         catch (e) {
             text = null;
-            this._app.log.error({
+            this._app.log({
                 name: 'Не удалось преобразовать в json',
-                code: 0,
                 event: e
             });
         }
@@ -223,9 +222,8 @@ app.storeOpen = {
             }
         }
         catch (e) {
-            this._app.log.error({
+            this._app.log({
                 name: '',
-                code: 0,
                 event: e,
                 deb: rawSaving
             });

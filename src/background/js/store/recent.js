@@ -38,7 +38,7 @@ app.storeRecent = {
                     }
                 }
                 catch (e) {
-                    this._app.log.msg({
+                    this._app.log({
                         name: 'Получение сохраненных данных недавно закрытых окон браузера',
                         msg: 'Запись в localStorage не валидна'
                     });

@@ -41,8 +41,6 @@ app.tabConv = {
         return tabRaw || null;
     },
 
-
-
     /**
      * Конвертация объекта события "создание окна"
      * @param {*} event объект события создания вкладки
@@ -58,14 +56,6 @@ app.tabConv = {
         }
         return tabsRaw || [];
     },
-
-
-
-
-
-
-
-
 
     // ################################################
     // валидация, экспорт/импорт
@@ -126,9 +116,6 @@ app.tabConv = {
             .every(field => field.type === typeof raw[field.name]);
     },
 
-
-
-
     // объединение (добавление) свойств к объекту
     conjunction(target, source) {
         target = Object.assign(target);
@@ -138,15 +125,8 @@ app.tabConv = {
                 const name = field.name;
                 target[name] = source[name];
             });
-
-        // вкладки
-
-
         return target;
-    },
-
-
-
+    }
 };
 
 

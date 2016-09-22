@@ -53,7 +53,6 @@ var app = {
 
 
 
-    // todo появилось несколько контроллеров
     /**
      * @type {object} контроллер событий окон и вкладок
      * @file js/controller/event.js
@@ -66,12 +65,17 @@ var app = {
      */
     controllerSynx: null,
 
-
     /**
      * @type {object} контроллер программного открытия окон и вкладок
      * @file js/controller/open.js
      */
     controllerOpen: null,
+
+    /**
+     * @type {object} контроллер программного открытия окон и вкладок
+     * @file js/controller/open.js
+     */
+    controllerMapping: null,
 
 
 
@@ -108,31 +112,6 @@ var app = {
      * @file js/log.js
      */
     convert: null,
-
-
-
-
-
-    // ссылки на глобальные объекты
-    // значения в них устанавливаются при проверке на совместимость "compatibility"
-
-    /**
-     * api browser chrome
-     * creates this property "compatibility"
-     */
-    chrome: null,
-
-    /**
-     * api browser chrome. Manage tabs
-     * creates this property "compatibility"
-     */
-    chromeTabs: null,
-
-    /**
-     * api browser chrome. Manage windows
-     * creates this property "compatibility"
-     */
-    chromeWindows: null,
     // </debug>
 
     /**
@@ -142,7 +121,7 @@ var app = {
      * у дочерних объектов методы имеют контекст своего объекта
      * @private
      */
-    _executionInit() {
+    _executionInits() {
         return new Promise(resolve => {
             for (let k in this) {
                 if (!this.hasOwnProperty(k) || Array.isArray(this[k])) {
@@ -184,7 +163,7 @@ var app = {
      */
     _timeout() {
         return new Promise(resolve => {
-            setTimeout(resolve, this.setup.get('timeoutAppLaunch'));
+            setTimeout(resolve, this.setup.get('timeout.app.launch'));
         });
     },
 
@@ -192,12 +171,12 @@ var app = {
      * Инициализация
      */
     init() {
-        this._executionInit()
+        this._executionInits()
             .then(this.compatibility.check)
             .then(this.setup.prep)
             .then(this._timeout.bind(this))
-            .then(this.controllerEvent.subscribe)
-            .then(this.controllerSynx.openedKits)
+            .then(this.controllerEvent.add)
+            .then(this.controllerSynx.all)
          //   .then(this.controllerOpen.savedKits)
 
             .then(
@@ -207,24 +186,16 @@ var app = {
             )
 
             .catch(e => {
-                this.log.error({
-                    // <debug>
-                    name: 'Запуск приложения',
-                    note: 'Не смогли стартовать приложение',
-                    $className: this.$className,
-                    // </debug>
-                    code: 0,
-                    event: e
+                this.log({
+                    name: 'Не смогли стартовать приложение'
                 });
-                this.closing({
-                    type: 'crash'
-                });
+                this.quit();
             });
 
         delete this.init;
         delete this._binding;
         delete this._timeout;
-        delete this._executionInit;
+        delete this._executionInits;
     }
 };
 

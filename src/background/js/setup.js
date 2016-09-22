@@ -17,7 +17,6 @@ app.setup = {
      */
     _isModify: false,
 
-
     /**
      * Подготовка настроек. Получить данные из store
      * @return {Promise}
@@ -29,10 +28,20 @@ app.setup = {
 
     /**
      * Получение значения
-     * @param {string} name
+     * @param {string} propName
      */
-    get(name) {
-        return name in this._data ? this._data[name] : this._default[name];
+    get(propName) {
+        let result = this._app.util.getDeepProp(propName, this._data);
+        if (result.exist) {
+            return result.value;
+        }
+        result = this._app.util.getDeepProp(propName, this._default);
+
+        if (result.exist) {
+            return result.value;
+        }
+        // todo зафиксировать, что не смогли найти запрошенное свойство
+       // return name in this._data ? this._data[name] : this._default[name];
     },
 
     /**
@@ -41,6 +50,7 @@ app.setup = {
      * @param {*} value
      */
     set(name, value) {
+        // сделать запись во вложенные объекты типа 'prop.ext.one'
         this._data[name] = value;
         this._change.push({
             name: name,
@@ -65,18 +75,42 @@ app.setup = {
      * @type {object}
      */
     _default: {
-
         /**
-         * задержка запуска приложения
-         * @type {number}
+         * ожидания
          */
-        timeoutAppLaunch: 100,  // todo для релиза поставить 1000 - 5000
+        timeout: {
 
-        /**
-         * задержка обработки события создания новой вкладки
-         * @type {number}
-         */
-        timeoutOnTabCreate: 100,
+            /**
+             * @type {object} приложение
+             */
+            app: {
+                /**
+                 *  // todo для релиза поставить 1000 - 5000
+                 * @type {number} задержка запуска приложения
+                 */
+                launch: 1000
+            },
+
+            /**
+             * @type {object} окно
+             */
+            kit: {
+                beforeSave: 1000
+            },
+
+            /**
+             * @type {object} вкладка
+             */
+            tab: {
+                onCreate: 100
+            }
+        },
+
+
+
+
+
+
 
         /**
          * Настройки можно сохранять в localStorage
@@ -101,9 +135,7 @@ app.setup = {
          */
         saveError: false,
 
-
         global: {
-
 
             kit: {
                 // закрытые вкладки сохраняются.
@@ -115,24 +147,18 @@ app.setup = {
                 history: true
             }
 
-
         },
-
 
         kit: {
             track: false,       // отслеживать. есть хоть у одной вкладки есть track:true
 
-
             tabHistory: false   // сохранять историю
         },
-
 
         tab: {
             track: true,        // отслеживать url
             history: true       // сохранять историю
         }
-
-
 
     }
 };

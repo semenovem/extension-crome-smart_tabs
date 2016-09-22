@@ -10,20 +10,13 @@ app.tabCollect = {
      * @type {object}
      */
     _app: null,
+    // </debug>
 
     /**
      * Список tabs
      * @type {object}
      */
-    _items: null,
-    // </debug>
-
-    /**
-     * Инициализация объекта
-     */
-    init() {
-        this._items = Object.create(null);
-    },
+    _items: Object.create(null),
 
     /**
      * Создание экземпляра
@@ -66,6 +59,25 @@ app.tabCollect = {
      */
     isById(id) {
         return id in this._items;
+    },
+
+    /**
+     * Получить вкладки, принадлежащие окну
+     * @param {object} kit объект окна браузера
+     */
+    getByKit(kit) {
+        const items = this._items;
+        const tabs = [];
+        for (let id in items) {
+            if (items[id].getKit() === kit) {
+                tabs.push(items[id]);
+            }
+        }
+        return tabs;
     }
+
+
+
+
 
 };

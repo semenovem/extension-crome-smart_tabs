@@ -12,12 +12,11 @@ app.controllerSynx = {
     _app: null,
     // </debug>
 
-
     /**
      * Синхронизация с открытыми окнами/вкладками и сохраненными данными
      * @return {Promise}
      */
-    openedKits() {
+    all() {
         return this._app.browserApi.kitAll()
             .then(kitRawAll => {
 
@@ -45,13 +44,32 @@ app.controllerSynx = {
                 console.warn('controllerSynx.openedKits', e);
                 console.warn('Не удалось получение текущего состояния открытых окон и вкладок');
             });
+    },
+
+
+
+    // синхронизация открытого окна по id
+    // используем в случае, когда событие браузерного api возвращает неизвестный id
+    kit(id) {
+        this._app.browserApi.kit(id)
+            .then(r => {
+                console.log ('ttt', r);
+            });
+
+
+
+        return new Promise(resolve => {
+
+            resolve();
+        })
+    },
+
+
+    // синхронизация вкладки по ее id
+    tab(id) {
+        return new Promise(resolve => {
+
+            resolve();
+        })
     }
-
-
-
-
-
-
-
-
 };

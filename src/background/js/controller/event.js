@@ -24,6 +24,7 @@ app.controllerEvent = {
 
         // это никак не используется, не входит в сборку
         addListener: null,
+        removeListener: null,
         onRemoved: null,
         onCreated: null,
         onUpdated: null,
@@ -65,9 +66,10 @@ app.controllerEvent = {
 
 
     /**
-     *
+     * Добавление обработчиков событий
+     * todo сделать обработку через browserApi
      */
-    subscribe() {
+    add() {
         let apiTab = this._app.chromeTabs;
 
         apiTab.onRemoved.addListener(this._removedTab);
@@ -78,6 +80,20 @@ app.controllerEvent = {
         apiTab.onActivated.addListener(this._activatedTab);
 
         // tabs.onMoved.addListener(hand.moved);
+    },
+
+    /**
+     * Снять обработчики событий
+     */
+    remove() {
+        let apiTab = this._app.chromeTabs;
+        apiTab.onRemoved.removeListener(this._removedTab);
+        apiTab.onCreated.removeListener(this._createdTab);
+        apiTab.onUpdated.removeListener(this._updatedTab);
+        apiTab.onDetached.removeListener(this._deachedTab);
+        apiTab.onAttached.removeListener(this._attachedTab);
+        apiTab.onActivated.removeListener(this._activatedTab);
+        // tabs.onMoved.removeListener(hand.moved);
     },
 
 
@@ -138,7 +154,6 @@ app.controllerEvent = {
      */
     _updatedTab(tabId, change, objTab) {
         const tab = this._app.tabCollect.getById(tabId);
-
      //   console.log ('.. updateTab', change, tabId, !!tab);
         if (tab) {
             tab.modify();
@@ -153,14 +168,21 @@ app.controllerEvent = {
     _activatedTab(tabId, windowId) {
        // console.log('tab _onActivated', tabId, windowId);
 
+        // получить созданные объекты
+        // если нет tab но есть kit - установить
+
         // проверить, принадлежит ли вкладка окну
         const kit = this._app.kitCollect.getById(windowId);
         const tab = this._app.tabCollect.getById(tabId);
 
-        // если вкладка не принадлежит окну - привести состояние объектов
-        // в соответствие с реальностью (запустить synx)
-        if (kit && tab) {
-            kit.hasTab(tab) ? kit.setTabActive(tab) : null;
+        // есть объект окна
+        if (kit) {
+            kit.modify();
+        }
+        // нет объекта окна
+        else {
+            // todo создание объекта окна по id  this._app.
+
         }
     },
 
