@@ -19,13 +19,20 @@ app.kitCollect = {
     _items: Object.create(null),
 
     /**
+     *
+     */
+    init() {
+        this._app.binding(this);
+    },
+
+    /**
      * Создание экземпляра
      * @param {object} raw
      * @return {object}
      */
     createItem(raw) {
         let item;
-        item = new this._app.KitItem(raw, this._app);
+        item = new this._app.KitItem(raw);
         this._items[item.getId()] = item;
         return item;
     },
@@ -39,7 +46,6 @@ app.kitCollect = {
         const item = this._items[id];
         if (item) {
             delete this._items[id];
-            item.tabs.forEach(tab => this._app.tabCollect.removeItem(tab));
         }
         return item || null;
     },
@@ -51,22 +57,5 @@ app.kitCollect = {
      */
     getById(id) {
         return this._items[id];
-    },
-
-    /**
-     * Проверить существование kit по id
-     * @param id
-     * @return {boolean}
-     */
-    isById(id) {
-        return id in this._items;
-    },
-
-    /**
-     * Получить все окна
-     * @return {Array}
-     */
-    getItemsInArray() {
-        return Object.keys(this._items).map(key => this._items[key]);
     }
 };

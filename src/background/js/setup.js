@@ -10,6 +10,12 @@ app.setup = {
      * @type {object}
      */
     _app: null,
+
+    /**
+     * @type {object} @class Condition состояние готовности
+     */
+    _condition: null,
+
     // </debug>
 
     /**
@@ -18,19 +24,41 @@ app.setup = {
     _isModify: false,
 
     /**
+     *
+     */
+    init() {
+        this._app.binding(this);
+    },
+
+    /**
      * Подготовка настроек. Получить данные из store
      * @return {Promise}
      */
     prep() {
         return this._app.storeSetup.get()
-            .then(data => this._data = data);
+            .then(data => {
+                this._data = data;
+                this._getCondition().resolve();
+            })
     },
 
     /**
-     * Получение значения
-     * @param {string} propName
+     * Получение объекта состояния готовновности
+     * Поскольку к настройкам обращаются другие объекты,
+     * только так можем гарантированно создать объект состояния до первого его использования
+     * @return {object}
+     * @private
      */
-    get(propName) {
+    _getCondition() {
+        return this._condition || (this._condition = new this._app.Condition);
+    },
+
+    /**
+     * Получение значения. Синхронно
+     * @param {string} propName
+     * @return {*}
+     */
+    getSynx(propName) {
         let result = this._app.util.getDeepProp(propName, this._data);
         if (result.exist) {
             return result.value;
@@ -40,17 +68,30 @@ app.setup = {
         if (result.exist) {
             return result.value;
         }
-        // todo зафиксировать, что не смогли найти запрошенное свойство
-       // return name in this._data ? this._data[name] : this._default[name];
+        this._app.log({
+            e: new Error,
+            name: 'не смогли найти запрошенное свойство: ' + propName
+        });
     },
 
     /**
-     * Изменение значения
+     * Получение значения. Асинхронно
+     * @param {string} propName
+     * @return {Promise|*}
+     */
+    get(propName) {
+        return this._getCondition().get().then(() => this.getSynx(propName));
+    },
+
+
+    /**
+     * Изменение значения. Асинхронно
      * @param {string} name
      * @param {*} value
      */
     set(name, value) {
         // сделать запись во вложенные объекты типа 'prop.ext.one'
+        // todo сделать асинхронную запись
         this._data[name] = value;
         this._change.push({
             name: name,
@@ -58,6 +99,8 @@ app.setup = {
         });
         this._isModify = true;
     },
+
+
 
     /**
      * Изменные настройки, сохраненные в store
@@ -88,14 +131,19 @@ app.setup = {
                  *  // todo для релиза поставить 1000 - 5000
                  * @type {number} задержка запуска приложения
                  */
-                launch: 1000
+                launch: 1
             },
 
             /**
              * @type {object} окно
              */
             kit: {
-                beforeSave: 1000
+                beforeSave: 2000,
+
+                /**
+                 * Через сколько начать искать соответствие в store
+                 */
+                beforeMapping: 200
             },
 
             /**
@@ -103,6 +151,36 @@ app.setup = {
              */
             tab: {
                 onCreate: 100
+            },
+
+            /**
+             * @type {object} браузерное api
+             */
+            browserApi: {
+                /**
+                 * @type {number} таймаут, после которого запрос к api браузера считается зависшим
+                 */
+                hung: 3000
+
+            }
+        },
+
+
+        // todo описать данные
+        store: {
+            /**
+             * Хранение открытых окон
+             */
+            open: {
+                // префикс при сохранениях в localStorage
+                prefix: 'kit_open_'
+            },
+            /**
+             * @type {object} хранение недавно закрытых окон
+             */
+            recent: {
+                // префикс при сохранениях в localStorage
+                prefix: 'kit_recent_'
             }
         },
 
@@ -153,11 +231,17 @@ app.setup = {
             track: false,       // отслеживать. есть хоть у одной вкладки есть track:true
 
             tabHistory: false   // сохранять историю
+
+
+
         },
 
         tab: {
             track: true,        // отслеживать url
             history: true       // сохранять историю
+
+            // максимальное длинна истории
+
         }
 
     }

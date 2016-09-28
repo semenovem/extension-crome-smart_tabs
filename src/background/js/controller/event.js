@@ -19,21 +19,30 @@ app.controllerEvent = {
     /**
      * @type {object} список названий событий
      */
-    __suppressEventsList: {
+    $_suppressEventsList: {
         createdTab: null,
 
         // это никак не используется, не входит в сборку
         addListener: null,
         removeListener: null,
-        onRemoved: null,
-        onCreated: null,
-        onUpdated: null,
-        onDetached: null,
-        onAttached: null,
-        onActivated: null
+        tabs: {
+            onRemoved: null,
+            onCreated: null,
+            onUpdated: null,
+            onDetached: null,
+            onAttached: null,
+            onActivated: null
+        }
     },
 
     // </debug>
+
+    /**
+     *
+     */
+    init() {
+        this._app.binding(this);
+    },
 
 
     /**
@@ -70,56 +79,73 @@ app.controllerEvent = {
      * todo сделать обработку через browserApi
      */
     add() {
-        let apiTab = this._app.chromeTabs;
+        const apiTab = window.chrome.tabs;
 
         apiTab.onRemoved.addListener(this._removedTab);
-        apiTab.onCreated.addListener(this._createdTab);
+        //apiTab.onCreated.addListener(this._createdTab);
         apiTab.onUpdated.addListener(this._updatedTab);
-        apiTab.onDetached.addListener(this._deachedTab);
-        apiTab.onAttached.addListener(this._attachedTab);
-        apiTab.onActivated.addListener(this._activatedTab);
+        //apiTab.onDetached.addListener(this._deachedTab);
+        //apiTab.onAttached.addListener(this._attachedTab);
+        //apiTab.onActivated.addListener(this._activatedTab);
 
         // tabs.onMoved.addListener(hand.moved);
+
+        const api = this._app.browserEvent.tabs;
+        api.onCreated(this._createdTab);
+        //api.onUpdated(this._updatedTab);
+
+        //this._app.browserEvent.kit.onRemoved(this._removedKit);
+
+
+        // api.tabs.un.created()
+
+
     },
+
 
     /**
      * Снять обработчики событий
      */
     remove() {
-        let apiTab = this._app.chromeTabs;
+        const apiTab = window.chrome.tabs;
         apiTab.onRemoved.removeListener(this._removedTab);
-        apiTab.onCreated.removeListener(this._createdTab);
+        //apiTab.onCreated.removeListener(this._createdTab);
         apiTab.onUpdated.removeListener(this._updatedTab);
-        apiTab.onDetached.removeListener(this._deachedTab);
-        apiTab.onAttached.removeListener(this._attachedTab);
-        apiTab.onActivated.removeListener(this._activatedTab);
+        //apiTab.onDetached.removeListener(this._deachedTab);
+        //apiTab.onAttached.removeListener(this._attachedTab);
+        //apiTab.onActivated.removeListener(this._activatedTab);
         // tabs.onMoved.removeListener(hand.moved);
+
+        const api = this._app.browserEvent.tabs;
+        api.onCreated(null);
+        //api.onRemoved(null);
+
+        //this._app.browserEvent.kit.onRemoved(null);
+
+        //api.onUpdated(null);
     },
 
 
 
     /**
      * Событие. Создана новая вкладка
-     * @param {object} eventTab объект tab
+     * @param {object} eTab объект tab
      */
-    _createdTab(eventTab) {
-        if (this._suppressEvents.createdTab) {
+    _createdTab(eTab) {
+        // todo перенести заморозку событий в browserApi
+        if (this._suppressEvents.onCreatedTab) {
             return;
         }
-        console.log ('001, create tab ', eventTab);
+        console.log ('001, create tab ', eTab);
 
-        const kitRaw = this._app.kitConv.onCreatedTab(eventTab);
-        const tabRaw = this._app.tabConv.onCreatedTab(eventTab);
+        const kit = this._app.kitCollect.getById(eTab.windowId) || this._app.kitCollect.createItem({
+                id: eTab.windowId
+            });
 
-        if (kitRaw && tabRaw) {
-            const tabCollect = this._app.tabCollect;
-            const kitCollect = this._app.kitCollect;
+        kit.modify();   // todo вызвать только если объект уже был создан
 
-            const kit = kitCollect.getById(kitRaw.id) || kitCollect.createItem(kitRaw);
-            const tab = tabCollect.getById(tabRaw.id) || tabCollect.createItem(tabRaw);
-
-            tab.setKit(kit);
-        }
+        const tab = this._app.tabCollect.getById(eTab.id) || this._app.tabCollect.createItem(eTab);
+        tab.setState(eTab);
     },
 
     /**
@@ -128,36 +154,53 @@ app.controllerEvent = {
      * @param {object} info
      */
     _removedTab(tabId, info) {
-        const tabCollect = this._app.tabCollect;
+        const windowId = info.windowId;
+        const isWindowClosing = info.isWindowClosing;
 
-        //console.log(info, tabId);
+        const kit = this._app.kitCollect.getById(windowId);
+        const tab = this._app.tabCollect.getById(tabId);
 
-        let tab = tabCollect.removeItem(tabId);
-        if (tab) {
-            // закрытие окна
-            // обработать info перед использованием
-            if (info.isWindowClosing) {
-                //        tab.kit.record && this._app.collectRecords.removeRecord(tab.kit.record);
-            }
-            // закрытие вкладки
-            else {
-                tab.close();
-            }
+        // закрытие окна
+        if (isWindowClosing) {
+            kit && kit.close();
+            tab && tab.remove();
+
+        // закрывается одна вкладка
+        } else {
+            tab && tab.close();
+            kit && kit.modify();   // todo если  модели окна нет - создать
         }
     },
 
+    ///**
+    // * Закрытие окна браузера
+    // * @param {number} id идентификатор окна браузера
+    // * @private
+    // */
+    //_removedKit(id) {
+    //    const kit = this._app.kitCollect.getById(Id);
+    //    kit && kit.close();
+    //},
+
     /**
-     * Hahdler for when a tab is updated url
+     * Обработчик события изменение данных во вкладке
      * @param {number} tabId
      * @param {object} change
-     * @param {object} objTab
+     * @param {object} eDataTab
      */
-    _updatedTab(tabId, change, objTab) {
-        const tab = this._app.tabCollect.getById(tabId);
-     //   console.log ('.. updateTab', change, tabId, !!tab);
-        if (tab) {
-            tab.modify();
-        }
+    _updatedTab(tabId, change, eDataTab) {
+        // todo обработать данные от api
+
+        const kit = this._app.kitCollect.getById(eDataTab.windowId);
+        kit && kit.modify();
+
+        // это возможно не потребуется
+        //const tab = this._app.tabCollect.getById(tabId);
+        //if (tab) {
+        //    tab.modify();
+        //} else {
+        //    this._app.controllerSynx.tab(tabId);
+        //}
     },
 
     /**

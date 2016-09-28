@@ -10,36 +10,74 @@ app.browserApi = {
      * @type {object}
      */
     _app: null,
-    // </debug>
+
 
     /**
      * @type {number} таймаут, после которого запрос к api браузера считается зависшим
      */
-    _TIME_OUT_HAND: 3000,
+    _TIME_OUT_HUNG: 0,
+    // </debug>
 
     /**
-     * получить все открытые окна
-     * @return {Promise.<T>}
+     * @type {object} параметры запроса к браузерному api по умолчанию
      */
-    kitAll() {
+    param: {
+        _kitAll: {
+            populate: false
+        },
+        _kit: {
+            populate: true
+        },
+
+        /**
+         * Смешать параметры по умолчанию и переданные приложением, и конвертировать для api
+         * пока конвертировать не нужно, если api будет изменятся - тогда сделать конвертацию
+         * @param {string} optName название параметра по умолчанию
+         * @param {object} params
+         */
+        mix(optName, params) {
+            return Object.assign(this['_' + optName], params && typeof params && params || {});
+        }
+    },
+
+    /**
+     *
+     */
+    init() {
+        this._app.binding(this);
+        this._app.setup.get('timeout.browserApi.hung')
+            .then(value => this._TIME_OUT_HUNG = value);
+    },
+
+
+    /**
+     * Получить все открытые окна
+     * @param {object|undefined} [params] параметры
+     * @return {Promise.<Array>}
+     */
+    getKitAll(params) {
+        let timer;
         return new Promise((resolve, reject) => {
-            setTimeout(reject, this._TIME_OUT_HAND);
+            timer = setTimeout(reject, this._TIME_OUT_HUNG);
 
             window.chrome.windows.getAll(
-                {
-                    populate: true
-                },
+                this.param.mix('kitAll', params),
                 resolve
-            )
+            );
         })
-            .then(eventKits => {
-                const kitsRaw = eventKits.map(this._kit).filter(kit => kit);
-                if (!kitsRaw.length) {
+            .then(eDataKits => {
+                clearTimeout(timer);
+
+                const eKits = eDataKits
+                    .map(eKit => eKit && typeof eKit === 'object' && this._kitTask(eKit))
+                    .filter(eKit => eKit);
+
+                if (!eKits.length) {
                     throw {
                         name: 'Данные всех окон не прошли валидацию'
                     };
                 }
-                return kitsRaw;
+                return eKits;
             })
             .catch(this._failure);
     },
@@ -59,6 +97,7 @@ app.browserApi = {
      *      focused:
      *      type:
      *
+     *      // если передан параметр populate: true
      *      tabs: [
      *          {
      *              active:
@@ -70,40 +109,106 @@ app.browserApi = {
      * }
      *
      * @param {number} id идентификатор окна
+     * @param {object|undefined} [params] параметры
      * @return {Promise.<object>}
      */
-    kit(id) {
-        return new Promise((resolve, reject) => {
-            // таймер на зависание. если в течение указаного времени ответа от api не последовало
-            setTimeout(reject, this._TIME_OUT_HAND);
+    getKit(id, params) {
+        let timer;
+        const queryParams = this.param.mix('kit', params);
 
-            window.chrome.windows.get(
-                id,
-                {
-                    populate: true
-                },
-                resolve
-            )
+        return new Promise((resolve, reject) => {
+            timer = setTimeout(reject, this._TIME_OUT_HUNG);
+            window.chrome.windows.get(id, queryParams, resolve);
         })
-            .then(eventKit => {
-                return this._kit(eventKit) || Promise.reject('Данные окна не прошли валидацию');
+            .then(eDataKit => {
+                clearTimeout(timer);
+                const eKit = this._kitTask(eDataKit);
+
+                if (eKit && id === eKit.id && (!queryParams.populate || eKit.tabs.length)) {
+                    return eKit;
+                } else {
+                    throw {
+                        name: 'Данные окна не прошли валидацию'
+                    };
+                }
             })
-            .catch(this._failure)
+            .catch(this._failure);
     },
+
+
+
 
     /**
      * Конвертация объекта, который возвращает api браузера
-     * @param eventKit
-     * @return {*}
+     * @param {object} eData
+     * @return {object|null} _eKitToRaw
      * @private
      */
-    _kit(eventKit) {
-        const kitRaw = this._kitConv(eventKit);
-        if (kitRaw) {
-            kitRaw.tabs = this._tabsConv(eventKit.tabs);
+    _kitTask(eData) {
+        let eKit = this._kitConv(eData);
+        if (eKit && Array.isArray(eData.tabs)) {
+            eKit.tabs = this._tabsConv(eData.tabs);
         }
-        return kitRaw && kitRaw.tabs.length ? kitRaw : null;
+
+        return eKit || null;
     },
+
+
+
+    /**
+     * Получить по вкладке
+     * Конвертация данных
+     * на выходе объект:
+     * {
+     *      active:
+     *      url:
+     *      title:
+     *      favIconUrl:
+     * }
+     *
+     * @param {number} id идентификатор вкладки
+     * @return {Promise.<object>}
+     */
+    getTab(id) {
+        let timer;
+
+        return new Promise((resolve, reject) => {
+            timer = setTimeout(reject, this._TIME_OUT_HUNG);
+            window.chrome.tabs.get(id, resolve);
+        })
+            .then(eDataTab => {
+                clearTimeout(timer);
+                const eTab = this._tabConv(eDataTab);
+
+                if (eTab && id === eTab.id) {
+                    return eTab;
+                } else {
+                    throw {
+                        name: 'Данные вкладки не прошли валидацию'
+                    };
+                }
+            })
+            .catch(this._failure);
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Ошибка при конвертации
@@ -119,14 +224,66 @@ app.browserApi = {
         return Promise.reject(null);
     },
 
+
+
+
+
+
+
+
+
+
+
     // ################################################
-    // методы конвертации
+    // открытие окна/вкладки
+    // ################################################
+
+    /**
+     * Открытие окна браузера
+     * @param {object} storedKit
+     * @return {Promise}
+     */
+    createKit(storedKit) {
+        const params = this._storedKitToOpen(storedKit);
+        let timer;
+
+        return new Promise((resolve, reject) => {
+            timer = setTimeout(reject, this._TIME_OUT_HUNG);
+            window.chrome.windows.create(params, resolve);
+        })
+            .then(eData => {
+                clearTimeout(timer);
+                const eKit = this._kitTask(eData);
+
+                if (eKit && eKit.tabs.length) {
+                    return eKit;
+                } else {
+                    throw {
+                        name: 'Данные окна не прошли валидацию'
+                    };
+                }
+            })
+            .catch(this._failure);
+    },
+
+
+    // ################################################
+    // подписка на события (пока в файле browserEvent.js)
+    // ################################################
+
+
+
+
+
+
+
+    // ################################################
+    // конвертация данных, полученных от api
     // ################################################
 
     /**
      * Конвертация объекта, возвращенного событием браузерного api в программный
      * который будет использоватся дальше
-     *
      * {
      *      id:             {number}    id окна
      *      width:          {number}
@@ -136,44 +293,60 @@ app.browserApi = {
      *      alwaysOnTop:    {boolean}
      *      focused:        {boolean}
      *      type:           {string}
-     *
      * }
      *
-     * @param eventKit
+     * @param {object} eData
      * @return {object|null}
      * @private
      */
-    _kitConv(eventKit) {
-        return eventKit && typeof eventKit === 'object' &&
-            this._app.kitConv.validateRaw(
+    _kitConv(eData) {
+        return this._app.kitConv.validateEvent(
                 this._app.kitConv.normalize({
-                    id: eventKit.id,
-                    //   focused: eventKit.focused,
-                    left: eventKit.left,
-                    top: eventKit.top,
-                    width: eventKit.width,
-                    height: eventKit.height,
-                    //state: eventKit.state,
-                    //type: eventKit.type,
+                    id: eData.id,
+                    focused: eData.focused,
+                    left: eData.left,
+                    top: eData.top,
+                    width: eData.width,
+                    height: eData.height,
+                    state: eData.state,    // "fullscreen" "minimized" "maximized" "normal"
+                    type: eData.type,
+                    alwaysOnTop: eData.alwaysOnTop
                 })
             ) || null;
         // todo сделать логирование ошибок валидации
     },
 
+    ///**
+    // * Конвертация данных объекта события вкладки. Получаем данные окна
+    // * @param {*} eDataTab
+    // * @return {object|null}
+    // * @private
+    // */
+    //_eDataTabToEKit(eDataTab) {
+    //    return this._app.kitConv.validateEvent(
+    //            this._app.kitConv.normalize({
+    //                id: eDataTab.windowId
+    //            })
+    //        ) || null;
+    //    // todo сделать логирование ошибок валидации
+    //},
+
+
+
+
     /**
      * Конвертация массива вкладок
-     * @param {*} eventTabs
+     * @param {Array} eDataTabs
      * @return {Array}
      * @private
      */
-    _tabsConv(eventTabs) {
-        return Array.isArray(eventTabs) && eventTabs.map(this._tabConv).filter(t=>t) || [];
+    _tabsConv(eDataTabs) {
+        return eDataTabs
+            .map(eDataTab => eDataTab && typeof eDataTab === 'object' && this._tabConv(eDataTab)).filter(t=>t);
     },
 
     /**
      * Конвертация данных вкладки
-     *
-     *
      *  {
      *      active:
      *      url:
@@ -181,29 +354,65 @@ app.browserApi = {
      *      favIconUrl:
      *  }
      *
-     *
-     * @param {*} eventTab
+     * @param {object} eData
      * @return {object|null}
      * @private
      */
-    _tabConv(eventTab) {
-        return eventTab && typeof eventTab === 'object' &&
-            this._app.kitConv.validateRaw(
-                this._app.kitConv.normalize({
-                    id: eventTab.id,
-                    //active: eventTab.active,
-                    //audible: eventTab.audible,
-                    favIconUrl: eventTab.favIconUrl,
-                    //highlighted: eventTab.highlighted,
-                    //incognito: eventTab.incognito,
-                    //index: eventTab.index,
-                    //pinned: eventTab.pinned,
-                    //selected: eventTab.selected,
-                    //status: eventTab.status,
-                    title: eventTab.title,
-                    url: eventTab.url
+    _tabConv(eData) {
+        return this._app.tabConv.validateEvent(
+                this._app.tabConv.normalize({
+                    id: eData.id,
+                    //active: eData.active,
+                    //audible: eData.audible,
+                    favIconUrl: eData.favIconUrl,
+                    //highlighted: eData.highlighted,
+                    //incognito: eData.incognito,
+                    //index: eData.index,
+                    //pinned: eData.pinned,
+                    //selected: eData.selected,
+                    //status: eData.status,
+                    title: eData.title,
+                    url: eData.url,
+                    windowId: eData.windowId
                 })
             ) || null;
         // todo сделать логирование ошибок валидации
+    },
+
+
+
+
+
+
+
+    // ################################################
+    // конвертация данных для api
+    // ################################################
+
+    /**
+     * Подготовка параметров открытия окна браузера
+     * @param {object} storedKit
+     * @return {object}
+     * @private
+     */
+    _storedKitToOpen(storedKit) {
+        const params = {
+            url: storedKit.tabs.map(tab => tab.url)
+        };
+        switch (storedKit.state) {
+            case 'minimized':
+            case 'maximized':
+            case 'fullscreen':
+                params.state = storedKit.state;
+                break;
+            default:
+                storedKit.left || (params.left = storedKit.left);
+                storedKit.top || (params.top = storedKit.top);
+                storedKit.width || (params.width = storedKit.width);
+                storedKit.height || (params.height = storedKit.height);
+                break
+        }
+        return params;
     }
+
 };

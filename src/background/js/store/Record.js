@@ -8,64 +8,84 @@ app.Record = function(opts) {
     this.$className = 'Record';
     // </debug>
 
-    this._store = opts.store;
     this._itemKey = opts.itemKey;
-    this._kit = opts.kit ? opts.kit : null;
 
-    if (opts.rawSaving) {
-        this._rawSaving = opts.rawSaving;
+    if (opts.kit) {
+        this._kit = opts.kit;
+    }
+    if (opts.storedKit) {
+        this._storedKit = opts.storedKit;
     }
 };
-
 
 /**
  * @type {object} прототип @class Record
  */
-app.Record.prototype = {
+app.recordPrototypre = app.Record.prototype = {
+    // <debug>
+    /**
+     * @type {object} объект приложения
+     */
+    _app: null,
+    // </debug>
 
-    // получить объект для сохранения
-    getRaw() {
-        return this._kit.getRaw();
+    /**
+     * getter
+     * Получить сохранные данные окна
+     * @return {object}
+     */
+    getStoredKit() {
+        return this._storedKit;
     },
 
+    /**
+     * Сохранение
+     * @param {Array} tabs массив вкладок окна
+     * @return {Promise<>}
+     */
+    save(tabs) {
+        const raw = this.getRaw();
+        raw.tabs = tabs.map(tab => tab.getRaw());
 
-    // получить сохраненный объект
-    getRawSaving() {
-        return this._rawSaving;
+        this._kit.clearModify();
+        return this._app.storeOpen.save(this._itemKey, raw);
     },
 
-
-
-
-
-    // сохранение
-    save() {
-        // todo сделать нормальную обработку ошибки
-        this._kit || console.error('пытаемся сохранить запись, которая не имеет открытого окна');
-
-        return this._store.save(
-            this._itemKey,
-            this.getRaw()
-        )
-    },
-
+    /**
+     * getter
+     * @return {object}
+     */
     getKit() {
         return this._kit;
     },
 
     /**
-     * Добавление объекта открытого окна
-     * @param kit
+     * Получить объект модели окна для сохранения
+     * @return {object}
+     */
+    getRaw() {
+        return this._kit.getRaw();
+    },
+
+    /**
+     * setter
+     * Добавление модели
+     * @param {object} kit
      */
     setKit(kit) {
         this._kit = kit;
-        delete this._rawSaving;
-        kit.getRecord() !== this && kit.setRecord(this);
+        if (kit.getRecord() !== this) {
+            kit.setRecord(this);
+        }
+        delete this._storedKit;
+    },
+
+    /**
+     * Сохранение в последние использованные
+     */
+    moveToRecent() {
+        return this._app.storeOpen.moveToRecent(this._itemKey);
     }
 
 
 };
-
-
-
-

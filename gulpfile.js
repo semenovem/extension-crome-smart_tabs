@@ -36,6 +36,7 @@ gulp.task('build', ['build-clear'], function() {
             'src/background/js/controller/*.js',
             'src/background/js/store/*.js',
             'src/background/js/api/*.js',
+            'src/background/js/classes/*.js',
 			'src/background/js/*.js'
 
 		])

@@ -1,62 +1,41 @@
 /**
  * Проверка совместимости приложения с браузером
  */
-app.compatibility = {
-    // <debug>
-    $className: 'Compatibility',
+app.compatibility = function() {
+    const ITEM_TEST = '_test';
 
-    /**
-     * Объект приложения
-     * @type {object}
-     */
-    _app: null,
-    // </debug>
+    return new Promise((resolve, reject) => {
 
-    _ITEM_TEST: '_test',
+        if (typeof window.chrome === 'undefined') {
+            reject('нет объекта chrome');
+        }
 
-    /**
-     * Проверка совместимости приложения с платформой
-     * @returns {Promise}
-     */
-    check() {
-        return new Promise((resolve, reject) => {
+        if (typeof window.chrome.tabs === 'undefined') {
+            reject('нет объекта chrome.tabs');
+        }
 
-            if (typeof window.chrome === 'undefined') {
-                reject('нет объекта chrome');
-            }
+        if (typeof window.chrome.windows === 'undefined') {
+            reject('нет объекта chrome.windows');
+        }
 
-            if (typeof window.chrome.tabs === 'undefined') {
-                reject('нет объекта chrome.tabs');
-            }
+        // проверка localStorage
+        if (typeof window.localStorage === 'undefined') {
+            reject('нет объекта localStorage');
+        }
+        const test = ITEM_TEST + Math.random();
+        localStorage.setItem(ITEM_TEST, test);
+        if (localStorage.getItem(ITEM_TEST) !== test) {
+            reject('ошибка при записи в localStorage');
+        }
+        localStorage.removeItem(ITEM_TEST);
 
-            if (typeof window.chrome.windows === 'undefined') {
-                reject('нет объекта chrome.windows');
-            }
-
-
-            // проверка localStorage
-            if (typeof window.localStorage === 'undefined') {
-                reject('нет объекта localStorage');
-            }
-            const test = this._ITEM_TEST + Math.random();
-            localStorage.setItem(this._ITEM_TEST, test);
-            if (localStorage.getItem(this._ITEM_TEST) !== test) {
-                reject('ошибка при записи в localStorage');
-            }
-            localStorage.removeItem(this._ITEM_TEST);
-
-            app.chrome = window.chrome;
-            app.chromeTabs = window.chrome.tabs;
-            app.chromeWindows = window.chrome.windows;
-            resolve(this._app);
-        })
-            .catch(e => {
-                this._app.log({
-                    // <debug>
-                    name: 'Приложение не прошло проверку на совместимость с платформой',
-                    event: e
-                });
-                throw(e);
+        resolve(this._app);
+    })
+        .catch(e => {
+            this._app.log({
+                name: 'Приложение не прошло проверку на совместимость с платформой',
+                event: e
             });
-    }
+            throw(e);
+        });
 };

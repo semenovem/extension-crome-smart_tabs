@@ -13,75 +13,11 @@ app.kitConv = {
     // </debug>
 
     /**
-     * Создать объект для открытия браузером нового окна
-     * @param {object} raw
-     * @return {object}
+     *
      */
-    toOpen(raw) {
-        const prop = Object.create(null);
-        this._app.KitItem.prototype.fields
-            .filter(field => field.toOpen && field.name in raw)
-            .forEach(field => {
-                const name = field.name;
-                prop[name] = raw[name];
-            });
-
-        // массив строк с адресами вкладок url
-        prop.url = raw.tabs
-            .filter(tab => !tab.closed)
-            .map(tab => tab.url);
-        return prop;
+    init() {
+        this._app.binding(this);
     },
-
-
-    /**
-     * Конвертация объекта события "создание вкладки"
-     * @param {*} event объект события создания вкладки
-     * @return {object|null}
-     */
-    onCreatedTab(event) {
-        return event && typeof event === 'object' &&
-            this.validateRaw(
-                this.normalize({
-                    id: event.windowId,
-                    left: event.left,
-                    top: event.top,
-                    width: event.width,
-                    height: event.height
-                })
-            ) || null;
-    },
-
-    /**
-     * Конвертация объекта события "создание окна"
-     * @param {*} event объект события создания вкладки
-     * @return {object|null}
-     */
-    onCreatedKit(event) {
-        return event && typeof event === 'object' &&
-            this.validateRaw(
-                this.normalize({
-                    id: event.id,
-                    //   focused: event.focused,
-                    left: event.left,
-                    top: event.top,
-                    width: event.width,
-                    height: event.height,
-                    //state: event.state,
-                    //type: event.type,
-
-                    tabs: this._app.tabConv.onCreatedKit(event)
-                })
-            ) || null;
-    },
-
-
-
-
-
-
-
-
 
 
 
@@ -113,46 +49,47 @@ app.kitConv = {
     },
 
     /**
-     * Валидация данных, из которых впоследствии будет создаваться экземпляр класса KitItem
+     * Валидация объекта события браузерного api
      * @param {object} raw
      * @return {object|null}
      */
-    validateRaw(raw) {
-        const valid = raw && typeof raw === 'object' &&
-            this.validateTypeFields(raw) &&
+    validateEvent(raw) {
+        const valid = raw &&
+            typeof raw === 'object' &&
+            this._validateTypeFields(raw) &&
             this._app.KitItem.prototype.fields
-                .filter(field => field.requireNew === true)
+                .filter(field => field.requireEvent === true)
                 .every(field => raw[field.name]) &&
                 // вкладки
-            (!Array.isArray(raw.tab) || raw.tabs.every(tab => this._app.tabConv.validateRaw(tab)));
+            (!Array.isArray(raw.tab) || raw.tabs.every(tab => this._app.tabConv.validateEvent(tab)));
         return valid ? raw : null;
     },
 
     /**
-     * Валидация данных, сохраненных ранее
+     * Валидация сохраненных данных
      * @param {object} raw
      * @return {object|null}
      */
-    validateSaving(raw) {
-        const valid = raw && typeof raw === 'object' &&
-            this.validateTypeFields(raw) &&
+    validateStored(raw) {
+        const valid = raw &&
+            typeof raw === 'object' &&
+            this._validateTypeFields(raw) &&
             this._app.KitItem.prototype.fields
-                .filter(field => field.requireSaving === true)
+                .filter(field => field.requireStored === true)
                 .every(field => raw[field.name]) &&
                 // вкладки обязательны при сохранениях
-                raw.tabs.every(tab => this._app.tabConv.validateSaving(tab));
+            Array.isArray(raw.tabs) &&
+            raw.tabs.every(tab => this._app.tabConv.validateStored(tab)) &&
+            raw.tabs.length;
         return valid ? raw : null;
     },
-
-
-
 
     /**
      * Проверка типов полей
      * @param {object} raw
      * @return {boolean}
      */
-    validateTypeFields(raw) {
+    _validateTypeFields(raw) {
         return this._app.KitItem.prototype.fields
             .filter(field => 'type' in field && field.name in raw)
             .every(field => field.type === typeof raw[field.name]);
@@ -161,29 +98,56 @@ app.kitConv = {
 
 
 
-    // объединение (добавление) свойств к объекту
-    conjunction(target, source) {
-        target = Object.assign(target);
-        this._app.KitItem.prototype.fields
-            .filter(field => field.conjunction && field.name in source)
-            .forEach(field => {
-                const name = field.name;
-                target[name] = source[name];
+
+    // ################################################
+    // Конвертация данных для/после сохранения
+    // ################################################
+
+    /**
+     * Получить данные в виде строки для сохранения
+     * @returns {string|null}
+     */
+    serialization(raw) {
+        let text;
+        try {
+            text = JSON.stringify(raw);
+        }
+        catch (e) {
+            text = null;
+            this._app.log({
+                name: 'Не удалось преобразовать в json',
+                event: e
             });
-        //
-        //// вкладки
-        //if (Array.isArray(source.tabs)) {
-        //    target.tabs
-        //}
-
-
-        return target;
+        }
+        return text;
     },
 
-
-
-
-
+    /**
+     * Достаем данные из сохранения
+     * @return {string|null}
+     */
+    unserialization(text) {
+        let storedKit;
+        try {
+            storedKit = this._app.kitConv.validateStored(
+                this._app.kitConv.normalize(
+                    JSON.parse(text)
+                )
+            );
+            if (!storedKit) {
+                throw 'объект не проходит валидацию!';
+            }
+        }
+        catch (e) {
+            this._app.log({
+                name: '',
+                event: e,
+                deb: storedKit
+            });
+            storedKit = null;
+        }
+        return storedKit;
+    }
 };
 
 

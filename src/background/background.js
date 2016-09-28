@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Объект приложения
  */
@@ -107,11 +108,6 @@ var app = {
      */
     log: null,
 
-    /**
-     * Конвертация данных. todo изменить название - привязать к событиям
-     * @file js/log.js
-     */
-    convert: null,
     // </debug>
 
     /**
@@ -131,8 +127,6 @@ var app = {
                 if (obj && typeof obj === 'object') {
                     obj._app = this;
 
-                    this._binding(obj);
-
                     if (typeof obj.init === 'function') {
                         obj.init.call(obj);
                         delete obj.init;
@@ -145,25 +139,26 @@ var app = {
 
     /**
      * Биндинг методов объекта
-     * @param {object} obj
+     * @param {object} obj ообъект, методам которого биндим контекст
+     * @param {object} [scope] контекст
      * @private
      */
-    _binding(obj) {
+    binding(obj, scope) {
         for (let key in obj) {
             if (obj.hasOwnProperty(key) && typeof obj[key] === 'function') {
-                obj[key] = obj[key].bind(obj);
+                obj[key] = obj[key].bind(scope || obj);
             }
         }
     },
 
     /**
      * Задержка перед запуском приложения
-     * @return {Promise} void
+     * @return {Promise<void>}
      * @private
      */
     _timeout() {
         return new Promise(resolve => {
-            setTimeout(resolve, this.setup.get('timeout.app.launch'));
+            setTimeout(resolve, this.setup.getSynx('timeout.app.launch'));
         });
     },
 
@@ -171,31 +166,37 @@ var app = {
      * Инициализация
      */
     init() {
-        this._executionInits()
-            .then(this.compatibility.check)
-            .then(this.setup.prep)
+        this._executionInits()                      // инициализация
+            .then(this.compatibility.bind(this))    // поверка совместимости
+            .then(this.setup.prep)                  // получение настроек
             .then(this._timeout.bind(this))
             .then(this.controllerEvent.add)
             .then(this.controllerSynx.all)
-         //   .then(this.controllerOpen.savedKits)
+            .then(this.controllerOpen.saved)
 
             .then(
                 () => {
-                    console.log('\n\nthis', this.kitCollect._items);
+                    console.log ('\n-----------------------------------\n\n');
+                    console.log('(records):  ', this.storeOpen._records);
+                    console.log('(kits):  ', this.kitCollect._items);
+                    console.log('(tabs):  ', this.tabCollect._items);
+                    console.log ('\n-----------------------------------\n');
                 }
             )
 
             .catch(e => {
                 this.log({
+                    e: e,
                     name: 'Не смогли стартовать приложение'
                 });
                 this.quit();
             });
 
-        delete this.init;
-        delete this._binding;
-        delete this._timeout;
-        delete this._executionInits;
+
+        this.init = null;
+        this.binding = null;
+        this._timeout = null;
+        this._executionInits = null;
     }
 };
 
