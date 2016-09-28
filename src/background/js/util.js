@@ -13,6 +13,10 @@ app.util = {
     _app: null,
     // </debug>
 
+    init() {
+        this._app.binding(this);
+    },
+
 
     /**
      * Получить значение, вложенное в другие объекты

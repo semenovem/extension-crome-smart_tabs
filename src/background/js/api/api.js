@@ -16,7 +16,9 @@ app.api = {
     /**
      * Инициализация объекта
      */
-    init() {}
+    init() {
+        this._app.binding(this);
+    }
 
 };
 

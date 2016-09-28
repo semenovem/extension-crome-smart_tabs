@@ -14,6 +14,8 @@ app.quit = function() {
 
         this.controllerEvent.remove('all');
 
+        // если позволяют настройки - отправить данные
+
 
 
         // записать не сохраненные данные

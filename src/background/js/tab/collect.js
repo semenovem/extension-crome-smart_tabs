@@ -19,6 +19,13 @@ app.tabCollect = {
     _items: Object.create(null),
 
     /**
+     *
+     */
+    init() {
+        this._app.binding(this);
+    },
+
+    /**
      * Создание экземпляра
      * @param {object} raw
      * @return {object}
@@ -33,7 +40,7 @@ app.tabCollect = {
     /**
      * Удаление объекта вкладки
      * @param {number} id
-     * @returns {object|null}
+     * @return {object|null}
      */
     removeItem(id) {
         const item = this._items[id];
@@ -46,38 +53,9 @@ app.tabCollect = {
     /**
      * Получить tab по id
      * @param {number} id
-     * @returns {object|undefined}
+     * @return {object|undefined}
      */
     getById(id) {
         return this._items[id];
-    },
-
-    /**
-     * проверить существование tab по id
-     * @param {number} id
-     * @returns {boolean}
-     */
-    isById(id) {
-        return id in this._items;
-    },
-
-    /**
-     * Получить вкладки, принадлежащие окну
-     * @param {object} kit объект окна браузера
-     */
-    getByKit(kit) {
-        const items = this._items;
-        const tabs = [];
-        for (let id in items) {
-            if (items[id].getKit() === kit) {
-                tabs.push(items[id]);
-            }
-        }
-        return tabs;
     }
-
-
-
-
-
 };

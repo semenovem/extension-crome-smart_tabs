@@ -13,49 +13,13 @@ app.tabConv = {
     // </debug>
 
     /**
-     * Конвертация объекта события "создание вкладки"
-     * @param {*} event объект события создания вкладки
-     * @return {object|null}
+     *
      */
-    onCreatedTab(event) {
-        let tabRaw;
-
-        if (event && typeof event === 'object') {
-            tabRaw = this.validateRaw(
-                this.normalize({
-                    id: event.id,
-                    //active: event.active,
-                    //audible: event.audible,
-                    favIconUrl: event.favIconUrl,
-                    //highlighted: event.highlighted,
-                    //incognito: event.incognito,
-                    //index: event.index,
-                    //pinned: event.pinned,
-                    //selected: event.selected,
-                    //status: event.status,
-                    title: event.title,
-                    url: event.url
-                })
-            );
-        }
-        return tabRaw || null;
+    init() {
+        this._app.binding(this);
     },
 
-    /**
-     * Конвертация объекта события "создание окна"
-     * @param {*} event объект события создания вкладки
-     * @return {object|null}
-     */
-    onCreatedKit(event) {
-        let tabsRaw;
 
-        if (event && typeof event === 'object' && Array.isArray(event.tabs)) {
-            tabsRaw = event.tabs
-                .map(this.onCreatedTab)
-                .filter(tab => tab);
-        }
-        return tabsRaw || [];
-    },
 
     // ################################################
     // валидация, экспорт/импорт
@@ -82,25 +46,25 @@ app.tabConv = {
      * @param {object} raw
      * @return {object|null}
      */
-    validateRaw(raw) {
+    validateEvent(raw) {
         const valid = raw && typeof raw === 'object' &&
-            this.validateTypeFields(raw) &&
+            this._validateTypeFields(raw) &&
             this._app.TabItem.prototype.fields
-                .filter(field => field.requireNew === true)
+                .filter(field => field.requireEvent === true)
                 .every(field => raw[field.name]);
         return valid ? raw : null;
     },
 
     /**
-     * Валидация данных, сохраненных ранее
+     * Валидация сохраненных данных
      * @param {object} raw
      * @return {object|null}
      */
-    validateSaving(raw) {
+    validateStored(raw) {
         const valid = raw && typeof raw === 'object' &&
-            this.validateTypeFields(raw) &&
+            this._validateTypeFields(raw) &&
             this._app.TabItem.prototype.fields
-                .filter(field => field.requireSaving === true)
+                .filter(field => field.requireStored === true)
                 .every(field => raw[field.name]);
         return valid ? raw : null;
     },
@@ -110,23 +74,12 @@ app.tabConv = {
      * @param {object} raw
      * @returns {boolean}
      */
-    validateTypeFields(raw) {
+    _validateTypeFields(raw) {
         return this._app.TabItem.prototype.fields
             .filter(field => 'type' in field && field.name in raw)
             .every(field => field.type === typeof raw[field.name]);
     },
 
-    // объединение (добавление) свойств к объекту
-    conjunction(target, source) {
-        target = Object.assign(target);
-        this._app.TabItem.prototype.fields
-            .filter(field => field.conjunction && field.name in source)
-            .forEach(field => {
-                const name = field.name;
-                target[name] = source[name];
-            });
-        return target;
-    }
 };
 
 

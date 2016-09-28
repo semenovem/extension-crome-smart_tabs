@@ -9,12 +9,17 @@ app.storeOpen = {
      * @type {object} объект приложения
      */
     _app: null,
-    // </debug>
+
+    /**
+     * @type {object} @class Condition состояние готовности
+     */
+    _condition: null,
 
     /**
      * @type {string}  префик для названия ключа - при сохранении записи в localStorage
      */
-    _PREFIX: 'kit_open_',
+    _PREFIX: '',
+    // </debug>
 
     /**
      * @type {Array} список записей (открытых окон)
@@ -22,81 +27,52 @@ app.storeOpen = {
     _records: [],
 
     /**
-     * Данные прочитаны из localStore
+     *
      */
-    _isReaded: false,
-
-
-    /**
-     * Сохранение записи
-     * @param {string} itemKey ключ, по которому записать в localStorage
-     * @param {object} raw
-     */
-    save(itemKey, raw) {
-        return new Promise((resolve, reject) => {
-            const text = this.serialization(raw);
-            if (text) {
-
-                console.log('\n...saveRecordOpen...\n', { d: text }, '\n');
-
-              //  localStorage.setItem(itemKey, text);
-                resolve(true);
-            } else {
-                console.error('не удалось записать', itemKey, raw);
-                reject({
-                    name: 'не удалось записать'
-                });
-            }
-        });
+    init() {
+        this._app.binding(this);
+        this._condition = new this._app.Condition;
+        this._app.setup.get('store.open.prefix')
+            .then(prefix => {
+                this._PREFIX = prefix;
+                return this._readAll();
+            })
+            .then(this._condition.resolve);
     },
 
     /**
-     * Сопоставление сохраненного объекта окна с объектом из коллекции collectKit
-     * @param {object} kit объект открытого окна
-     * @return {Promise.<T>}
+     * Получить объект состояния
+     * @return {Promise}
      */
-    mapping(kit) {
-        return this._getUncertain()
-            .then(record => {
-                let recordOrig = null;
+    getCondition() {
+        return this._condition.get();
+    },
 
-                // процесс поиска соответствий:
-                // ищем до 1 (полное соответствие)
-                // если полное соответствие не найдено - ищем максимальное соответствие
-                //
 
-                record.some((record, index, records) => {
-                    if (this._app.matchTab.compare(kit.tabs, record._rawSaving.tabs) > 0.8) {
+    /**
+     * Сохранения, которые не имеют определенного view - открытого окна браузера
+     * @return {Promise<>}
+     */
+    getVacant() {
+        return this._condition.get()
+            .then(this.getVacantSync);
+    },
 
-                        recordOrig = record;
-                        recordOrig.setKit(kit);
-                        records.splice(index, 1);
-                    }
-                    return recordOrig
-                });
-                return recordOrig;
-            })
-
-            // todo перед созданием нового объекта, можно поискать в storeRecent
-            .then(record => {
-                return record || this.create(kit);
-            });
+    /**
+     * Синхронное получение записей без view
+     * @return {Array}
+     */
+    getVacantSync() {
+        return this._records.filter(rec => !rec._kit);
     },
 
     /**
      * Получить сохраненные окна которые нужно открыть
      * @return {Promise} массив записей (сохраненные окна) которые нужно открыть
      */
-    getOpenSaved() {
-        return this._getUncertain();
+    getSaved() {
+        return this.getVacant();
     },
-
-
-
-
-
-
-
 
     /**
      * Прочитать все сохраненные записи
@@ -106,64 +82,49 @@ app.storeOpen = {
     _readAll() {
         return new Promise(resolve => {
             const regexp = new RegExp('^' + this._PREFIX);
-            let rawSaving;
+            let storedKit;
 
             for (let i = 0; i < localStorage.length; i++) {
                 const itemKey = localStorage.key(i);
                 if (regexp.test(itemKey)) {
-                    rawSaving = this.unserialization(localStorage.getItem(itemKey));
-                    rawSaving && this.factoryRecord(itemKey, rawSaving);
+                    storedKit = this._app.kitConv.unserialization(localStorage.getItem(itemKey));
+
+                    if (storedKit) {
+                        this._factoryRecord(itemKey, storedKit);
+                    } else {
+                        // удалить не валидные данные
+                        localStorage.removeItem(itemKey);
+                    }
                 }
             }
-            this._isReaded = true;
-            resolve(this._records);
+            resolve();
         });
     },
+
 
     /**
      * Фабрика создания записей
      * @param {string} itemKey
-     * @param {object} rawSaving сохраненные данные
+     * @param {object} storedKit сохраненные данные
      */
-    factoryRecord(itemKey, rawSaving) {
+    _factoryRecord(itemKey, storedKit) {
         const record = new this._app.Record({
-            store: this,
             itemKey,
-            rawSaving
+            storedKit
         });
         this._records.push(record);
         return record;
-    },
-
-
-
-
-
-    /**
-     * Получить записи, которые еще не были сопоставленны с объектом открытого окна kit
-     * @return {*}
-     * @private
-     */
-    _getUncertain() {
-        if (this._isReaded) {
-            return Promise.resolve(this._records.filter(item => !item._kit));
-        } else {
-            return this._readAll();
-        }
     },
 
     /**
      * Создание новой записи
      * @param kit
      */
-    create(kit) {
-        const record = this.factoryRecord(
+    createRecord(kit) {
+        return this._factoryRecord(
             this.getItemKey(kit),
             null
         );
-        record.setKit(kit);
-        record.save();
-        return record;
     },
 
     /**
@@ -175,64 +136,57 @@ app.storeOpen = {
         return this._PREFIX + kit.id;
     },
 
-
-
-
-
-    // ################################################
-    // Конвертация данных
-    // ################################################
-
-
     /**
-     * Получить данные в виде строки для сохранения
-     * @returns {string|null}
+     * Сохранение записи
+     * @param {string} itemKey ключ, по которому записать в localStorage
+     * @param {object} raw
      */
-    serialization(raw) {
-        let text;
-        try {
-            text = JSON.stringify(raw);
-        }
-        catch (e) {
-            text = null;
-            this._app.log({
-                name: 'Не удалось преобразовать в json',
-                event: e
-            });
-        }
-        return text;
-    },
+    save(itemKey, raw) {
+        return new Promise((resolve, reject) => {
+            const text = this._app.kitConv.serialization(raw);
+            if (text) {
 
+                console.log('\n...saveRecordOpen...\n', { d: text }, '\n');
 
-    /**
-     * Достаем данные из сохранения
-     * @return {string|null}
-     */
-    unserialization(text) {
-        let rawSaving;
-        try {
-            rawSaving = this._app.kitConv.validateSaving(
-                this._app.kitConv.normalize(
-                    JSON.parse(text)
-                )
-            );
-
-            if (!rawSaving) {
-                throw 'объект не проходит валидацию!';
+                localStorage.setItem(itemKey, text);
+                resolve();
+            } else {
+                console.error('не удалось записать', itemKey, raw);
+                reject({
+                    name: 'не удалось записать'
+                });
             }
-        }
-        catch (e) {
-            this._app.log({
-                name: '',
-                event: e,
-                deb: rawSaving
-            });
-            rawSaving = null;
-        }
-        return rawSaving;
+        });
+    },
+
+    /**
+     * Перенос записи в store для хранения недавно закрытых окон
+     * @param {string} itemKey ключ записи
+     * @return {Promise.<T>}
+     */
+    moveToRecent(itemKey) {
+        return this.readItem(itemKey)
+            .then(this._app.storeRecent.add)
+            //       .then(() => this.removeItem(itemKey))
     },
 
 
+    /**
+     * Прочитать элемент
+     * @param {string} itemKey ключ записи
+     */
+    readItem(itemKey) {
+        return Promise.resolve(localStorage.getItem(itemKey));
+    },
+
+
+    /**
+     * Удалить элемент
+     * @param {string} itemKey ключ записи
+     */
+    removeItem(itemKey) {
+        return Promise.resolve(localStorage.removeItem(itemKey));
+    }
 
 
 };

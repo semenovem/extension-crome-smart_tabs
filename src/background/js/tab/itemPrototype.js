@@ -1,7 +1,13 @@
 /**
  * @type {object} прототип @class TabItem
  */
-app.TabItem.prototype = {
+app.tabItemPrototype = app.TabItem.prototype = {
+    // <debug>
+    /**
+     * @type {object} объект приложения
+     */
+    _app: null,
+    // </debug>
 
     /**
      * поля объекта
@@ -13,7 +19,18 @@ app.TabItem.prototype = {
             name: 'id',
             type: 'number',
             persist: false,
-            requireNew: true,
+            requireCreate: true,
+            requireEvent: true,
+            normalize(val) {
+                val = +val;
+                return isFinite(val) && val > 0 ? val : 0;
+            }
+        },
+        {   // id окна, которому принадлежит вкладка
+            name: 'windowId',
+            type: 'number',
+            persist: false,
+            requireEvent: true,
             normalize(val) {
                 val = +val;
                 return isFinite(val) && val > 0 ? val : 0;
@@ -43,8 +60,10 @@ app.TabItem.prototype = {
         {   // адрес
             name: 'url',
             type: 'string',
-            requireNew: true,
-            requireSaving: true,
+            requireCreate: true,
+            requireEvent: true,
+            requireStored: true,
+            state: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
@@ -54,7 +73,7 @@ app.TabItem.prototype = {
             type: 'string',
             default: '',
             persist: false,
-            conjunction: true,
+            state: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
@@ -64,12 +83,19 @@ app.TabItem.prototype = {
             type: 'string',
             default: '',
             persist: false,
-            conjunction: true,
+            state: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
         }
     ],
+
+
+    /**
+     * Доставить настройки
+     */
+    init() {},
+
 
     /**
      * Вернуть id записи
@@ -89,7 +115,7 @@ app.TabItem.prototype = {
     getRaw() {
         let raw = this.fields.reduce((raw, field) => {
             let name = field.name;
-            if (field.special !== true && field.persist !== false && field.default !== this[name]) {
+            if (field.persist !== false && field.default !== this[name]) {
                 raw[name] = this[name];
             }
             return raw;
@@ -108,42 +134,39 @@ app.TabItem.prototype = {
     // ################################################
 
     /**
-     * Присвоили окно
-     * @param kit
-     */
-    setKit(kit) {
-        if (this.kit !== kit) {
-            if (this.kit) {
-                this.modify();  // для предыдущего окна информация об изменениях
-            }
-            this.kit = kit;
-            this.modify();
-        }
-    },
-    /**
-     * getter
-     * @return {object}
-     */
-    getKit() {
-        return this.kit;
-    },
-
-
-
-    /**
      * Вкладка закрыта
      */
     close() {
         if (!this.closed) {
             this.closed = true;
-            this.modify();
+            this.remove();
         }
     },
 
     /**
-     * Произошло изменение объекта
+     * Удаление модели вкладки
      */
-    modify() {
-        this.kit.modify();
+    remove() {
+        this._app.tabCollect.removeItem(this.id);
+    },
+
+
+    /**
+     * Обновление состояния
+     * @param {object} state
+     * @return {boolean} произошли ли изменения в данных
+     */
+    setState(state) {
+        let change = false;
+        this.fields
+            .filter(field => field.state && field.name in state)
+            .forEach(field => {
+                const name = field.name;
+                if (this[name] !== state[name]) {
+                    change = true;
+                    this[name] = state[name];
+                }
+            });
+        return change;
     }
 };

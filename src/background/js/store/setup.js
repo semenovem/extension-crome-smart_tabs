@@ -12,6 +12,9 @@ app.storeSetup = {
     _app: null,
     // </debug>
 
+    init() {
+        this._app.binding(this);
+    },
 
     /**
      * Чтение данных
@@ -35,7 +38,7 @@ app.storeSetup = {
      * @return {Promise}
      */
     set() {
-        let allow = this._app.setup.get('setupUseLocalStorage');
+        let allow = this._app.setup.getSynx('setupUseLocalStorage');
         return new Promise((resolve, reject) => {
             var data = Object.create(null);
 
