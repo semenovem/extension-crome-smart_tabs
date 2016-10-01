@@ -1,8 +1,29 @@
 
 
 body {
-    width: 300px;
-    height: 200px;
+    width: 400px;
+    height: 300px;
 
+
+}
+
+
+.section-title {
+	font-size: larger;
+	text-align: center;
+	font-weight: bold;
+	margin-top: 3vh;
+	clear: both;
+
+
+}
+
+
+.kit-open {
+	width: 15vh;
+	height: 15vh;
+	float : left;
+	border: 3px solid #999;
+	margin :3vh;
 
 }

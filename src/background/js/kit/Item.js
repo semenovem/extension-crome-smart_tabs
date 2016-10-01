@@ -22,11 +22,19 @@ app.KitItem = function(raw) {
      * Состояние экземпляра. Промис выполнится после нахождения / создания записи в store
      * @type {object}
      */
-    this._condition = new this._app.Condition;
+    this.ready = this._app.Ready();
 
-
-    this._timerBeforeSave = null;
+    // таймеры
     this._timerBeforeMapping = null;
+
+    // ключ в store
+    this._itemKey = null;
+
+    this.modify = this._app.Modify({
+        delay: this._TIMEOUT_BEFORE_SAVE,       // '_TIMEOUT_BEFORE_SAVE'
+        callback: this._savePrep.bind(this)     // '_savePrep'
+    });
+
 
 
     // Сюда попадут закрытые вкладки

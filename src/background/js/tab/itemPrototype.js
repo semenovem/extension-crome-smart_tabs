@@ -42,6 +42,7 @@ app.tabItemPrototype = app.TabItem.prototype = {
             type: 'boolean',
             default: false,
             conjunction: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'boolean' ? val : Boolean(val);
             }
@@ -64,6 +65,7 @@ app.tabItemPrototype = app.TabItem.prototype = {
             requireEvent: true,
             requireStored: true,
             state: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
@@ -72,8 +74,9 @@ app.tabItemPrototype = app.TabItem.prototype = {
             name: 'title',
             type: 'string',
             default: '',
-            persist: false,
+            //     persist: false,
             state: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
@@ -82,20 +85,19 @@ app.tabItemPrototype = app.TabItem.prototype = {
             name: 'favIconUrl',
             type: 'string',
             default: '',
-            persist: false,
+            //     persist: false,
             state: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
         }
     ],
 
-
     /**
      * Доставить настройки
      */
     init() {},
-
 
     /**
      * Вернуть id записи
@@ -149,7 +151,6 @@ app.tabItemPrototype = app.TabItem.prototype = {
     remove() {
         this._app.tabCollect.removeItem(this.id);
     },
-
 
     /**
      * Обновление состояния

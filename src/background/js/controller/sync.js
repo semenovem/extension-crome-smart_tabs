@@ -1,9 +1,9 @@
 /**
  * @type {object} cинхронизация состояний окон и сохраненных данных
  */
-app.controllerSynx = {
+app.controllerSync = {
     // <debug>
-    $className: 'controlleSynx',
+    $className: 'controlleSync',
 
     /**
      * Объект приложения
@@ -32,11 +32,11 @@ app.controllerSynx = {
             )
             // ожидание готовности окон - когда их состояние станет resolve
             .then(kits => Promise.all(
-                kits.map(kit => kit.getCondition())
+                kits.map(kit => kit.ready())
                 )
             )
             .catch(e => {
-                console.warn('controllerSynx.openedKits', e);
+                console.warn('controllerSync.openedKits', e);
                 console.warn('Не удалось получение текущего состояния открытых окон и вкладок');
             });
     },

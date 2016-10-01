@@ -199,7 +199,7 @@ app.controllerEvent = {
         //if (tab) {
         //    tab.modify();
         //} else {
-        //    this._app.controllerSynx.tab(tabId);
+        //    this._app.controllerSync.tab(tabId);
         //}
     },
 

@@ -25,16 +25,16 @@ app.controllerMapping = {
      */
     record(kit) {
         return Promise.all([
-                this._app.controllerSynx.kit(kit),
+                this._app.controllerSync.kit(kit),
             /*
             ожидаем готовности store - пока не будут загруженны все записи
             при сопоставлении view и сохраненных данных должны участвовать только еще не определенные записи
              */
-                this._app.storeOpen.getCondition()
+                this._app.storeOpen.ready()
             ])
             .then(data => {
                 const tabs = data[0];
-                const records = this._app.storeOpen.getVacantSync();
+                const records = this._app.storeOpen.getHeap();
 
           //      console.log('tabs', tabs, '   ', 'records  ', records);
 
@@ -44,22 +44,33 @@ app.controllerMapping = {
                 // Поиск наилучшего совпадения
                 records.forEach(rec => {
 
-                    const part = this.compare(tabs, rec.getStoredKit().tabs);
+                    const part = this.compare(tabs, rec.recordKit.tabs);
                     if (part > comparePart) {
                         comparePart = part;
                         record = rec;
                     }
                 });
 
-                //console.log('comparePart: ', comparePart);
+               // console.log('comparePart: ', comparePart);
                 //console.log('record: ', record);
 
-                kit.setRecord(
-                    record || this._app.storeOpen.createRecord(kit)
+
+                // для существующей записи объединить данные из сохранения
+                if (record) {
+                    kit.conjunction(record.recordKit);
+                    this._app.storeOpen.heapExclude(record.itemKey);
+                }
+
+                // todo задача для этого модуля и для открытия вкладок
+                // нужен какой то общий механизм для коньюкции
+                // conjunction для tabs
+
+                kit.setItemKey(
+                    record ? record.itemKey : this._app.storeOpen.createRecord()
                 );
 
                 // если совпадение < 100% нужно сохранить запись
-                comparePart !== 1 && kit.getRecord().save(tabs);
+                comparePart !== 1 && kit.save(tabs);
 
                 return comparePart;
             });

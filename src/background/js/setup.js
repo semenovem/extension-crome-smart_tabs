@@ -12,9 +12,12 @@ app.setup = {
     _app: null,
 
     /**
-     * @type {object} @class Condition состояние готовности
+     * @type {function} @class Ready состояние готовности
+     * при первом вызове метода, создать объект и заменить им себя
      */
-    _condition: null,
+    ready() {
+        return (this.ready = this._app.Ready())();
+    },
 
     // </debug>
 
@@ -38,19 +41,8 @@ app.setup = {
         return this._app.storeSetup.get()
             .then(data => {
                 this._data = data;
-                this._getCondition().resolve();
+                this.ready.resolve(this);
             })
-    },
-
-    /**
-     * Получение объекта состояния готовновности
-     * Поскольку к настройкам обращаются другие объекты,
-     * только так можем гарантированно создать объект состояния до первого его использования
-     * @return {object}
-     * @private
-     */
-    _getCondition() {
-        return this._condition || (this._condition = new this._app.Condition);
     },
 
     /**
@@ -58,7 +50,7 @@ app.setup = {
      * @param {string} propName
      * @return {*}
      */
-    getSynx(propName) {
+    getSync(propName) {
         let result = this._app.util.getDeepProp(propName, this._data);
         if (result.exist) {
             return result.value;
@@ -80,7 +72,7 @@ app.setup = {
      * @return {Promise|*}
      */
     get(propName) {
-        return this._getCondition().get().then(() => this.getSynx(propName));
+        return this.ready().then(() => this.getSync(propName));
     },
 
 

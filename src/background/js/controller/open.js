@@ -64,11 +64,17 @@ app.controllerOpen = {
      * @private
      */
     kit(record) {
-        return this._app.browserApi.createKit(record.getStoredKit())
+        return this._app.browserApi.createKit(record.recordKit)
             .then(eKit => {
                 const collect = this._app.kitCollect;
                 const kit = collect.getById(eKit.id) || collect.createItem(eKit);
-                kit.setRecord(record);
+
+                kit.conjunction(record.recordKit);
+                this._app.storeOpen.heapExclude(record.itemKey);
+
+                kit.setItemKey(record.itemKey);
+
+
             });
     },
 
