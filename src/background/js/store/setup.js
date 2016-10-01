@@ -38,7 +38,7 @@ app.storeSetup = {
      * @return {Promise}
      */
     set() {
-        let allow = this._app.setup.getSynx('setupUseLocalStorage');
+        let allow = this._app.setup.getSync('setupUseLocalStorage');
         return new Promise((resolve, reject) => {
             var data = Object.create(null);
 

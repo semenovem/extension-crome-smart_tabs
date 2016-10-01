@@ -19,8 +19,6 @@ app.kitConv = {
         this._app.binding(this);
     },
 
-
-
     // ################################################
     // валидация, экспорт/импорт
     // ################################################
@@ -38,6 +36,7 @@ app.kitConv = {
                     const name = field.name;
                     obj[name] = field.normalize(obj[name]);
                 });
+
             // вкладки
             if (Array.isArray(obj.tabs)) {
                 obj.tabs = obj.tabs
@@ -95,10 +94,6 @@ app.kitConv = {
             .every(field => field.type === typeof raw[field.name]);
     },
 
-
-
-
-
     // ################################################
     // Конвертация данных для/после сохранения
     // ################################################
@@ -147,7 +142,30 @@ app.kitConv = {
             storedKit = null;
         }
         return storedKit;
+    },
+
+    // ################################################
+    // конвертация для передачи вкладкам
+    // ################################################
+
+    /**
+     * Конвертирование данных в вид для frontend
+     * @param {object} obj
+     * @returns {object}
+     */
+    storedToDemo(obj) {
+        const newObj = Object.create(null);
+        this._app.KitItem.prototype.fields
+            .filter(field => field.name in obj && field.demo)
+            .forEach(field => {
+                const name = field.name;
+                newObj[name] = obj[name];
+            });
+        // вкладки
+        newObj.tabs = obj.tabs.map(this._app.tabConv.storedToDemo);
+        return newObj;
     }
+
 };
 
 

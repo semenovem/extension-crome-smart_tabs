@@ -62,9 +62,9 @@ var app = {
 
     /**
      * @type {object} cинхронизация состояний окон и сохраненных данных
-     * @file js/controller/synx.js
+     * @file js/controller/sync.js
      */
-    controllerSynx: null,
+    controllerSync: null,
 
     /**
      * @type {object} контроллер программного открытия окон и вкладок
@@ -158,7 +158,7 @@ var app = {
      */
     _timeout() {
         return new Promise(resolve => {
-            setTimeout(resolve, this.setup.getSynx('timeout.app.launch'));
+            setTimeout(resolve, this.setup.getSync('timeout.app.launch'));
         });
     },
 
@@ -171,13 +171,14 @@ var app = {
             .then(this.setup.prep)                  // получение настроек
             .then(this._timeout.bind(this))
             .then(this.controllerEvent.add)
-            .then(this.controllerSynx.all)
+            .then(this.controllerSync.all)
             .then(this.controllerOpen.saved)
+            .then(this.controllerMessage.add)
 
             .then(
                 () => {
                     console.log ('\n-----------------------------------\n\n');
-                    console.log('(records):  ', this.storeOpen._records);
+                    console.log('(heap):  ', this.storeOpen._heap);
                     console.log('(kits):  ', this.kitCollect._items);
                     console.log('(tabs):  ', this.tabCollect._items);
                     console.log ('\n-----------------------------------\n');

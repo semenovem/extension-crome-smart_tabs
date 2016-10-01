@@ -11,9 +11,9 @@ app.storeOpen = {
     _app: null,
 
     /**
-     * @type {object} @class Condition состояние готовности
+     * @type {function} @class Ready состояние готовности
      */
-    _condition: null,
+    ready: null,
 
     /**
      * @type {string}  префик для названия ключа - при сохранении записи в localStorage
@@ -22,48 +22,51 @@ app.storeOpen = {
     // </debug>
 
     /**
-     * @type {Array} список записей (открытых окон)
+     * @type {Array} все сохраненные записи на момент запуска приложения. данные формата: recordKit
      */
-    _records: [],
+    _heap: [],
 
     /**
+     * Получить настройки
+     * Прочитать все записи view, положить в "кучу" heap для разбора по view
      *
      */
     init() {
         this._app.binding(this);
-        this._condition = new this._app.Condition;
+        this.ready = this._app.Ready();
         this._app.setup.get('store.open.prefix')
             .then(prefix => {
                 this._PREFIX = prefix;
-                return this._readAll();
+                return this._readItemAll();
             })
-            .then(this._condition.resolve);
+            .then(records => {
+                this._heap = records;
+                this.ready.resolve(this);
+            });
     },
 
     /**
-     * Получить объект состояния
-     * @return {Promise}
-     */
-    getCondition() {
-        return this._condition.get();
-    },
-
-
-    /**
-     * Сохранения, которые не имеют определенного view - открытого окна браузера
-     * @return {Promise<>}
-     */
-    getVacant() {
-        return this._condition.get()
-            .then(this.getVacantSync);
-    },
-
-    /**
-     * Синхронное получение записей без view
+     * "куча" - массив записей, сохраненных в предыдущую сессию работы.
+     * При старте приложения нужно найти каждой записи ее открытое окно браузера
+     * или открыть новое окно
+     *
+     * Получить записи, которые нужно разобрать по view
      * @return {Array}
      */
-    getVacantSync() {
-        return this._records.filter(rec => !rec._kit);
+    getHeap() {
+        return this._heap;
+    },
+
+    /**
+     * Исключить запись из "кучи"
+     * @param {string} itemKey
+     */
+    heapExclude(itemKey) {
+        this._heap.reduceRight((notUse, record, i) => {
+            if (record.itemKey === itemKey) {
+                this._heap.splice(i, 1);
+            }
+        }, null);
     },
 
     /**
@@ -71,69 +74,14 @@ app.storeOpen = {
      * @return {Promise} массив записей (сохраненные окна) которые нужно открыть
      */
     getSaved() {
-        return this.getVacant();
-    },
-
-    /**
-     * Прочитать все сохраненные записи
-     * @return {Promise} прочитанные записи
-     * @private
-     */
-    _readAll() {
-        return new Promise(resolve => {
-            const regexp = new RegExp('^' + this._PREFIX);
-            let storedKit;
-
-            for (let i = 0; i < localStorage.length; i++) {
-                const itemKey = localStorage.key(i);
-                if (regexp.test(itemKey)) {
-                    storedKit = this._app.kitConv.unserialization(localStorage.getItem(itemKey));
-
-                    if (storedKit) {
-                        this._factoryRecord(itemKey, storedKit);
-                    } else {
-                        // удалить не валидные данные
-                        localStorage.removeItem(itemKey);
-                    }
-                }
-            }
-            resolve();
-        });
-    },
-
-
-    /**
-     * Фабрика создания записей
-     * @param {string} itemKey
-     * @param {object} storedKit сохраненные данные
-     */
-    _factoryRecord(itemKey, storedKit) {
-        const record = new this._app.Record({
-            itemKey,
-            storedKit
-        });
-        this._records.push(record);
-        return record;
+        return Promise.resolve(this._heap);
     },
 
     /**
      * Создание новой записи
-     * @param kit
      */
-    createRecord(kit) {
-        return this._factoryRecord(
-            this.getItemKey(kit),
-            null
-        );
-    },
-
-    /**
-     * Ключ, под которым сохранить в localStorage
-     * @param kit
-     * @returns {string}
-     */
-    getItemKey(kit) {
-        return this._PREFIX + kit.id;
+    createRecord() {
+        return this._getItemKey();
     },
 
     /**
@@ -165,28 +113,96 @@ app.storeOpen = {
      * @return {Promise.<T>}
      */
     moveToRecent(itemKey) {
-        return this.readItem(itemKey)
+        return this._readItem(itemKey)
             .then(this._app.storeRecent.add)
-            //       .then(() => this.removeItem(itemKey))
+        //       .then(() => this._removeItem(itemKey))
     },
 
+
+
+
+
+
+
+
+
+    // ################################################
+    // низко-уровневые операции чтения / изменения данных
+    // ################################################
+
+    /**
+     * Ключ, под которым сохранить в localStorage
+     * @return {string}
+     */
+    _getItemKey() {
+        let key;
+        do {
+            key = this._PREFIX + Date.now() + Math.random().toString()[3];
+        } while (localStorage.getItem(key));
+        return key;
+    },
+
+    /**
+     * Прочитать все сохраненные записи
+     * @return {Promise} прочитанные записи
+     * @private
+     */
+    _readItemAll() {
+        return new Promise(resolve => {
+            const regexp = new RegExp('^' + this._PREFIX);
+            const unserialization = this._app.kitConv.unserialization;
+            const records = [];
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const itemKey = localStorage.key(i);
+                if (!regexp.test(itemKey)) {
+                    continue;
+                }
+
+                let recordKit = unserialization(localStorage.getItem(itemKey));
+
+                if (recordKit) {
+                    records.push({
+                        recordKit,
+                        itemKey
+                    });
+
+                } else {
+                    // удалить не валидные данные
+                    localStorage._removeItem(itemKey);
+                }
+            }
+
+            resolve(records);
+        });
+    },
 
     /**
      * Прочитать элемент
      * @param {string} itemKey ключ записи
      */
-    readItem(itemKey) {
+    _readItem(itemKey) {
         return Promise.resolve(localStorage.getItem(itemKey));
     },
 
+    /**
+     *
+     * @param itemKey
+     * @param data
+     * @returns {Promise.<T>}
+     */
+    _saveItem(itemKey, data) {
+        localStorage.setItem(itemKey, data);
+        return Promise.resolve();
+    },
 
     /**
      * Удалить элемент
      * @param {string} itemKey ключ записи
      */
-    removeItem(itemKey) {
-        return Promise.resolve(localStorage.removeItem(itemKey));
+    _removeItem(itemKey) {
+        localStorage.removeItem(itemKey);
+        return Promise.resolve();
     }
-
 
 };

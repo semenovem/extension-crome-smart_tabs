@@ -17,6 +17,13 @@ app.kitItemPrototype = app.KitItem.prototype = {
      * @type {number} задержка перед поиском соответствия в store
      */
     _TIMEOUT_BEFORE_MAPPING: 0,
+
+    /**
+     * Произошли изменения в данных
+     * Метод добавляется к экземпляру класса Modify при создании
+     * @method modify
+     * @type {function}
+     */
     // </debug>
 
     /**
@@ -35,12 +42,6 @@ app.kitItemPrototype = app.KitItem.prototype = {
                 val = +val;
                 return isFinite(val) && val > 0 ? val : 0;
             }
-        },
-
-        {   // ссылка на объект, отвечающий за сохранение
-            name: '_record',
-            type: 'object',
-            persist: false
         },
 
         {   // есть ли необходимость сохранить данные
@@ -131,6 +132,7 @@ app.kitItemPrototype = app.KitItem.prototype = {
             type: 'string',
             persist: false,
             conjunction: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
@@ -140,6 +142,7 @@ app.kitItemPrototype = app.KitItem.prototype = {
             type: 'string',
             persist: false,
             conjunction: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'string' ? val : '';
             }
@@ -150,6 +153,7 @@ app.kitItemPrototype = app.KitItem.prototype = {
             type: 'number',
             default: 0,
             conjunction: true,
+            demo: true,
             normalize(val) {
                 val = +val;
                 return isFinite(val) && val >= 0 ? val : 0;
@@ -161,6 +165,7 @@ app.kitItemPrototype = app.KitItem.prototype = {
             type: 'boolean',
             default: true,
             conjunction: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'boolean' ? val : Boolean(val);
             }
@@ -170,6 +175,7 @@ app.kitItemPrototype = app.KitItem.prototype = {
             type: 'boolean',
             default: false,
             conjunction: true,
+            demo: true,
             normalize(val) {
                 return typeof val === 'boolean' ? val : Boolean(val);
             }
@@ -189,12 +195,10 @@ app.kitItemPrototype = app.KitItem.prototype = {
      */
     prep() {
         this._timerBeforeMapping = setTimeout(() => {
-            // состояние уже было установлено (установили record)
-            if (this._record) {
+            if (this.ready.is) {
                 return;
             }
-
-            if (Date.now() - this.modifyLastTime > this._TIMEOUT_BEFORE_MAPPING) {
+            if (Date.now() - this.modify.timeCall > this._TIMEOUT_BEFORE_MAPPING) {
                 this._app.controllerMapping.record(this);
             } else {
                 this.prep();
@@ -236,91 +240,38 @@ app.kitItemPrototype = app.KitItem.prototype = {
     // ################################################
 
     /**
-     * Произошли изменения в данных, если true - нужно их сохранить
-     * @return {object}
-     */
-    modify() {
-        this.modifyLastTime = Date.now();
-        if (!this.isModify) {
-            this.isModify = true;
-            this._timeoutBeforeSave(this._TIMEOUT_BEFORE_SAVE);
-        }
-        return this;
-    },
-
-    /**
-     * Сбросить флага изменения
-     */
-    clearModify() {
-        if (this.isModify) {
-            this.isModify = false;
-            clearTimeout(this._timerBeforeSave);
-        }
-    },
-
-    /**
-     * Запуск таймаута перед сохранением изменений
-     * @param {number} timeout
-     * @private
-     */
-    _timeoutBeforeSave(timeout) {
-        this._timerBeforeSave = setTimeout(() => {
-            const timeout = this._TIMEOUT_BEFORE_SAVE;
-            const diff = Date.now() - this.modifyLastTime;
-            diff < timeout && diff > 50 ? this._timeoutBeforeSave(timeout - diff) : this.save();
-        }, timeout);
-    },
-
-    /**
      * Сохранить
      * @return {Promise<> | boolean}
      */
-    save() {
-        // todo подумать что бы биндить методы при создании экземпляра
-        return this._condition.get()
-                .then(this.synx.bind(this))
-                .then(this._record.save.bind(this._record));
+    _savePrep() {
+        return this.ready()
+            .then(d => { console.log (666,this); return d; })
+            .then(this._app.controllerSync.kit)
+            .then(this.save.bind(this))
+            .catch(e => console.warn ('Не удалось сохранить данные окна') && console.log (e) );
     },
 
     /**
-     * Синхронизация объекта с открытыми окнами
-     * @return {Promise<tabs>} промис возвращает массив вкладок этого окна
+     * Сохранение
+     * @param {Array} tabs массив вкладок окна
+     * @return {Promise<>}
      */
-    synx() {
-        return this._app.controllerSynx.kit(this);
+    save(tabs) {
+        const raw = this.getRaw();
+        raw.tabs = tabs.map(tab => tab.getRaw());
+        this.modify.clear();
+        return this._app.storeOpen.save(this._itemKey, raw);
     },
 
-    /**
-     * getter
-     * @return {Promise} промис готовности - найден или создан объект в store для сохранения
-     */
-    getCondition() {
-        return this._condition.get();
-    },
 
-    /**
-     * getter
-     * @return {object|void}
-     */
-    getRecord() {
-        return this._record;
-    },
 
     /**
      * setter
-     * @param {object} record @class Record
-     * @return {object} @class app.KitItem
+     * @param {string} itemKey
      */
-    setRecord(record) {
-        this._record = record;
-
-        this.conjunction(record.getStoredKit());
-
-        if (record.getKit() !== this) {
-            record.setKit(this);
-        }
-        this._condition.resolve();
-        return this;
+    setItemKey(itemKey) {
+        this._itemKey = itemKey;
+        this.ready.resolve(this);
     },
 
     /**
@@ -345,7 +296,6 @@ app.kitItemPrototype = app.KitItem.prototype = {
     /**
      * Добавление в объект сохраненных данных
      * @param {object} source
-     * @return {object}
      */
     conjunction(source) {
         this.fields
@@ -354,7 +304,6 @@ app.kitItemPrototype = app.KitItem.prototype = {
                 const name = field.name;
                 this[name] = source[name];
             });
-        return this;
     },
 
     /**
@@ -362,13 +311,13 @@ app.kitItemPrototype = app.KitItem.prototype = {
      */
     close() {
         console.log('event close window');
+        this.modify.destroy();
 
-        clearTimeout(this._timerBeforeSave);
         clearTimeout(this._timerBeforeMapping);
 
         this._app.kitCollect.removeItem(this.id);
-        if (this._record) {
-            this._record.moveToRecent();
+        if (this._itemKey) {
+            this._app.storeOpen.moveToRecent(this._itemKey);
         }
     }
 

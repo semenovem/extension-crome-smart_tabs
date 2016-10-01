@@ -4,11 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var node = document.getElementById('status');
 
-    node.innerHTML = '666666666666';
+    node.innerHTML = Math.random();
 
-    console.log (3345345345)
-
-    
 });
 
 

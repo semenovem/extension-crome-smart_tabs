@@ -62,9 +62,9 @@ gulp.task('build', ['build-clear'], function() {
 		.pipe(gulp.dest('build/'));
 
 	// popup css
-	//gulp.src('src/popup/css/*.css')
-	//	.pipe(plugins.concat('popup.min.css'))
-	//	.pipe(gulp.dest('build/'));
+	gulp.src('src/popup/css/*.css')
+		.pipe(plugins.concat('popup.min.css'))
+		.pipe(gulp.dest('build/'));
 
 	// icon for omnibox
 	//gulp.src('src/omnibox/icon.png')
