@@ -1,9 +1,9 @@
 /**
- * @type {object} контроллер программного открытия окон и вкладок
+ * @type {object} создание окон и вкладок
  */
-app.controllerOpen = {
+app.create = {
     // <debug>
-    $className: 'controlleOpen',
+    $className: 'create',
 
     /**
      * Объект приложения
@@ -64,7 +64,29 @@ app.controllerOpen = {
      * @private
      */
     kit(record) {
-        return this._app.browserApi.createKit(record.recordKit)
+
+        // несколько вариантов открытия / создания нового окна
+        // - с пустыми страницами, которые загрузятся после получения фокуса
+        // - с пустыми страницами, которые будут одна за другой загружаться, по мере освобождения канала
+
+        //const tabs = record.recordKit;
+
+        //record.recordKit.tabs = [
+        //    {
+        //        url: 'chrome-extension://ekekhdhcpbbhfldpaoelpcpebkcmnkjh/blank.html'
+        //    },
+        //    {
+        //        url: 'chrome-extension://ekekhdhcpbbhfldpaoelpcpebkcmnkjh/blank.html'
+        //    },
+        //    {
+        //        url: 'chrome-extension://ekekhdhcpbbhfldpaoelpcpebkcmnkjh/blank.html'
+        //    }
+        //];
+
+        console.log ('record', record);
+
+        return this._app.browserApi.windows.create(record.recordKit)
+
             .then(eKit => {
                 const collect = this._app.kitCollect;
                 const kit = collect.getById(eKit.id) || collect.createItem(eKit);
@@ -73,8 +95,6 @@ app.controllerOpen = {
                 this._app.storeOpen.heapExclude(record.itemKey);
 
                 kit.setItemKey(record.itemKey);
-
-
             });
     },
 

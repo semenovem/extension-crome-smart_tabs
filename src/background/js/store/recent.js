@@ -38,15 +38,13 @@ app.storeRecent = {
         this._app.binding(this);
         this.ready = this._app.Ready();
 
-        this._app.setup.get('store.recent.prefix')
-            .then(prefix => {
-                this._PREFIX = prefix;
-                return this._readRecordAll();
-            })
-            .then(this.ready.resolve);
+        this._app.ready()
+            .then(() => {
+                this._PREFIX = this._app.setup.get('store.recent.prefix');
+                this._readRecordAll()
+                    .then(this.ready.resolve);
+            });
     },
-
-
 
 
     // перемещение записи в storeOpen
@@ -60,7 +58,7 @@ app.storeRecent = {
      * @return {Promise}
      */
     add(data) {
-        console.log('storeRecent storedKit', data);
+   //     console.log('storeRecent storedKit', data);
 
         this.isActual = false;
 
@@ -97,7 +95,7 @@ app.storeRecent = {
      * @private
      */
     _readRecordAll() {
-        this._readItemAll()
+        return this._readItemAll()
             .then(records => {
                 this._records = records;
                 this.isActual = true;
@@ -132,7 +130,7 @@ app.storeRecent = {
     _readItemAll() {
         return new Promise(resolve => {
             const regexp = new RegExp('^' + this._PREFIX);
-            const unserialization = this._app.kitConv.unserialization;
+            const unserialization = this._app.storeOpen.unserialization;    // todo пока пользуемся им, потомперенести на общий слой абстракции
             const records = [];
 
             for (let i = 0; i < localStorage.length; i++) {

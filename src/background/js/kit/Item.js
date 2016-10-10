@@ -5,7 +5,7 @@
  */
 app.KitItem = function(raw) {
     // <debug>
-    this.$className = 'KitItem';
+    this.$className = 'modelKit';
     // </debug>
 
     /**

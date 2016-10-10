@@ -9,9 +9,16 @@ var app = {
      */
     globalName: 'app',
 
+    // <debug>
+
+    /**
+     * @type {function} @class Ready состояние готовности
+     */
+    ready: null,
+
     /**
      * Проверка совместимости
-     * @type {object}
+     * @type {function}
      * @file js/compatibility.js
      */
     compatibility: null,
@@ -51,9 +58,6 @@ var app = {
      */
     kitCollect: null,
 
-
-
-
     /**
      * @type {object} контроллер событий окон и вкладок
      * @file js/controller/event.js
@@ -62,24 +66,21 @@ var app = {
 
     /**
      * @type {object} cинхронизация состояний окон и сохраненных данных
-     * @file js/controller/sync.js
+     * @file js/sync.js
      */
-    controllerSync: null,
+    sync: null,
 
     /**
-     * @type {object} контроллер программного открытия окон и вкладок
-     * @file js/controller/open.js
+     * @type {object} создание окон и вкладок
+     * @file js/create.js
      */
-    controllerOpen: null,
+    create: null,
 
     /**
-     * @type {object} контроллер программного открытия окон и вкладок
-     * @file js/controller/open.js
+     * @type {object} сопоставление вкладок сохраненного окна с реально открытым
+     * @file js/mapping.js
      */
-    controllerMapping: null,
-
-
-
+    mapping: null,
 
     /**
      * Хранение настроек приложения
@@ -108,33 +109,48 @@ var app = {
      */
     log: null,
 
+    /**
+     * Cостояние активности системы
+     * @file js/systemIdle.js
+     */
+    systemIdle: null,
+
     // </debug>
 
+
+
     /**
-     * Выполенение инициализации (вызов методов init) для всех классов
-     * После выполнения - удаляем init
+     * Дочерним объектам устанавливаем ссылку на объект приложения
+     * Если есть метод init - синхронно выполняем
+     * После выполнения удаляем init
      *
-     * у дочерних объектов методы имеют контекст своего объекта
+     * @param {object} app объект, устанавливаемый в качестве объекта приложения
      * @private
      */
-    _executionInits() {
-        return new Promise(resolve => {
-            for (let k in this) {
-                if (!this.hasOwnProperty(k) || Array.isArray(this[k])) {
-                    continue;
-                }
-                let obj = this[k];
-                if (obj && typeof obj === 'object') {
-                    obj._app = this;
-
-                    if (typeof obj.init === 'function') {
-                        obj.init.call(obj);
-                        delete obj.init;
-                    }
-                }
+    executionInits(app) {
+        let key, obj;
+        for (key in this) {
+            if (!this.hasOwnProperty(key)) {
+                continue;
             }
-            resolve();
-        });
+            obj = this[key];
+
+            if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+                continue;
+            }
+
+            //
+            if (key === '_app') {
+                continue;
+            }
+
+            obj._app = app;
+
+            if (typeof obj.init === 'function') {
+                obj.init.call(obj);
+                delete obj.init;
+            }
+        }
     },
 
     /**
@@ -158,7 +174,7 @@ var app = {
      */
     _timeout() {
         return new Promise(resolve => {
-            setTimeout(resolve, this.setup.getSync('timeout.app.launch'));
+            setTimeout(resolve, this.setup.get('app.launch.timeout'));
         });
     },
 
@@ -166,38 +182,73 @@ var app = {
      * Инициализация
      */
     init() {
-        this._executionInits()                      // инициализация
-            .then(this.compatibility.bind(this))    // поверка совместимости
+        // поверка совместимости
+        if (!this.compatibility()) {
+            return;
+        }
+
+        this.ready = this.Ready();
+        this.executionInits(this);                  // инициализация
+
+        Promise.resolve()
             .then(this.setup.prep)                  // получение настроек
             .then(this._timeout.bind(this))
-            .then(this.controllerEvent.add)
-            .then(this.controllerSync.all)
-            .then(this.controllerOpen.saved)
-            .then(this.controllerMessage.add)
+            .then(this.ready.resolve)
+            .then(() => {
+                this.controllerEvent.add();
+                this.controllerMessageBlank.add();
+                this.controllerMessagePopup.add();
+            })
+            .then(this.sync.all)
+            .then(this.create.saved)
 
             .then(
                 () => {
-                    console.log ('\n-----------------------------------\n\n');
+                    console.log('\n-----------------------------------\n\n');
                     console.log('(heap):  ', this.storeOpen._heap);
                     console.log('(kits):  ', this.kitCollect._items);
                     console.log('(tabs):  ', this.tabCollect._items);
-                    console.log ('\n-----------------------------------\n');
+                    console.log('\n-----------------------------------\n');
                 }
             )
+            .then(() => {
+
+                //       this.init = null;
+                //       this.binding = null;
+                //       this._timeout = null;
+                //       this.executionInits = null;
+
+                //function randomInteger(min, max) {
+                //    var rand = min - 0.5 + Math.random() * (max - min + 1)
+                //    rand = Math.round(rand);
+                //    return rand;
+                //}
+
+                //window.chrome.tabs.query({}, tabs => {
+                //
+                //    let num = 0;
+                //    const length = tabs.length - 1;
+                //
+                //    setInterval(() => {
+                //
+                //        window.chrome.tabs.update(
+                //            tabs[randomInteger(0, length)].id,
+                //            {
+                //                active: true
+                //            }
+                //        )
+                //    }, 500);
+                //})
+
+            })
 
             .catch(e => {
                 this.log({
                     e: e,
                     name: 'Не смогли стартовать приложение'
                 });
-                this.quit();
+                //       this.quit();
             });
-
-
-        this.init = null;
-        this.binding = null;
-        this._timeout = null;
-        this._executionInits = null;
     }
 };
 

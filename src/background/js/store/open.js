@@ -34,9 +34,10 @@ app.storeOpen = {
     init() {
         this._app.binding(this);
         this.ready = this._app.Ready();
-        this._app.setup.get('store.open.prefix')
-            .then(prefix => {
-                this._PREFIX = prefix;
+
+        this._app.ready()
+            .then(() => {
+                this._PREFIX = this._app.setup.get('store.open.prefix');
                 return this._readItemAll();
             })
             .then(records => {
@@ -91,7 +92,7 @@ app.storeOpen = {
      */
     save(itemKey, raw) {
         return new Promise((resolve, reject) => {
-            const text = this._app.kitConv.serialization(raw);
+            const text = this.serialization(raw);
             if (text) {
 
                 console.log('\n...saveRecordOpen...\n', { d: text }, '\n');
@@ -123,6 +124,97 @@ app.storeOpen = {
 
 
 
+    // ################################################
+    // сереализация / десереализация данных
+    // ################################################
+
+    /**
+     * Получить данные в виде строки для сохранения
+     * @returns {string|null}
+     */
+    serialization(kitStore) {
+        let data;
+        try {
+            data = JSON.stringify(kitStore);
+        }
+        catch (e) {
+            data = null;
+            this._app.log({
+                name: 'Не удалось преобразовать в json', kitStore,
+                event: e
+            });
+        }
+        return data;
+    },
+
+
+    /**
+     * Достаем данные из сохранения
+     * @return {object|null}
+     */
+    unserialization(data) {
+        try {
+            const kitRaw = JSON.parse(data);
+            const kitStore = {};
+
+            // <debug> проверка, нет ли лишних полей в создаваемом объекте
+            for (let name in kitRaw) {
+                this._app.kitFields.some(field => field.name === name) ||
+                console.warn('Поле в объекте: ', name, 'отсутствует в raw', kitRaw);
+            }
+            // </debug>
+
+            this._app.kitFields
+                .filter(field => field.store && field.name in kitRaw)
+                .forEach(field => {
+                    const name = field.name;
+                    const value = field.normalize(kitRaw[name]);
+                    if (field.valid(value)) {
+                        kitStore[name] = value;
+                    }
+                });
+
+            let valid = this._app.kitFields
+                .filter(field => field.requireStore)
+                .every(field => field.name in kitStore);
+
+            // валидировать вкладки
+            if (valid) {
+                kitStore.tabs = kitStore.tabs.map(tabRaw => {
+                    const tabStore = {};
+
+                    this._app.tabFields
+                        .filter(field => field.store && field.name in tabRaw)
+                        .forEach(field => {
+                            const name = field.name;
+                            const value = field.normalize(tabRaw[name]);
+                            if (field.valid(value)) {
+                                tabStore[name] = value;
+                            }
+                        });
+
+                    let valid = this._app.tabFields
+                        .filter(field => field.requireStore)
+                        .every(field => field.name in tabStore);
+
+                    return valid ? tabStore : null;
+                });
+            }
+            if (valid) {
+                return kitStore;
+            }
+        }
+        catch (e) {
+            this._app.log({
+                e,
+                data
+            });
+        }
+        return null;
+    },
+
+
+
 
 
 
@@ -150,7 +242,6 @@ app.storeOpen = {
     _readItemAll() {
         return new Promise(resolve => {
             const regexp = new RegExp('^' + this._PREFIX);
-            const unserialization = this._app.kitConv.unserialization;
             const records = [];
 
             for (let i = 0; i < localStorage.length; i++) {
@@ -159,11 +250,12 @@ app.storeOpen = {
                     continue;
                 }
 
-                let recordKit = unserialization(localStorage.getItem(itemKey));
+                let kitStore = this.unserialization(localStorage.getItem(itemKey));
 
-                if (recordKit) {
+                if (kitStore) {
                     records.push({
-                        recordKit,
+                        recordKit: kitStore,    // todo удалить после перехода на новые названия
+                        kitStore,
                         itemKey
                     });
 

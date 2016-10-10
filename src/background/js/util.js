@@ -13,11 +13,6 @@ app.util = {
     _app: null,
     // </debug>
 
-    init() {
-        this._app.binding(this);
-    },
-
-
     /**
      * Получить значение, вложенное в другие объекты
      * @example получим html, из объекта такой структуры: players.noautoplay.html
@@ -42,6 +37,31 @@ app.util = {
             exist: exist
         };
     },
+
+    /**
+     * Рекурсивное объединение всех свойств двух объектов в новый объект
+     *
+     * @param {object} target
+     * @param {object} source
+     * @return {object} возвращает новый объект
+     */
+    objectMerge(target, source) {
+        const result = target && typeof target === 'object' ? Object.assign({}, target) : {};
+        let key;
+
+        for (key in source) {
+            if (!source.hasOwnProperty(key)) {
+                continue;
+            }
+            if (source[key] && typeof source[key] === 'object') {
+                result[key] = this.objectMerge(result[key], source[key]);
+
+            } else {
+                result[key] = source[key];
+            }
+        }
+        return result;
+    }
 
 
 

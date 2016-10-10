@@ -23,6 +23,9 @@ app.kitConv = {
     // валидация, экспорт/импорт
     // ################################################
 
+
+
+
     /**
      * Приведение полей в соответствие с типом
      * @param {object} obj объект, у которого изменяем поля
@@ -40,11 +43,12 @@ app.kitConv = {
             // вкладки
             if (Array.isArray(obj.tabs)) {
                 obj.tabs = obj.tabs
-                    .map(tab => this._app.tabConv.normalize(tab))
+                    .map(this._app.tabConv.normalize)
                     .filter(tab => tab);
             }
+            return obj
         }
-        return obj || null;
+        return null;
     },
 
     /**
@@ -55,12 +59,11 @@ app.kitConv = {
     validateEvent(raw) {
         const valid = raw &&
             typeof raw === 'object' &&
-            this._validateTypeFields(raw) &&
             this._app.KitItem.prototype.fields
                 .filter(field => field.requireEvent === true)
                 .every(field => raw[field.name]) &&
                 // вкладки
-            (!Array.isArray(raw.tab) || raw.tabs.every(tab => this._app.tabConv.validateEvent(tab)));
+            (!Array.isArray(raw.tabs) || raw.tabs.every(this._app.tabConv.validateEvent));
         return valid ? raw : null;
     },
 

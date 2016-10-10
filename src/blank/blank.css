@@ -1,0 +1,23 @@
+html, body, article {
+	height  : 100vh;
+	margin  : 0;
+	padding : 0;
+}
+
+.frame {
+	height           : 100vh;
+	background-color : aliceblue;
+	display          : flex;
+	flex-direction   : column;
+	justify-content  : center;
+	align-items      : center;
+}
+
+.title {
+	font-size     : x-large;
+	margin-bottom : 2vh;
+}
+
+.load {
+	font-size : x-large;
+}

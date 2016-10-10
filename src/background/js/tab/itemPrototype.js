@@ -27,7 +27,7 @@ app.tabItemPrototype = app.TabItem.prototype = {
             }
         },
         {   // id окна, которому принадлежит вкладка
-            name: 'windowId',
+            name: 'kitId',
             type: 'number',
             persist: false,
             requireEvent: true,
@@ -57,6 +57,19 @@ app.tabItemPrototype = app.TabItem.prototype = {
                 return typeof val === 'boolean' ? val : Boolean(val);
             }
         },
+
+        {   // состояние вкладки - может быть выгружена из памяти
+            name: 'discarded',
+            type: 'boolean',
+            persist: false,
+            default: false,
+            conjunction: true,
+            normalize(val) {
+                return typeof val === 'boolean' ? val : Boolean(val);
+            }
+        },
+
+
 
         {   // адрес
             name: 'url',
@@ -169,5 +182,15 @@ app.tabItemPrototype = app.TabItem.prototype = {
                 }
             });
         return change;
+    },
+
+    /**
+     * Активация вкладки (была выбрана в своем окне)
+     */
+    active() {
+
+
+
     }
+
 };

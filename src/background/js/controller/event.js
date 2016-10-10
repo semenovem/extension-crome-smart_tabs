@@ -76,30 +76,16 @@ app.controllerEvent = {
 
     /**
      * Добавление обработчиков событий
-     * todo сделать обработку через browserApi
      */
     add() {
-        const apiTab = window.chrome.tabs;
+        const api = this._app.browserApi;
 
-        apiTab.onRemoved.addListener(this._removedTab);
-        //apiTab.onCreated.addListener(this._createdTab);
-        apiTab.onUpdated.addListener(this._updatedTab);
-        //apiTab.onDetached.addListener(this._deachedTab);
-        //apiTab.onAttached.addListener(this._attachedTab);
-        //apiTab.onActivated.addListener(this._activatedTab);
+        api.tabs.onCreated.addListener(this._createdTab);
+        api.tabs.onUpdated.addListener(this._updatedTab);
+        api.tabs.onRemoved.addListener(this._removedTab);
+        api.tabs.onActivated.addListener(this._activatedTab);
 
-        // tabs.onMoved.addListener(hand.moved);
-
-        const api = this._app.browserEvent.tabs;
-        api.onCreated(this._createdTab);
-        //api.onUpdated(this._updatedTab);
-
-        //this._app.browserEvent.kit.onRemoved(this._removedKit);
-
-
-        // api.tabs.un.created()
-
-
+        api.windows.onRemoved.addListener(this._removedKit);
     },
 
 
@@ -107,22 +93,14 @@ app.controllerEvent = {
      * Снять обработчики событий
      */
     remove() {
-        const apiTab = window.chrome.tabs;
-        apiTab.onRemoved.removeListener(this._removedTab);
-        //apiTab.onCreated.removeListener(this._createdTab);
-        apiTab.onUpdated.removeListener(this._updatedTab);
-        //apiTab.onDetached.removeListener(this._deachedTab);
-        //apiTab.onAttached.removeListener(this._attachedTab);
-        //apiTab.onActivated.removeListener(this._activatedTab);
-        // tabs.onMoved.removeListener(hand.moved);
+        const api = this._app.browserApi;
 
-        const api = this._app.browserEvent.tabs;
-        api.onCreated(null);
-        //api.onRemoved(null);
+        api.tabs.onCreated.removeListener();
+        api.tabs.onUpdated.removeListener();
+        api.tabs.onRemoved.removeListener();
+        api.tabs.onActivated.removeListener();
 
-        //this._app.browserEvent.kit.onRemoved(null);
-
-        //api.onUpdated(null);
+        api.windows.onRemoved.removeListener();
     },
 
 
@@ -138,8 +116,8 @@ app.controllerEvent = {
         }
         console.log ('001, create tab ', eTab);
 
-        const kit = this._app.kitCollect.getById(eTab.windowId) || this._app.kitCollect.createItem({
-                id: eTab.windowId
+        const kit = this._app.kitCollect.getById(eTab.kitId) || this._app.kitCollect.createItem({
+                id: eTab.kitId
             });
 
         kit.modify();   // todo вызвать только если объект уже был создан
@@ -149,84 +127,77 @@ app.controllerEvent = {
     },
 
     /**
-     * Hahdler for when a tab is closed
-     * @param {number} tabId
+     * Событие при закрытии вкладки
      * @param {object} info
      */
-    _removedTab(tabId, info) {
-        const windowId = info.windowId;
-        const isWindowClosing = info.isWindowClosing;
+    _removedTab(info) {
+        const tab = this._app.tabCollect.getById(info.tabId);
 
-        const kit = this._app.kitCollect.getById(windowId);
-        const tab = this._app.tabCollect.getById(tabId);
-
-        // закрытие окна
-        if (isWindowClosing) {
-            kit && kit.close();
+        if (info.isKitClosing) {
             tab && tab.remove();
-
-        // закрывается одна вкладка
         } else {
             tab && tab.close();
-            kit && kit.modify();   // todo если  модели окна нет - создать
+            const kit = this._app.kitCollect.getById(info.kitId);
+            kit && kit.modify();
         }
     },
 
-    ///**
-    // * Закрытие окна браузера
-    // * @param {number} id идентификатор окна браузера
-    // * @private
-    // */
-    //_removedKit(id) {
-    //    const kit = this._app.kitCollect.getById(Id);
-    //    kit && kit.close();
-    //},
+    /**
+     * Закрытие окна браузера
+     * @param {number} id идентификатор окна браузера
+     * @private
+     */
+    _removedKit(id) {
+        const kit = this._app.kitCollect.getById(id);
+        kit && kit.close();
+    },
+
 
     /**
      * Обработчик события изменение данных во вкладке
-     * @param {number} tabId
-     * @param {object} change
-     * @param {object} eDataTab
+     * @param {object} info
      */
-    _updatedTab(tabId, change, eDataTab) {
-        // todo обработать данные от api
-
-        const kit = this._app.kitCollect.getById(eDataTab.windowId);
+    _updatedTab(info) {
+        const kit = this._app.kitCollect.getById(info.kitId);
         kit && kit.modify();
-
-        // это возможно не потребуется
-        //const tab = this._app.tabCollect.getById(tabId);
-        //if (tab) {
-        //    tab.modify();
-        //} else {
-        //    this._app.controllerSync.tab(tabId);
-        //}
     },
+
 
     /**
      * Вкладка получила фокус
-     * @param {number} tabId
-     * @param {number} windowId
+     * @param {object} info
      */
-    _activatedTab(tabId, windowId) {
-       // console.log('tab _onActivated', tabId, windowId);
+    _activatedTab(info) {
+        const kit = this._app.kitCollect.getById(info.kitId);
+        const tab = this._app.tabCollect.getById(info.tabId);
+
+   //     console.log('tab _onActivated', info, tab);
+
+        //if (kit && tab && kit.tabDiscardCreate) {
+        //
+        //    tab.active();
+        //
+        //
+        //}
+
+
 
         // получить созданные объекты
-        // если нет tab но есть kit - установить
+        //// если нет tab но есть kit - установить
+        //
+        //// проверить, принадлежит ли вкладка окну
+        //const kit = this._app.kitCollect.getById(kitId);
 
-        // проверить, принадлежит ли вкладка окну
-        const kit = this._app.kitCollect.getById(windowId);
-        const tab = this._app.tabCollect.getById(tabId);
-
-        // есть объект окна
-        if (kit) {
-            kit.modify();
-        }
-        // нет объекта окна
-        else {
-            // todo создание объекта окна по id  this._app.
-
-        }
+        //
+        //// есть объект окна
+        //if (kit) {
+        //    kit.modify();
+        //}
+        //// нет объекта окна
+        //else {
+        //    // todo создание объекта окна по id  this._app.
+        //
+        //}
     },
 
     /**

@@ -29,10 +29,10 @@ app.compatibility = function() {
         }
         localStorage.removeItem(ITEM_TEST);
 
-        resolve(this._app);
+        resolve(this);
     })
         .catch(e => {
-            this._app.log({
+            this.log({
                 name: 'Приложение не прошло проверку на совместимость с платформой',
                 event: e
             });

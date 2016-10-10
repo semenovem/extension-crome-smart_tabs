@@ -27,7 +27,9 @@ app.tabConv = {
 
     /**
      * Приведение полей в соответствие с типом
-     * @param {object} obj объект, у которого изменяем поля
+     * модифицирует поля объекта, переданного аргументом
+     * @param {*} obj ожидаем объект, у которого изменяем поля
+     * @return {object|null}
      */
     normalize(obj) {
         if (obj && typeof obj === 'object') {
@@ -37,12 +39,13 @@ app.tabConv = {
                     const name = field.name;
                     obj[name] = field.normalize(obj[name]);
                 });
+            return obj;
         }
-        return obj || null;
+        return null;
     },
 
     /**
-     * Валидация данных, из которых впоследствии будет создаваться экземпляр класса KitItem
+     * Валидация данных, из которых в последствии будет создаваться экземпляр класса KitItem
      * @param {object} raw
      * @return {object|null}
      */
