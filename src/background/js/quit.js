@@ -21,7 +21,7 @@ app.quit = function() {
         // записать не сохраненные данные
         // ....
 
-
+        // удалить обработчики браузерного api
 
         window[this.globalName] = null;
 

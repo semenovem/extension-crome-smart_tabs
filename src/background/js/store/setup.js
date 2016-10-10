@@ -38,7 +38,6 @@ app.storeSetup = {
      * @return {Promise}
      */
     set() {
-        let allow = this._app.setup.getSync('setupUseLocalStorage');
         return new Promise((resolve, reject) => {
             var data = Object.create(null);
 
@@ -46,7 +45,7 @@ app.storeSetup = {
             if (data) {
                 resolve(data);
             } else {
-                reject(allow);
+                reject();
             }
         });
     }

@@ -1,10 +1,8 @@
 {
   "manifest_version": 2,
-
   "name": "smart tabs",
   "description": "This extension shows a Google Image search result for the current page",
   "version": "1.0",
-
   "browser_action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html",
@@ -14,7 +12,9 @@
     "tabs",
     "activeTab",
     "storage",
-    "https://ajax.googleapis.com/"
+	"idle",
+	"tabCapture",
+	"desktopCapture"
   ],
   "background": {
       "scripts": ["background.js"]

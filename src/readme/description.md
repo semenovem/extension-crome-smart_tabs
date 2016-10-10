@@ -77,3 +77,12 @@ kit.setState(rawEvent)
 conjunction
 добавление сохраненных данных в модель: store -> model
 kit.conjunction(rawSaving) 
+
+
+
+__
+
+browserApi
+
+абстракция для браузерного api приводит все методы к одному аргументу
+валидация

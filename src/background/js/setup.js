@@ -1,5 +1,6 @@
 /**
  * Настройки
+ * Получение и изменение в синхронном режиме
  */
 app.setup = {
     // <debug>
@@ -13,13 +14,22 @@ app.setup = {
 
     /**
      * @type {function} @class Ready состояние готовности
-     * при первом вызове метода, создать объект и заменить им себя
      */
-    ready() {
-        return (this.ready = this._app.Ready())();
-    },
+    ready: null,
+
+    /**
+     * Настройки
+     * @type {object}
+     */
+    _data: null,
 
     // </debug>
+
+    /**
+     * Измененные записи, которые нужно сохранить
+     */
+    _change: [],
+
 
     /**
      * Показывает, что данные были изменены и необходимо сохранение
@@ -27,53 +37,111 @@ app.setup = {
     _isModify: false,
 
     /**
+     * Кеширвание данных
+     */
+    _cache: {
+        _list: {},
+        has(path) {
+            return path in this._list;
+        },
+        get(path) {
+            return this._list[path];
+        },
+        add(path, value) {
+            this._list[path] = value;
+        },
+        reset() {
+            this._list = {};
+        }
+    },
+
+
+    /**
      *
      */
     init() {
         this._app.binding(this);
+        this.ready = this._app.Ready();
     },
 
     /**
-     * Подготовка настроек. Получить данные из store
+     * Подготовка. Получить
+     * - настройки по умолчанию
+     * - пользовательские, сохраненные в store
+     * объединяет их в один объект
+     *
      * @return {Promise}
      */
     prep() {
-        return this._app.storeSetup.get()
-            .then(data => {
-                this._data = data;
-                this.ready.resolve(this);
-            })
+        return Promise.all([
+            this._app.storeSetup.get(),
+            this._readFileSetup()
+        ])
+            .then(results => {
+                this._data = this._app.util.objectMerge(results[0], results[1]);
+                this.ready.resolve();
+            });
     },
 
     /**
-     * Получение значения. Синхронно
-     * @param {string} propName
+     * Чтение настроек по умолчанию из файла
+     * @returns {Promise.<T>}
+     * @private
+     */
+    _readFileSetup() {
+        return fetch ('background_setting.json')
+            .then(response => response.json())
+            .catch(e => {
+                console.warn('Не удалось прочитать настройки по умолчанию', e);
+                throw e;
+            });
+    },
+
+    /**
+     * Получение значения. Сначала проверяем в сохранения в кеше, если нет, получаем из БД
+     * @param {string} path
      * @return {*}
      */
-    getSync(propName) {
-        let result = this._app.util.getDeepProp(propName, this._data);
-        if (result.exist) {
-            return result.value;
-        }
-        result = this._app.util.getDeepProp(propName, this._default);
+    get(path) {
+        return this._cache.has(path) ? this._cache.get(path) : this._get(path);
+    },
 
-        if (result.exist) {
-            return result.value;
+
+    /**
+     * Получение значения
+     * @param {string} path
+     * @return {*}
+     */
+    _get(path) {
+        const chainProps = path.split('.');
+        const goal = chainProps[chainProps.length - 1];
+        let value;
+        let exist;
+
+        let data = this._data;
+
+        chainProps.every(link => {
+
+            if (data && typeof data === 'object' && goal in data) {
+                value = data[goal];
+                exist = true;
+            }
+
+            return data = data[link];
+        });
+
+        if (exist) {
+            this._cache.add(path, value);
+            return value;
         }
+
         this._app.log({
             e: new Error,
-            name: 'не смогли найти запрошенное свойство: ' + propName
+            name: 'не смогли найти запрошенное свойство: ' + path
         });
     },
 
-    /**
-     * Получение значения. Асинхронно
-     * @param {string} propName
-     * @return {Promise|*}
-     */
-    get(propName) {
-        return this.ready().then(() => this.getSync(propName));
-    },
+
 
 
     /**
@@ -90,153 +158,5 @@ app.setup = {
             value: value
         });
         this._isModify = true;
-    },
-
-
-
-    /**
-     * Изменные настройки, сохраненные в store
-     * @type {object}
-     */
-    _data: null,
-
-    /**
-     * Измененные записи, которые нужно сохранить
-     */
-    _change: [],
-
-    /**
-     * Значения настроек по умолчанию
-     * @type {object}
-     */
-    _default: {
-        /**
-         * ожидания
-         */
-        timeout: {
-
-            /**
-             * @type {object} приложение
-             */
-            app: {
-                /**
-                 *  // todo для релиза поставить 1000 - 5000
-                 * @type {number} задержка запуска приложения
-                 */
-                launch: 1
-            },
-
-            /**
-             * @type {object} окно
-             */
-            kit: {
-                beforeSave: 2000,
-
-                /**
-                 * Через сколько начать искать соответствие в store
-                 */
-                beforeMapping: 200
-            },
-
-            /**
-             * @type {object} вкладка
-             */
-            tab: {
-                onCreate: 100
-            },
-
-            /**
-             * @type {object} браузерное api
-             */
-            browserApi: {
-                /**
-                 * @type {number} таймаут, после которого запрос к api браузера считается зависшим
-                 */
-                hung: 3000
-
-            }
-        },
-
-
-        // todo описать данные
-        store: {
-            /**
-             * Хранение открытых окон
-             */
-            open: {
-                // префикс при сохранениях в localStorage
-                prefix: 'kit_open_'
-            },
-            /**
-             * @type {object} хранение недавно закрытых окон
-             */
-            recent: {
-                // префикс при сохранениях в localStorage
-                prefix: 'kit_recent_'
-            }
-        },
-
-
-
-
-
-
-
-        /**
-         * Настройки можно сохранять в localStorage
-         * @type{boolean}
-         */
-        setupUseLocalStorage: true,
-
-        // максимальное кол-во записей в истории
-
-        maxHistoryLength: 20,
-
-        /**
-         * Отправлять сообщение о падениях
-         * @type {boolean}
-         */
-        reportCrash: false,
-
-        /**
-         * Записывать сообщения об ошибках
-         * todo - еще не определился
-         * @type {boolean}
-         */
-        saveError: false,
-
-        global: {
-
-            kit: {
-                // закрытые вкладки сохраняются.
-                history: true
-            },
-
-            tab: {
-                // история
-                history: true
-            }
-
-        },
-
-        kit: {
-            track: false,       // отслеживать. есть хоть у одной вкладки есть track:true
-
-            tabHistory: false   // сохранять историю
-
-
-
-        },
-
-        tab: {
-            track: true,        // отслеживать url
-            history: true       // сохранять историю
-
-            // максимальное длинна истории
-
-        }
-
     }
 };
-
-

@@ -38,6 +38,11 @@ app.kitItemPrototype = app.KitItem.prototype = {
             requireEvent: true,     // обязательное для объекта события
             requireStored: false,   // обязательное для сохраненных данных
             requireCreate: true,    // обязательное для создания экземпляра
+
+            // источники данных
+            toRecord: false,
+            toEvent: true,
+
             normalize(val) {
                 val = +val;
                 return isFinite(val) && val > 0 ? val : 0;
@@ -126,6 +131,25 @@ app.kitItemPrototype = app.KitItem.prototype = {
             }
         },
 
+
+        {   // не загружать вкладку, пока она не будет выбрана
+            name: 'tabDiscardCreate',
+            type: 'boolean',
+            default: true,
+            conjunction: true,
+            demo: true,
+            normalize(val) {
+                return typeof val === 'boolean' ? val : Boolean(val);
+            }
+        },
+
+
+        // выгружать данные из вкладки, когда она не активна
+        // варианты не активности: давно не открывалась
+        // по прошествии заданного промежутка
+
+
+
         // ### на будущее
         {   // название окна, заданное пользователем
             name: 'customName',
@@ -186,8 +210,11 @@ app.kitItemPrototype = app.KitItem.prototype = {
      * Доставить настройки
      */
     init() {
-        this._app.setup.get('timeout.kit.beforeSave').then(value => this._TIMEOUT_BEFORE_SAVE = value);
-        this._app.setup.get('timeout.kit.beforeMapping').then(value => this._TIMEOUT_BEFORE_MAPPING = value);
+        this._app.ready()
+            .then(() => {
+                this._TIMEOUT_BEFORE_SAVE = this._app.setup.get('kit.save.timeout');
+                this._TIMEOUT_BEFORE_MAPPING = this._app.setup.get('kit.mapping.timeout');
+            });
     },
 
     /**
@@ -199,7 +226,8 @@ app.kitItemPrototype = app.KitItem.prototype = {
                 return;
             }
             if (Date.now() - this.modify.timeCall > this._TIMEOUT_BEFORE_MAPPING) {
-                this._app.controllerMapping.record(this);
+                this._app.mapping.record(this);
+                delete this._timerBeforeMapping;
             } else {
                 this.prep();
             }
@@ -226,6 +254,15 @@ app.kitItemPrototype = app.KitItem.prototype = {
      * @return {object}
      */
     getRaw() {
+        const raw = {};
+        //
+        //this._app.kitFields
+        //    .filter(field => field.raw && ('default' in field === false || field.default !== this[field.name]))
+        //    .forEach(field => raw[field.name] = field.raw(this[field.name]));
+        //
+        //return raw;
+
+
         return this.fields.reduce((raw, field) => {
             let name = field.name;
             if (field.persist !== false && field.default !== this[name]) {
@@ -245,8 +282,7 @@ app.kitItemPrototype = app.KitItem.prototype = {
      */
     _savePrep() {
         return this.ready()
-            .then(d => { console.log (666,this); return d; })
-            .then(this._app.controllerSync.kit)
+            .then(this._app.sync.kit)
             .then(this.save.bind(this))
             .catch(e => console.warn ('Не удалось сохранить данные окна') && console.log (e) );
     },
@@ -310,7 +346,7 @@ app.kitItemPrototype = app.KitItem.prototype = {
      * Закрытие окна браузера
      */
     close() {
-        console.log('event close window');
+        console.log('event close window', this.id);
         this.modify.destroy();
 
         clearTimeout(this._timerBeforeMapping);

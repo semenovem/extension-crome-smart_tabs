@@ -43,13 +43,13 @@ app.browserApi.tabs = {
 
     /**
      * Конвертация массива вкладок
-     * @param {Array} eDataTabs
+     * @param {Array} tabsEvent
      * @return {Array}
      * @private
      */
-    convAll(eDataTabs) {
-        return eDataTabs
-            .map(eDataTab => eDataTab && typeof eDataTab === 'object' && this.conv(eDataTab)).filter(t=>t);
+    convAll(tabsEvent) {
+        return tabsEvent
+            .map(tabsEvent => this.conv(tabsEvent)).filter(tabView => tabView);
     },
 
     /**
@@ -61,30 +61,48 @@ app.browserApi.tabs = {
      *      favIconUrl:
      *  }
      *
-     * @param {object} eDataTab
+     * @param {object} tabEvent
      * @return {object|null}
      * @private
      */
-    conv(eDataTab) {
-        return eDataTab && typeof eDataTab === 'object' &&
-            this._app.tabConv.validateEvent(
-                this._app.tabConv.normalize({
-                    id: eDataTab.id,
-                    //active: eDataTab.active,
-                    //audible: eDataTab.audible,
-                    favIconUrl: eDataTab.favIconUrl,
-                    //highlighted: eDataTab.highlighted,
-                    //incognito: eDataTab.incognito,
-                    //index: eDataTab.index,
-                    //pinned: eDataTab.pinned,
-                    //selected: eDataTab.selected,
-                    //status: eDataTab.status,
-                    title: eDataTab.title,
-                    url: eDataTab.url,
-                    windowId: eDataTab.windowId
-                })
-            ) || null;
-        // todo сделать логирование ошибок валидации
-    }
+    conv(tabEvent) {
+        if (!tabEvent || typeof tabEvent !== 'object') {
+            return null;
+        }
+        const tabView = {};
+        const tabRaw = {
+            id        : tabEvent.id,
+            //active: tabEvent.active,
+            //audible: tabEvent.audible,
+            favIconUrl: tabEvent.favIconUrl,
+            //highlighted: tabEvent.highlighted,
+            //incognito: tabEvent.incognito,
+            //index: tabEvent.index,
+            //pinned: tabEvent.pinned,
+            //selected: tabEvent.selected,
+            //status: tabEvent.status,
+            title     : tabEvent.title,
+            url       : tabEvent.url,
+            kitId     : tabEvent.windowId
+        };
 
+        this._app.tabFields
+            .filter(field => field.view && tabRaw[field.name])
+            .forEach(field => {
+                const name = field.name;
+                const value = field.normalize(tabRaw[name]);
+                if (field.valid(value)) {
+                    tabView[name] = value;
+                }
+            });
+
+        // валидация обязательных значений
+        let valid = this._app.tabFields
+            .filter(field => field.requireView)
+            .every(field => tabView[field.name]);
+
+        return valid ? tabView : null;
+        
+        // todo сделать логгирование ошибок валидации
+    }
 };

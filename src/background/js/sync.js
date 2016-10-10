@@ -1,9 +1,9 @@
 /**
  * @type {object} cинхронизация состояний окон и сохраненных данных
  */
-app.controllerSync = {
+app.sync = {
     // <debug>
-    $className: 'controlleSync',
+    $className: 'sync',
 
     /**
      * Объект приложения
@@ -26,7 +26,6 @@ app.controllerSync = {
     all() {
         return this._app.browserApi.windows.getAll()
             .then(eKits => eKits.map(eKit => {
-
                     const collect = this._app.kitCollect;
                     return collect.getById(eKit.id) || collect.createItem(eKit);
                 })
@@ -39,7 +38,7 @@ app.controllerSync = {
                 }
             )
             .catch(e => {
-                console.warn('controllerSync.openedKits', e);
+                console.warn('sync.openedKits', e);
                 console.warn('Не удалось получение текущего состояния открытых окон и вкладок');
             });
     },
@@ -55,10 +54,11 @@ app.controllerSync = {
      */
     kit(kit) {
 
-        //return this._app.browserApi.getKit(kit.getId())
         return this._app.browserApi.windows.get(kit.getId())
 
             .then(eKit => {
+
+            //    console.log (eKit)
 
                 const kit = this._app.kitCollect.getById(eKit.id) || this._app.kitCollect.createItem(eKit);
                 kit.setState(eKit);
@@ -82,8 +82,8 @@ app.controllerSync = {
     //tab(id) {
     //    return this._app.browserApi.getTab(id)
     //        .then(eTab => {
-    //            const kit = this._app.kitCollect.getById(eTab.windowId) ||
-    //                this._app.kitCollect.createItem({id:eTab.windowId});
+    //            const kit = this._app.kitCollect.getById(eTab.kitId) ||
+    //                this._app.kitCollect.createItem({id:eTab.kitId});
     //            kit.modify();      // todo вызвать метод только, если объект уже существует
     //
     //            const tab = this._app.tabCollect.getById(eTab.id) || this._app.tabCollect.createItem(eTab);

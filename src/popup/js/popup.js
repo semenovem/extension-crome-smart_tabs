@@ -2,14 +2,57 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    var node = document.getElementById('status');
+    let node = document.getElementById('status');
 
     node.innerHTML = Math.random();
+
+
+    let elButtomBlank = document.getElementById('blank');
+    if (elButtomBlank) {
+
+        elButtomBlank.addEventListener('click', popup.createBlank);
+
+    }
+
 
 });
 
 
+/**
+ * @type {object}
+ */
 let popup = {
+
+    /**
+     *
+     */
+    init() {
+        for (let key in this) {
+            if (this.hasOwnProperty(key) && typeof this[key] === 'function') {
+                this[key] = this[key].bind(this);
+            }
+        }
+    },
+
+    /**
+     * Создать пустую страницу
+     */
+    createBlank() {
+        console.log (2345234);
+
+        this._message.msg('create.blank');
+
+
+
+    },
+
+    /**
+     * Объект для обмена данными с backend
+     * @type {object}
+     */
+    _message: new Message('popup')
+
+
 
 
 
@@ -22,4 +65,8 @@ let popup = {
 
 
 
+
 };
+
+
+popup.init();
