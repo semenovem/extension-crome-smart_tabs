@@ -1,9 +1,10 @@
 /**
- * @type {object} контроллер для сопоставления открытых вкладок с сохраненными данными
+ * @type {object} сопоставление вкладок сохраненного окна с реально открытым
+ *
  */
-app.controllerMapping = {
+app.mapping = {
     // <debug>
-    $className: 'controllerMapping',
+    $className: 'mapping',
 
     /**
      * @type {object} объект приложения
@@ -25,7 +26,7 @@ app.controllerMapping = {
      */
     record(kit) {
         return Promise.all([
-                this._app.controllerSync.kit(kit),
+                this._app.sync.kit(kit),
             /*
             ожидаем готовности store - пока не будут загруженны все записи
             при сопоставлении view и сохраненных данных должны участвовать только еще не определенные записи

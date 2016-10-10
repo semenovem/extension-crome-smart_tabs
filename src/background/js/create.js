@@ -1,9 +1,9 @@
 /**
- * @type {object} контроллер программного открытия окон и вкладок
+ * @type {object} создание окон и вкладок
  */
-app.controllerOpen = {
+app.create = {
     // <debug>
-    $className: 'controlleOpen',
+    $className: 'create',
 
     /**
      * Объект приложения
@@ -64,7 +64,10 @@ app.controllerOpen = {
      * @private
      */
     kit(record) {
-        return this._app.browserApi.createKit(record.recordKit)
+        return this._app.browserApi.windows.create(record.recordKit)
+
+
+        //return this._app.browserApi.createKit(record.recordKit)
             .then(eKit => {
                 const collect = this._app.kitCollect;
                 const kit = collect.getById(eKit.id) || collect.createItem(eKit);
