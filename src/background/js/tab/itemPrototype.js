@@ -1,7 +1,7 @@
 /**
  * @type {object} прототип @class TabItem
  */
-app.tabItemPrototype = app.TabItem.prototype = {
+app.TabItemPrototype = app.TabItem.prototype = {
     // <debug>
     /**
      * @type {object} объект приложения
@@ -9,103 +9,6 @@ app.tabItemPrototype = app.TabItem.prototype = {
     _app: null,
     // </debug>
 
-    /**
-     * поля объекта
-     * @type {object}
-     */
-    fields: [
-
-        {
-            name: 'id',
-            type: 'number',
-            persist: false,
-            requireCreate: true,
-            requireEvent: true,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val > 0 ? val : 0;
-            }
-        },
-        {   // id окна, которому принадлежит вкладка
-            name: 'kitId',
-            type: 'number',
-            persist: false,
-            requireEvent: true,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val > 0 ? val : 0;
-            }
-        },
-
-        {   // вкладка закрыта
-            name: 'closed',
-            type: 'boolean',
-            default: false,
-            conjunction: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'boolean' ? val : Boolean(val);
-            }
-        },
-
-        {   // сохранение истории
-            name: 'history',
-            type: 'boolean',
-            default: false,
-            conjunction: true,
-            normalize(val) {
-                return typeof val === 'boolean' ? val : Boolean(val);
-            }
-        },
-
-        {   // состояние вкладки - может быть выгружена из памяти
-            name: 'discarded',
-            type: 'boolean',
-            persist: false,
-            default: false,
-            conjunction: true,
-            normalize(val) {
-                return typeof val === 'boolean' ? val : Boolean(val);
-            }
-        },
-
-
-
-        {   // адрес
-            name: 'url',
-            type: 'string',
-            requireCreate: true,
-            requireEvent: true,
-            requireStored: true,
-            state: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'string' ? val : '';
-            }
-        },
-        {   //
-            name: 'title',
-            type: 'string',
-            default: '',
-            //     persist: false,
-            state: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'string' ? val : '';
-            }
-        },
-        {   // фавикон
-            name: 'favIconUrl',
-            type: 'string',
-            default: '',
-            //     persist: false,
-            state: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'string' ? val : '';
-            }
-        }
-    ],
 
     /**
      * Доставить настройки
@@ -123,25 +26,50 @@ app.tabItemPrototype = app.TabItem.prototype = {
     /**
      * Формирует данные для сохранения
      * Готовый объект содержит:
-     * - обязательные поля при сериализации
-     * - поля, значения которых отличаются от default
+     * - поля для сохранения, у которых значение отличаются от значений по умолчанию
+     * @param view
      * @return {object}
      */
-    getRaw() {
-        let raw = this.fields.reduce((raw, field) => {
-            let name = field.name;
-            if (field.persist !== false && field.default !== this[name]) {
-                raw[name] = this[name];
-            }
-            return raw;
-        }, Object.create(null));
+    getModel(view) {
+        const model = {};
+        const tmp = this._app.util.objectMerge(
+            this._getDataToModel(),
+            view
+        );
 
-        if (Array.isArray(this.urlHistory) && this.urlHistory.length) {
-            // todo здесть вставить ограничение по кол-ву записей
-            raw.urlHistory = this.urlHistory.slice(0, 100);
-            //
-        }
-        return raw;
+        this._app.tabFields
+            .filter(field => field.model && field.name in tmp)
+            .filter(field => 'default' in field === false || field.default !== tmp[field.name])
+            .forEach(field => model[field.name] = tmp[field.name]);
+
+        return model;
+    },
+
+    /**
+     * Формирует данные для сохранения
+     * @return {object}
+     */
+    _getDataToModel() {
+        const model = {};
+        this._app.tabFields
+            .filter(field => field.model && field.name in this)
+            .forEach(field => model[field.name] = this[field.name]);
+        return model;
+    },
+
+    /**
+     * Добавление в объект сохраненных данных
+     * @param {object} model
+     */
+    joinModel(model) {
+        this._app.tabFields
+            .filter(field => field.tab && model[field.name])
+            .forEach(field => {
+                const name = field.name;
+                if (this[name] !== model[name]) {
+                    this[name] = model[name];
+                }
+            });
     },
 
     // ################################################
@@ -151,12 +79,14 @@ app.tabItemPrototype = app.TabItem.prototype = {
     /**
      * Вкладка закрыта
      */
-    close() {
-        if (!this.closed) {
-            this.closed = true;
+    closed() {
+        if (!this.isClosed) {
+            this.isClosed = true;
             this.remove();
         }
     },
+
+
 
     /**
      * Удаление модели вкладки
@@ -165,32 +95,15 @@ app.tabItemPrototype = app.TabItem.prototype = {
         this._app.tabCollect.removeItem(this.id);
     },
 
-    /**
-     * Обновление состояния
-     * @param {object} state
-     * @return {boolean} произошли ли изменения в данных
-     */
-    setState(state) {
-        let change = false;
-        this.fields
-            .filter(field => field.state && field.name in state)
-            .forEach(field => {
-                const name = field.name;
-                if (this[name] !== state[name]) {
-                    change = true;
-                    this[name] = state[name];
-                }
-            });
-        return change;
-    },
 
     /**
      * Активация вкладки (была выбрана в своем окне)
      */
     active() {
-
-
-
-    }
+        return this._app.browserApi.tabs.update(this.id, { active: true })
+            // <debug>
+            .then(tabView => console.log ('tab was activated ', tabView));
+        // </debug>
+    },
 
 };

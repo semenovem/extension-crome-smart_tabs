@@ -27,14 +27,23 @@ app.kitCollect = {
 
     /**
      * Создание экземпляра
-     * @param {object} raw
+     * @param {object} view
      * @return {object}
      */
-    createItem(raw) {
+    createItem(view) {
         let item;
-        item = new this._app.KitItem(raw);
+        item = new this._app.KitItem(view);
         this._items[item.getId()] = item;
         return item;
+    },
+
+    /**
+     * Получить или создать запись
+     * @param {object} view
+     * @return {object}
+     */
+    getByView(view) {
+        return this.getById(view.id) || this.createItem(view);
     },
 
     /**

@@ -22,7 +22,7 @@ app.storeRecent = {
     // </debug>
 
     /**
-     * @type {Array} список записей. данные формата: storedKit
+     * @type {Array} список записей. данные формата: model
      */
     _records: [],
 
@@ -139,11 +139,11 @@ app.storeRecent = {
                 if (!regexp.test(itemKey)) {
                     continue;
                 }
-                const storedKit = unserialization(localStorage.getItem(itemKey));
+                const model = unserialization(localStorage.getItem(itemKey));
 
-                if (storedKit) {
+                if (model) {
                     records.push({
-                        storedKit,
+                        model,
                         itemKey
                     });
                 } else {

@@ -1,7 +1,7 @@
 /**
  * @type {object} прототип @class KitItem
  */
-app.kitItemPrototype = app.KitItem.prototype = {
+app.KitItemPrototype = app.KitItem.prototype = {
     // <debug>
     /**
      * @type {object} объект приложения
@@ -27,212 +27,63 @@ app.kitItemPrototype = app.KitItem.prototype = {
     // </debug>
 
     /**
-     * Поля объекта
-     * @type {object}
-     */
-    fields: [
-        {   // id окна браузера в системе
-            name: 'id',
-            type: 'number',
-            persist: false,
-            requireEvent: true,     // обязательное для объекта события
-            requireStored: false,   // обязательное для сохраненных данных
-            requireCreate: true,    // обязательное для создания экземпляра
-
-            // источники данных
-            toRecord: false,
-            toEvent: true,
-
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val > 0 ? val : 0;
-            }
-        },
-
-        {   // есть ли необходимость сохранить данные
-            name: 'isModify',
-            type: 'boolean',
-            persist: false,
-            default: false,
-            normalize(val) {
-                return typeof val === 'boolean' ? val : Boolean(val);
-            }
-        },
-
-        {   // время последнего изменения в объекте
-            name: 'modifyLastTime',
-            type: 'number',
-            persist: false,
-            default: 0,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val >= 0 ? val : 0;
-            }
-        },
-
-        // свернутое состояние окна браузера
-        // "fullscreen" "minimized" "maximized" "normal"
-        {
-            name: 'state',
-            type: 'string',
-            default: 'normal',
-            state: true,
-            options: [
-                'fullscreen',
-                'minimized',
-                'maximized',
-                'normal'
-            ],
-            normalize(val) {
-                return typeof val === 'string' && this.options.indexOf(val) !== -1 ? val : this.default;
-            }
-        },
-        // размеры окна
-        {
-            name: 'width',
-            type: 'number',
-            default: 0,
-            state: true,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val >= 0 ? val : 0;
-            }
-        },
-        {
-            name: 'height',
-            type: 'number',
-            default: 0,
-            state: true,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val >= 0 ? val : 0;
-            }
-        },
-
-        // позиция на рабочем столе
-        {
-            name: 'left',
-            type: 'number',
-            default: 0,
-            state: true,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val >= 0 ? val : 0;
-            }
-        },
-        {
-            name: 'top',
-            type: 'number',
-            default: 0,
-            state: true,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val >= 0 ? val : 0;
-            }
-        },
-
-
-        {   // не загружать вкладку, пока она не будет выбрана
-            name: 'tabDiscardCreate',
-            type: 'boolean',
-            default: true,
-            conjunction: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'boolean' ? val : Boolean(val);
-            }
-        },
-
-
-        // выгружать данные из вкладки, когда она не активна
-        // варианты не активности: давно не открывалась
-        // по прошествии заданного промежутка
-
-
-
-        // ### на будущее
-        {   // название окна, заданное пользователем
-            name: 'customName',
-            type: 'string',
-            persist: false,
-            conjunction: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'string' ? val : '';
-            }
-        },
-        {   // описание окна, заданное пользователем
-            name: 'customTitle',
-            type: 'string',
-            persist: false,
-            conjunction: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'string' ? val : '';
-            }
-        },
-
-        {   // номер активной вкладки
-            name: 'tabActive',
-            type: 'number',
-            default: 0,
-            conjunction: true,
-            demo: true,
-            normalize(val) {
-                val = +val;
-                return isFinite(val) && val >= 0 ? val : 0;
-            }
-        },
-
-        {   // сохранять состояние закрытых вкладок
-            name: 'tabClosed',
-            type: 'boolean',
-            default: true,
-            conjunction: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'boolean' ? val : Boolean(val);
-            }
-        },
-        {   // сохранять историю url
-            name: 'tabHistory',
-            type: 'boolean',
-            default: false,
-            conjunction: true,
-            demo: true,
-            normalize(val) {
-                return typeof val === 'boolean' ? val : Boolean(val);
-            }
-        }
-    ],
-
-    /**
      * Доставить настройки
      */
     init() {
         this._app.ready()
             .then(() => {
                 this._TIMEOUT_BEFORE_SAVE = this._app.setup.get('kit.save.timeout');
-                this._TIMEOUT_BEFORE_MAPPING = this._app.setup.get('kit.mapping.timeout');
+                this._TIMEOUT_BEFORE_MAPPING = this._app.setup.get('kit.mappingModel.timeout');
             });
     },
 
     /**
-     * Начало работы объекта модели окна
+     * Искать соответствие с сохраненной записью
+     * установить новые параметры для
+     * @private
      */
-    prep() {
-        this._timerBeforeMapping = setTimeout(() => {
-            if (this.ready.is) {
-                return;
-            }
-            if (Date.now() - this.modify.timeCall > this._TIMEOUT_BEFORE_MAPPING) {
-                this._app.mapping.record(this);
-                delete this._timerBeforeMapping;
-            } else {
-                this.prep();
-            }
-        }, this._TIMEOUT_BEFORE_MAPPING);
+    _mappingModel() {
+        this.modify.suspend();
+
+        this._app.mapping.model(this)
+            .then(this.applyMapping.bind(this))
+            .then(this.modify.resume)
+            .catch(e => console.warn.bind(console, 'itemProtottype merge'));
     },
+
+    /**
+     * Установить модель для объекта окна
+     * если нет сто процентного совпадения - нужно сохранить
+     * @param {object} result
+     *
+     * result:
+     * {
+     *      view {object}
+     *      relevant {number}
+     *      itemKey {string}
+     *      [model] {object}
+     *  }
+     */
+    applyMapping(result) {
+        try {
+            this.modify.setDelay(this._TIMEOUT_BEFORE_SAVE);
+            this.modify.setCallback(this.save);
+
+            result.model && this.joinModel(result.model);
+            this._itemKey = result.itemKey;
+
+            this.modify.clear();
+
+            return (result.relevant === 1 ? Promise.resolve() : this._save(this.getModel(result.view)))
+                .then(this.ready.resolve);
+        }
+        catch (e) {
+            this._app.log({
+                e: e
+            });
+        }
+    },
+
 
     /**
      * Вернуть id записи
@@ -243,118 +94,127 @@ app.kitItemPrototype = app.KitItem.prototype = {
     },
 
     // ################################################
-    // экспорт/импорт
-    // ################################################
-
-    /**
-     * Формирует данные для сохранения
-     * Готовый объект содержит:
-     * - обязательные поля при сериализации
-     * - поля, значения которых отличаются от default
-     * @return {object}
-     */
-    getRaw() {
-        const raw = {};
-        //
-        //this._app.kitFields
-        //    .filter(field => field.raw && ('default' in field === false || field.default !== this[field.name]))
-        //    .forEach(field => raw[field.name] = field.raw(this[field.name]));
-        //
-        //return raw;
-
-
-        return this.fields.reduce((raw, field) => {
-            let name = field.name;
-            if (field.persist !== false && field.default !== this[name]) {
-                raw[name] = this[name];
-            }
-            return raw;
-        }, Object.create(null));
-    },
-
-    // ################################################
     // модификация объекта
     // ################################################
 
     /**
-     * Сохранить
-     * @return {Promise<> | boolean}
+     * Сохранение объекта
+     * @return {Promise.<T>}
      */
-    _savePrep() {
-        return this.ready()
-            .then(this._app.sync.kit)
-            .then(this.save.bind(this))
-            .catch(e => console.warn ('Не удалось сохранить данные окна') && console.log (e) );
+    save() {
+        return this.getView()
+            .then(this.getModel)
+            .then(this._save);
     },
 
     /**
      * Сохранение
-     * @param {Array} tabs массив вкладок окна
+     * @param {object} model
      * @return {Promise<>}
      */
-    save(tabs) {
-        const raw = this.getRaw();
-        raw.tabs = tabs.map(tab => tab.getRaw());
-        this.modify.clear();
-        return this._app.storeOpen.save(this._itemKey, raw);
-    },
-
-
-
-    /**
-     * setter
-     * @param {string} itemKey
-     */
-    setItemKey(itemKey) {
-        this._itemKey = itemKey;
-        this.ready.resolve(this);
+    _save(model) {
+        this.modify.is && this.modify.clear();
+        return this._app.storeOpen.save(this._itemKey, model);
     },
 
     /**
-     * Обновление состояния модели
-     * @param {object} state
-     * @return {boolean} произошли ли изменения в данных
+     * Получение view окна браузера
+     * @return {Promise.<T>}
      */
-    setState(state) {
-        let change = false;
-        this.fields
-            .filter(field => field.state && field.name in state)
-            .forEach(field => {
-                const name = field.name;
-                if (this[name] !== state[name]) {
-                    change = true;
-                    this[name] = state[name];
-                }
-            });
-        return change;
+    getView() {
+        return app.browserApi.windows.get(this.id);
+    },
+
+    /**
+     * Получить модель
+     * @param view
+     * @return {object}
+     */
+    getModel(view) {
+        const model = {};
+        const tmp = this._app.util.objectMerge(
+            this._getDataToModel(),
+            view
+        );
+
+        this._app.kitFields
+            .filter(field => field.model && field.name in tmp)
+            .filter(field => 'default' in field === false || field.default !== tmp[field.name])
+            .forEach(field => model[field.name] = tmp[field.name]);
+
+        // данные вкладок
+        model.tabs = view.tabs.map(tabView => this._app.tabCollect
+            .getByView(tabView)
+            .getModel(tabView)
+        );
+
+        return model;
     },
 
     /**
      * Добавление в объект сохраненных данных
-     * @param {object} source
+     * @param {object} model
      */
-    conjunction(source) {
-        this.fields
-            .filter(field => field.conjunction && field.name in source)
+    joinModel(model) {
+        this._app.kitFields
+            .filter(field => field.kit && model[field.name])
             .forEach(field => {
                 const name = field.name;
-                this[name] = source[name];
+                if (this[name] !== model[name]) {
+                    this[name] = model[name];
+                }
             });
     },
 
     /**
-     * Закрытие окна браузера
+     * Формирует данные для сохранения
+     * @return {object}
      */
-    close() {
+    _getDataToModel() {
+        const model = {};
+        this._app.kitFields
+            .filter(field => field.model && field.name in this)
+            .forEach(field => model[field.name] = this[field.name]);
+        return model;
+    },
+
+    // ################################################
+    //
+    // ################################################
+
+    /**
+     * Окно закрыто
+     */
+    closed() {
+
         console.log('event close window', this.id);
         this.modify.destroy();
-
-        clearTimeout(this._timerBeforeMapping);
 
         this._app.kitCollect.removeItem(this.id);
         if (this._itemKey) {
             this._app.storeOpen.moveToRecent(this._itemKey);
         }
+    },
+
+    /**
+     * setter Установить имя окна
+     * @param {string} name
+     * @returns {object}
+     */
+    setName(name) {
+        if (name !== this.name) {
+            this.name = name;
+            this.modify();
+        }
+        return this;
+    },
+
+    /**
+     * getter название окна
+     * @return {string}
+     */
+    getName() {
+        return this.name;
     }
 
 };

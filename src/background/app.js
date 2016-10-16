@@ -117,18 +117,19 @@ var app = {
 
     // </debug>
 
-
-
     /**
      * Дочерним объектам устанавливаем ссылку на объект приложения
      * Если есть метод init - синхронно выполняем
      * После выполнения удаляем init
      *
-     * @param {object} app объект, устанавливаемый в качестве объекта приложения
+     * @param {object} [app] объект, устанавливаемый в качестве объекта приложения
      * @private
      */
     executionInits(app) {
         let key, obj;
+        if (!app) {
+            app = this;
+        }
         for (key in this) {
             if (!this.hasOwnProperty(key)) {
                 continue;
@@ -168,6 +169,20 @@ var app = {
     },
 
     /**
+     * Рекурсивный биндинг методов объекта
+     * @param {object} obj ообъект, методам которого биндим контекст
+     * @param {object} [scope] контекст
+     */
+    recursiveBinding(obj, scope) {
+        this.binding(obj, scope);
+        for (let key in obj) {
+            if (obj.hasOwnProperty(key) && obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+                this.recursiveBinding(obj[key], scope);
+            }
+        }
+    },
+
+    /**
      * Задержка перед запуском приложения
      * @return {Promise<void>}
      * @private
@@ -179,29 +194,68 @@ var app = {
     },
 
     /**
+     * Список свойств, которые нужно добавить в объекты
+     */
+    _propsToObj: [],
+
+    /**
+     * Добавить свойство в объект
+     * Добавление будет когда все данные(файлы) будут загружены
+     *
+     * @param {string} path путь / имя метода(или объекта)
+     * @param {*} content
+     */
+    defineProp(path, content) {
+        this._propsToObj.push({
+            path   : path,
+            content: content
+        });
+    },
+
+    /**
+     * Добавление свойств в объект
+     * @private
+     */
+    _addPropsToObj() {
+        this._propsToObj.forEach(item => {
+            const pathKeys = item.path.split('.');
+            const propName = pathKeys.pop();
+            pathKeys.reduce((obj, key) => {
+                return obj[key] && typeof obj[key] === 'object' && obj[key] || (obj[key] = {});
+            }, this)[propName] = item.content;
+        });
+    },
+
+    /**
      * Инициализация
      */
     init() {
+        this.Modify = Modify;
+        this.Ready = Ready;
+        this.Subscribe = Subscribe;
+
         // поверка совместимости
         if (!this.compatibility()) {
             return;
         }
 
         this.ready = this.Ready();
-        this.executionInits(this);                  // инициализация
+        this._addPropsToObj();
 
-        Promise.resolve()
-            .then(this.setup.prep)                  // получение настроек
+        this.executionInits();                      // инициализация
+
+        this.setup.prep()                           // получение настроек
             .then(this._timeout.bind(this))
-            .then(this.ready.resolve)
+            .then(this.ready.resolve)               // здесь подготовлен необходимый минимум приложения
             .then(() => {
                 this.controllerEvent.add();
-                this.controllerMessageBlank.add();
-                this.controllerMessagePopup.add();
+                this.controllerMsg.add();
+                //this.controllerMsgPopup.add();
+                //this.controllerMsgOptions.add();
+                this.systemIdle.run();
             })
             .then(this.sync.all)
             .then(this.create.saved)
-
             .then(
                 () => {
                     console.log('\n-----------------------------------\n\n');
@@ -244,11 +298,21 @@ var app = {
 
             .catch(e => {
                 this.log({
-                    e: e,
+                    e   : e,
                     name: 'Не смогли стартовать приложение'
                 });
                 //       this.quit();
-            });
+            })
+            // удаление не используемых методов
+            .then(() => {
+                this.defineProp = null;
+                this._addPropsToObj = null;
+                this._propsToObj = null;
+                this.init = null;
+                this._timeout = null;
+                this.executionInits = null;
+                this.binding = null;
+            })
     }
 };
 

@@ -1,9 +1,9 @@
 /**
  * Конструктор модель окна
- * @param {object} raw
+ * @param {object} view
  * @constructor
  */
-app.KitItem = function(raw) {
+app.KitItem = function(view) {
     // <debug>
     this.$className = 'modelKit';
     // </debug>
@@ -11,11 +11,11 @@ app.KitItem = function(raw) {
     /**
      * Получение полей, которые должны быть у экземпляра
      */
-    this.fields
-        .filter(field => field.requireCreate === true || 'default' in field)
+    this._app.kitFields
+        .filter(field => field.requireKit || field.kit)
         .forEach(field => {
             let name = field.name;
-            this[name] = name in raw ? raw[name] : field.default;
+            this[name] = name in view ? view[name] : field.default;
         });
 
     /**
@@ -24,22 +24,26 @@ app.KitItem = function(raw) {
      */
     this.ready = this._app.Ready();
 
-    // таймеры
-    this._timerBeforeMapping = null;
+    // сохранить часто используемые методы с контекстом в экземпляр
+    this.save = this.save.bind(this);
+    this._save = this._save.bind(this);
+    this.getView = this.getView.bind(this);
+    this.getModel = this.getModel.bind(this);
 
-    // ключ в store
-    this._itemKey = null;
-
+    /**
+     * Поиск соответствия с моделью
+     * после нахождения модели - параметры (delay, callback) изменяются для отслеживания модификации view
+     * @type {Function}
+     */
     this.modify = this._app.Modify({
-        delay: this._TIMEOUT_BEFORE_SAVE,       // '_TIMEOUT_BEFORE_SAVE'
-        callback: this._savePrep.bind(this)     // '_savePrep'
+        delay: this._TIMEOUT_BEFORE_MAPPING,
+        callback: this._mappingModel.bind(this)
     });
 
+    this.modify();
 
-
-    // Сюда попадут закрытые вкладки
-    this.tabsClosed = [];
-
-
-    this.prep();
+    // ключ в store
+    // <debug>
+    this._itemKey = null;
+    // </debug>
 };

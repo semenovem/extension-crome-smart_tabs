@@ -22,128 +22,154 @@ app.mapping = {
     /**
      * Поиск записи в store
      * @param {object} kit
-     * @returns {Promise.<T>}
+     * @return {Promise.<T>}
+     *
+     * возвращаемый объект
+     * {
+     *      relevant: 0 .. 1,       // идентичность
+     *      view: {object}
+     *      itemKey: {string},
+     *      model: {object}
+     *
+     *  }
      */
-    record(kit) {
+    model(kit) {
         return Promise.all([
-                this._app.sync.kit(kit),
-            /*
-            ожидаем готовности store - пока не будут загруженны все записи
-            при сопоставлении view и сохраненных данных должны участвовать только еще не определенные записи
-             */
-                this._app.storeOpen.ready()
+                this._app.browserApi.windows.get(kit.getId()),  // получение view вкладок окна
+                this._app.storeOpen.ready()                     // ожидаем готовности store
             ])
             .then(data => {
-                const tabs = data[0];
-                const records = this._app.storeOpen.getHeap();
+                const view = data[0];
 
-          //      console.log('tabs', tabs, '   ', 'records  ', records);
+                // Поиск наилучшего совпадения в куче записей store
+                let mapping = this._app.storeOpen.getHeap()
+                    .reduce((mapping, record)=> {
+                        const result = this.compare(view.tabs, record.model.tabs);
 
-                let comparePart = 0,
-                    record;
+                        if (result.relevant && (!mapping || result.relevant > mapping.relevant)) {
+                            mapping = result;
+                            mapping.record = record;
 
-                // Поиск наилучшего совпадения
-                records.forEach(rec => {
+                        }
+                        return mapping;
+                    }, null);
 
-                    const part = this.compare(tabs, rec.recordKit.tabs);
-                    if (part > comparePart) {
-                        comparePart = part;
-                        record = rec;
-                    }
-                });
+                const result = {
+                    view
+                };
 
-               // console.log('comparePart: ', comparePart);
-                //console.log('record: ', record);
+                // соответствующая запись найдена
+                if (mapping) {
+                    result.model = mapping.record.model;
+                    result.itemKey = mapping.record.itemKey;
+                    result.relevant = mapping.relevant;
 
+                    this._app.storeOpen.heapExclude(mapping.record.itemKey);
 
-                // для существующей записи объединить данные из сохранения
-                if (record) {
-                    kit.conjunction(record.recordKit);
-                    this._app.storeOpen.heapExclude(record.itemKey);
+                    // объединить с model все вкладки
+                    mapping.equalTabs.forEach(item => {
+                        this._app.tabCollect
+                            .getByView(item.tabV)
+                            .joinModel(item.tabM);
+                    });
                 }
 
-                // todo задача для этого модуля и для открытия вкладок
-                // нужен какой то общий механизм для коньюкции
-                // conjunction для tabs
+                // окно не было сохранено ранее, создаем новую запись
+                else {
+                    result.itemKey = this._app.storeOpen.createModel();
+                    result.relevant = 0;
+                }
 
-                kit.setItemKey(
-                    record ? record.itemKey : this._app.storeOpen.createRecord()
-                );
-
-                // если совпадение < 100% нужно сохранить запись
-                comparePart !== 1 && kit.save(tabs);
-
-                return comparePart;
+                return result;
             });
     },
 
 
 
-
     /**
      * Вычисление соответствия двух наборов вкладок
      * Сравнение по url
-     * Пропускать записи, у которых есть closed = true
-     * @param {Array} arr0 первый набор вкладок - вкладки браузера
-     * @param {Array} arr1 второй набор - сохраненные вкладки
-     * @return {object} соответствие - 1 полное соответствие 0 - ничего не совпадает
+     * @param {Array} tabsView вкладки браузера
+     * @param {Array} tabsModel сохраненные данные
+     * @return {object} объект соответствия
+     *
+     *  {
+     *      relevant: {number}      // 0 ... 1 релевантность двух наборов вкладок
+     *      pairTabs: {Array}       // массив пар вкладок
+     *
+     *  }
+     *
      * @private
      */
-    compare(arr0, arr1) {
-        const match = this._compareTask(arr0, arr1);
-        match.ratio = 0;    // соответствие от 0 ... 1
-        match.compare = match.full + match.host;    // все вкладки (left || right) определены
+    compare(tabsView, tabsModel) {
+        const match = this._compareTask(tabsView, tabsModel);
+        match.relevant = 0;                         // соответствие от 0 ... 1
+        match.equal = match.equalTabs.length;       // общее количество успешно сопоставленных вкладок
 
         // решение о совпадении
-        if (match.compare && match.compare === match.length) {
-            if (match.lengthLeft === match.lengthRight) {
-                match.ratio = match.host ? 0.9 : 1;
+        if (match.equal > match.length / 2) {
+            if (match.lengthView === match.lengthModel) {
+                match.relevant = match.host ? 0.9 : 1;
             } else {
-                match.ratio = 0.9;
+                match.relevant = 0.9;
             }
         }
 
-        //console.log('...', match);
-
-        return match.ratio;
+        return {
+            relevant: match.relevant,
+            equalTabs: match.equalTabs
+        };
     },
 
     /**
      * Вычисление соответствия двух наборов вкладок
      * Сравнение по url
      * Пропускать записи, у которых есть closed = true
-     * @param {Array} tabsLeft первый набор вкладок
-     * @param {Array} tabsRight второй набор
+     * @param {Array} _tabsView вкладки браузера
+     * @param {Array} _tabsModel сохраненные данные
      * @return {object} соответствие - 1 полное соответствие 0 - ничего не совпадает
      * @private
      */
-    _compareTask(tabsLeft, tabsRight) {
-        let left = this._getOpenTabs(tabsLeft);
-        let right = this._getOpenTabs(tabsRight);
+    _compareTask(_tabsView, _tabsModel) {
+        let tabsView = _tabsView.slice();
+        let tabsModel = _tabsModel.slice();
 
         const match = {
-            length: Math.min(left.length, right.length),
-            lengthLeft: left.length,
-            lengthRight: right.length,
+            length     : Math.min(tabsView.length, tabsModel.length),
+            lengthView : tabsView.length,
+            lengthModel: tabsModel.length,
 
             full: 0,
-            host: 0
+            host: 0,
+
+            /**
+             * пары вкладок
+             */
+            equalTabs: []
         };
 
         // находим вкладки с полностью идентичными url
-        left = left.filter(tabLeft => {
-                return !right.some((tabRight, index) => {
-                    return this._matchFull(tabLeft, tabRight) ?
-                        (right.splice(index, 1), ++match.full) :
+        tabsView.filter(tabV => {
+                return !tabsModel.some((tabM, index) => {
+
+                    return this._matchFull(tabV, tabM) ?
+                        (tabsModel.splice(index, 1), ++match.full, match.equalTabs.push({
+                            tabV,
+                            tabM
+                        })) :
                         false;
                 });
             })
 
             // вкладки с совпадающим host
-            .filter(tabLeft => {
-                return !right.some((tabRight, index) => {
-                    return this._matchHost(tabLeft, tabRight) ?
-                        (right.splice(index, 1), ++match.host) :
+            .filter(tabV => {
+                return !tabsModel.some((tabM, index) => {
+
+                    return this._matchHost(tabV, tabM) ?
+                        (tabsModel.splice(index, 1), ++match.host, match.equalTabs.push({
+                            tabV,
+                            tabM
+                        })) :
                         false;
                 });
             });
@@ -153,16 +179,6 @@ app.mapping = {
         //console.log('right:: ', right);
 
         return match;
-    },
-
-    /**
-     * Получить массив без закрытых вкладок
-     * @param {Array} tabs массив вкладок
-     * @return {Array}
-     * @private
-     */
-    _getOpenTabs(tabs) {
-        return tabs.filter(tab => !tab.closed);
     },
 
     /**

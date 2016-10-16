@@ -22,7 +22,7 @@ app.storeOpen = {
     // </debug>
 
     /**
-     * @type {Array} все сохраненные записи на момент запуска приложения. данные формата: recordKit
+     * @type {Array} все сохраненные записи на момент запуска приложения. данные формата: kitModel
      */
     _heap: [],
 
@@ -42,7 +42,7 @@ app.storeOpen = {
             })
             .then(records => {
                 this._heap = records;
-                this.ready.resolve(this);
+                this.ready.resolve();
             });
     },
 
@@ -75,15 +75,18 @@ app.storeOpen = {
      * @return {Promise} массив записей (сохраненные окна) которые нужно открыть
      */
     getSaved() {
-        return Promise.resolve(this._heap);
+        return this.ready().then(() => this._heap);
     },
 
     /**
      * Создание новой записи
      */
-    createRecord() {
+    createModel() {
         return this._getItemKey();
     },
+
+
+
 
     /**
      * Сохранение записи
@@ -107,6 +110,10 @@ app.storeOpen = {
             }
         });
     },
+
+
+
+
 
     /**
      * Перенос записи в store для хранения недавно закрытых окон
@@ -132,15 +139,15 @@ app.storeOpen = {
      * Получить данные в виде строки для сохранения
      * @returns {string|null}
      */
-    serialization(kitStore) {
+    serialization(model) {
         let data;
         try {
-            data = JSON.stringify(kitStore);
+            data = JSON.stringify(model);
         }
         catch (e) {
             data = null;
             this._app.log({
-                name: 'Не удалось преобразовать в json', kitStore,
+                name: 'Не удалось преобразовать в json', model,
                 event: e
             });
         }
@@ -155,53 +162,45 @@ app.storeOpen = {
     unserialization(data) {
         try {
             const kitRaw = JSON.parse(data);
-            const kitStore = {};
-
-            // <debug> проверка, нет ли лишних полей в создаваемом объекте
-            for (let name in kitRaw) {
-                this._app.kitFields.some(field => field.name === name) ||
-                console.warn('Поле в объекте: ', name, 'отсутствует в raw', kitRaw);
-            }
-            // </debug>
+            const kitModel = {};
 
             this._app.kitFields
-                .filter(field => field.store && field.name in kitRaw)
+                .filter(field => field.model && field.name in kitRaw)
                 .forEach(field => {
                     const name = field.name;
                     const value = field.normalize(kitRaw[name]);
                     if (field.valid(value)) {
-                        kitStore[name] = value;
+                        kitModel[name] = value;
                     }
                 });
 
-            let valid = this._app.kitFields
-                .filter(field => field.requireStore)
-                .every(field => field.name in kitStore);
-
             // валидировать вкладки
+            kitModel.tabs = kitRaw.tabs.map(tabRaw => {
+                const tabModel = {};
+
+                this._app.tabFields
+                    .filter(field => field.model && field.name in tabRaw)
+                    .forEach(field => {
+                        const name = field.name;
+                        const value = field.normalize(tabRaw[name]);
+                        if (field.valid(value)) {
+                            tabModel[name] = value;
+                        }
+                    });
+
+                let valid = this._app.tabFields
+                    .filter(field => field.requireStore)
+                    .every(field => field.name in tabModel);
+                return valid ? tabModel : null;
+            })
+                .filter(tabModel => tabModel);
+
+            const valid = kitModel.tabs.length && this._app.kitFields
+                .filter(field => field.requireModel)
+                .every(field => field.name in kitModel);
+
             if (valid) {
-                kitStore.tabs = kitStore.tabs.map(tabRaw => {
-                    const tabStore = {};
-
-                    this._app.tabFields
-                        .filter(field => field.store && field.name in tabRaw)
-                        .forEach(field => {
-                            const name = field.name;
-                            const value = field.normalize(tabRaw[name]);
-                            if (field.valid(value)) {
-                                tabStore[name] = value;
-                            }
-                        });
-
-                    let valid = this._app.tabFields
-                        .filter(field => field.requireStore)
-                        .every(field => field.name in tabStore);
-
-                    return valid ? tabStore : null;
-                });
-            }
-            if (valid) {
-                return kitStore;
+                return kitModel;
             }
         }
         catch (e) {
@@ -250,12 +249,11 @@ app.storeOpen = {
                     continue;
                 }
 
-                let kitStore = this.unserialization(localStorage.getItem(itemKey));
+                let model = this.unserialization(localStorage.getItem(itemKey));
 
-                if (kitStore) {
+                if (model) {
                     records.push({
-                        recordKit: kitStore,    // todo удалить после перехода на новые названия
-                        kitStore,
+                        model,
                         itemKey
                     });
 
@@ -264,7 +262,6 @@ app.storeOpen = {
                     localStorage._removeItem(itemKey);
                 }
             }
-
             resolve(records);
         });
     },

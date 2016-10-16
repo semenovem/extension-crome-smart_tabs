@@ -1,73 +1,79 @@
 /**
- * объект сообщений для передачи / получения данных с фоновой страницей расширения
+ * Объект сообщений для передачи / получения данных с фоновой страницей расширения
  *
- *
- * @public
- * get
- *
- *
- *
- * @type {object}
+ * @return {Function}
  */
-function Message(pageName) {
-
-    this._page = pageName;
-
-    // проверка доступности объекта
-
-
-    // chrome.runtime.sendMessage
-}
-
-/**
- *
- * @type {object}
- */
-Message.prototype = {
-
+function Message(page) {
     /**
-     * публичный метод для выполнения запроса к фоновой странице
+     * Выполнение запроса к фоновой странице
      * @param {string} method какой метод вызывается
      * @param {object} params объект с параметрами
      * @return {Promise.<T>}
      */
-    msg(method, params) {
-
-        return this._request(
-            {
-                page: this._page,
-                method: method,
-                params: params
-            }
-        );
-    },
-
-    /**
-     *
-     * @param request
-     * @returns {Promise}
-     * @private
-     */
-    _request(request) {
+    function msg(method, params) {
         return new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage(request, resolve);
-
-            //
-        })
-            .then(this._response);
-    },
-
-    /**
-     * Валидация / обработка ответа
-     * @param {*} data
-     * @private
-     */
-    _response(data) {
-        console.log ('обработка ответа от backend', data);
-
-        return data;
+            const callback = prepResponse.bind(null, resolve, reject);
+            setTimeout(callback, 2000);
+            chrome.runtime.sendMessage(
+                prepProps(method, params),
+                callback
+            );
+        });
     }
 
 
+    // ################################################
+    // статические методы
+    // ################################################
 
-};
+    // пока нет
+
+    return msg;
+
+
+    // ################################################
+    // приватные методы
+    // ################################################
+
+    /**
+     * Подготовка параметров для запроса
+     * @param {string} method
+     * @param {object} params
+     * @return {object}
+     */
+    function prepProps(method, params) {
+        return {
+            page,
+            method,
+            params
+        }
+    }
+
+
+    /**
+     * Валидация / обработка ответа
+     * @param {function} resolve успешное выполнение промиса
+     * @param {function} reject  промис с ошибкой
+     * @param {*} [data] данные от расширения
+     * @private
+     */
+    function prepResponse(resolve, reject, data) {
+        if (data && typeof data === 'object' && Array.isArray(data) === false && data.success) {
+            const body = data.body && typeof data.body === 'object' && !Array.isArray(data.body) ?
+                data.body : { body: data.body };
+
+            resolve({
+                success: true,
+                error: data.error,
+                body: body
+            });
+        } else {
+            reject({
+                // <debug>
+                error: data,
+                // </debug>
+                success: false
+            });
+        }
+    }
+}

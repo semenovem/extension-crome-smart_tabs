@@ -1,21 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <title>Getting Started Extension's Popup</title>
-      <script src="popup.min.js" defer></script>
-      <link href="popup.min.css" rel="stylesheet" type="text/css">
+      <script src="popup.js"></script>
+      <script src="libs/Message.js"></script>
+      <script src="libs/Modify.js"></script>
+      <script src="libs/Ready.js"></script>
+      <script src="libs/browserApi/browserApi.js"></script>
+      <script src="libs/browserApi/windows/windows.js"></script>
+      <script src="libs/browserApi/windows/getCurrent.js"></script>
+
+      <link href="popup.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <div>
-      окно настроек и быстрых действий
-    </div>
+    <div class="title">окно настроек и быстрых действий</div>
+
+
+    <div id="status0"></div>
+    <div id="status"></div>
 
 
     <div> Открыть пустое окно </div>
     <button class="open-blank" id="blank">Открыть</button>
 
 
-    <div id="status"></div>
+
+
+    <div class="kit-name">
+        <div class="kit-name__title">Название окна</div>
+        <div class="kit-name__wrap">
+            <input class="kit-name__input" type="text">
+        </div>
+    </div>
 
 
     <section>

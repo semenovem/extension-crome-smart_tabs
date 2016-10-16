@@ -28,25 +28,18 @@
  * @param {object} [params] параметры
  * @return {Promise.<object>}
  */
-
-// browserApi.windows.get
-
-app.browserApi.windows.get = function(id, params) {
+app.browserApi.windows.get = function (id, params) {
     let timer;
 
     // параметры по умолчанию
     const paramsOrig = {
-        populate: true
+        populate: false
     };
 
     const queryParams = params ? Object.assign(paramsOrig, params) : paramsOrig;
 
     return new Promise((resolve, reject) => {
-        timer = setTimeout(
-            reject,
-            this._app.setup.get('browserApi.windows.get.resetQuery')
-        );
-
+        timer = setTimeout(reject, 1000);
         window.chrome.windows.get(id, queryParams, resolve);
     })
         .then(kitEvent => {

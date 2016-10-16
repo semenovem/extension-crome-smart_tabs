@@ -20,46 +20,18 @@ app.create = {
     },
 
     /**
-     * Подавить события, связанные с открытиями вкладок
-     * поскольку при создании окон срабатывает callback,
-     * что бы обработчики не гнались за событием
-     */
-    suppressEvent() {
-        this._app.controllerEvent.suppress('onCreatedTab');
-    },
-
-    /**
-     * Восстановить обработку событий, связанных с открытием вкладок
-     */
-    resumeEvent() {
-        this._app.controllerEvent.resume('onCreatedTab');
-    },
-
-
-    /**
      * Открыть вкладки, сохраненные в storeOpen
      * @return {Promise.<>} массив объектов окон @class KitItem
      */
     saved() {
         return this._app.storeOpen.getSaved()
-            .then(records => {
-                this.suppressEvent();
-
-                return Promise.all(
-                    records.map(this.kit)
-                )
-                    .then(kits => {
-                        this.resumeEvent();
-                        return kits;
-                    })
-            });
+            .then(records => Promise.all(records.map(this.kit)));
     },
 
 
     /**
      * Открытие окна
-     * Открытие происходит из сохраненных данных объект - @class Record
-     * @param {object} record @class Record
+     * @param {object} record
      * @return {Promise.<>} объект @class KitItem
      * @private
      */
@@ -69,9 +41,9 @@ app.create = {
         // - с пустыми страницами, которые загрузятся после получения фокуса
         // - с пустыми страницами, которые будут одна за другой загружаться, по мере освобождения канала
 
-        //const tabs = record.recordKit;
+        //const tabs = model.model;
 
-        //record.recordKit.tabs = [
+        //model.model.tabs = [
         //    {
         //        url: 'chrome-extension://ekekhdhcpbbhfldpaoelpcpebkcmnkjh/blank.html'
         //    },
@@ -83,21 +55,33 @@ app.create = {
         //    }
         //];
 
-        console.log ('record', record);
+        //console.log ('app.create.kit:: record', record.model);
 
-        return this._app.browserApi.windows.create(record.recordKit)
+        //console.log (111, this._app.browserApi.windows.recordKitToOpen(record.model))
 
-            .then(eKit => {
-                const collect = this._app.kitCollect;
-                const kit = collect.getById(eKit.id) || collect.createItem(eKit);
+        //return Promise.resolve();
 
-                kit.conjunction(record.recordKit);
+        return this._app.browserApi.windows.create(record.model)
+
+            .then(view => {
                 this._app.storeOpen.heapExclude(record.itemKey);
+                const kit = this._app.kitCollect.getByView(view);
 
-                kit.setItemKey(record.itemKey);
+                kit.applyMapping({
+                    view,
+                    relevant: 1,
+                    itemKey: record.itemKey,
+                    model: record.model
+                });
+
+                // активация вкладки
+                if (record.model.tabActive) {
+                    const tabView = view.tabs[record.model.tabActive];
+                    if (tabView) {
+                        const tab = this._app.tabCollect.getById(tabView.id);
+                        tab && tab.active();
+                    }
+                }
             });
-    },
-
-
-
+    }
 };

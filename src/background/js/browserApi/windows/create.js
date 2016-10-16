@@ -2,8 +2,8 @@
  * @type {object} создание нового окна браузера
  *
  */
-app.browserApi.windows.create = function(recordKit) {
-    const createData = this.recordKitToOpen(recordKit);
+app.browserApi.windows.create = function(model) {
+    const createData = this.recordKitToOpen(model);
     let timer;
     return new Promise((resolve, reject) => {
         timer = setTimeout(
@@ -13,16 +13,13 @@ app.browserApi.windows.create = function(recordKit) {
 
         window.chrome.windows.create(createData, resolve);
     })
-        .then(eDataKit => {
+        .then(kitEvent => {
             clearTimeout(timer);
 
-            const eKit = this.conv(eDataKit);
-            if (eKit && Array.isArray(eDataKit.tabs)) {
-                eKit.tabs = this._app.browserApi.tabs.convAll(eDataKit.tabs);
-            }
+            const view = this.conv(kitEvent);
 
-            if (eKit && eKit.tabs.length) {
-                return eKit;
+            if (view && view.tabs) {
+                return view;
             } else {
                 throw {
                     name: 'Данные окна не прошли валидацию'

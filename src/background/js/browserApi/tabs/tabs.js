@@ -83,11 +83,11 @@ app.browserApi.tabs = {
             //status: tabEvent.status,
             title     : tabEvent.title,
             url       : tabEvent.url,
-            kitId     : tabEvent.windowId
+            kitId     : tabEvent.windowId       // todo проверить, используется ли где либо это
         };
 
         this._app.tabFields
-            .filter(field => field.view && tabRaw[field.name])
+            .filter(field => field.view && field.name in tabRaw)
             .forEach(field => {
                 const name = field.name;
                 const value = field.normalize(tabRaw[name]);
