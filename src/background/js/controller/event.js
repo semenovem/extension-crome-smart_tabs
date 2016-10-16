@@ -14,13 +14,13 @@ app.controllerEvent = {
     /**
      * @type {object} содержит названия событий, которые нужно подавить
      */
-    _suppressEvents: Object.create(null),
+    _suspendEvents: Object.create(null),
 
     /**
      * @type {object} список названий событий
      */
     $_suppressEventsList: {
-        createdTab: null,
+        onCreatedTab: null,
 
         // это никак не используется, не входит в сборку
         addListener: null,
@@ -49,11 +49,11 @@ app.controllerEvent = {
      * Подавить события (просто не обрабатывать их)
      * @param {Array|string} eventName список названий событий, которые нужно подавить
      */
-    suppress(eventName) {
+    suspend(eventName) {
         if (Array.isArray(eventName)) {
-            eventName.forEach(item => this._suppressEvents[eventName] = true);
+            eventName.forEach(item => this._suspendEvents[eventName] = true);
         } else {
-             this._suppressEvents[eventName] = true;
+             this._suspendEvents[eventName] = true;
         }
     },
 
@@ -63,9 +63,9 @@ app.controllerEvent = {
      */
     resume(eventName) {
         if (Array.isArray(eventName)) {
-            eventName.forEach(item => delete this._suppressEvents[eventName]);
+            eventName.forEach(item => delete this._suspendEvents[eventName]);
         } else {
-            delete this._suppressEvents[eventName];
+            delete this._suspendEvents[eventName];
         }
     },
 
@@ -84,6 +84,8 @@ app.controllerEvent = {
         api.tabs.onUpdated.addListener(this._updatedTab);
         api.tabs.onRemoved.addListener(this._removedTab);
         api.tabs.onActivated.addListener(this._activatedTab);
+        api.tabs.onMoved.addListener(this._movedTab);
+
 
         api.windows.onRemoved.addListener(this._removedKit);
     },
@@ -99,6 +101,7 @@ app.controllerEvent = {
         api.tabs.onUpdated.removeListener();
         api.tabs.onRemoved.removeListener();
         api.tabs.onActivated.removeListener();
+        api.tabs.onMoved.removeListener();
 
         api.windows.onRemoved.removeListener();
     },
@@ -107,23 +110,21 @@ app.controllerEvent = {
 
     /**
      * Событие. Создана новая вкладка
-     * @param {object} eTab объект tab
+     * @param {object} tabView объект tab
      */
-    _createdTab(eTab) {
-        // todo перенести заморозку событий в browserApi
-        if (this._suppressEvents.onCreatedTab) {
+    _createdTab(tabView) {
+        if (this._suspendEvents.onCreatedTab) {
             return;
         }
-        console.log ('001, create tab ', eTab);
 
-        const kit = this._app.kitCollect.getById(eTab.kitId) || this._app.kitCollect.createItem({
-                id: eTab.kitId
+        const kit = this._app.kitCollect.getById(tabView.kitId) || this._app.kitCollect.createItem({
+                id: tabView.kitId
             });
+        kit.modify();
 
-        kit.modify();   // todo вызвать только если объект уже был создан
+        //console.log ('001, create tab ', tabView);
 
-        const tab = this._app.tabCollect.getById(eTab.id) || this._app.tabCollect.createItem(eTab);
-        tab.setState(eTab);
+        const tab = this._app.tabCollect.getByView(tabView);
     },
 
     /**
@@ -136,7 +137,7 @@ app.controllerEvent = {
         if (info.isKitClosing) {
             tab && tab.remove();
         } else {
-            tab && tab.close();
+            tab && tab.closed();
             const kit = this._app.kitCollect.getById(info.kitId);
             kit && kit.modify();
         }
@@ -149,7 +150,7 @@ app.controllerEvent = {
      */
     _removedKit(id) {
         const kit = this._app.kitCollect.getById(id);
-        kit && kit.close();
+        kit && kit.closed();
     },
 
 
@@ -169,43 +170,25 @@ app.controllerEvent = {
      */
     _activatedTab(info) {
         const kit = this._app.kitCollect.getById(info.kitId);
-        const tab = this._app.tabCollect.getById(info.tabId);
 
-   //     console.log('tab _onActivated', info, tab);
+//        console.log('tab _onActivated', info);
 
-        //if (kit && tab && kit.tabDiscardCreate) {
-        //
-        //    tab.active();
-        //
-        //
-        //}
-
-
-
-        // получить созданные объекты
-        //// если нет tab но есть kit - установить
-        //
-        //// проверить, принадлежит ли вкладка окну
-        //const kit = this._app.kitCollect.getById(kitId);
-
-        //
-        //// есть объект окна
-        //if (kit) {
-        //    kit.modify();
-        //}
-        //// нет объекта окна
-        //else {
-        //    // todo создание объекта окна по id  this._app.
-        //
-        //}
+        // есть объект окна
+        if (kit) {
+            kit.modify();
+        }
     },
 
     /**
-     *
+     * Перемещение вкладки внутри окна (изменение позиции)
      * @param info
      */
-    moved(info) {
-        console.log('tab _onMoved', info);
+    _movedTab(info) {
+        //console.log('tab _onMoved', info);
+        const kit = this._app.kitCollect.getById(info.kitId);
+        if (kit) {
+            kit.modify();
+        }
     },
 
     /**

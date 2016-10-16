@@ -2,7 +2,7 @@
  * @type {object} обмен данными со вкладками
  *
  * addListener() пописаться
- * removeListener()  удалить обработчик
+ * removeListener() удалить обработчик
  *
  * из одного события делаем раздельную подписку на события на разных страницах
  *
@@ -15,6 +15,11 @@ app.browserApi.runtime.onMessage = {
      * @type {object} объект приложения
      */
     _app: null,
+
+    /**
+     * обработчик события
+     */
+    _callback: null,
     // </debug>
 
     /**
@@ -81,25 +86,22 @@ app.browserApi.runtime.onMessage = {
 
     /**
      * Подписка на событие
-     * @param {string} pageName название страницы, с которой будет проходить коммуникация
      * @param {function} callback
      */
-    addListener(pageName, callback) {
+    addListener(callback) {
         if (this._pages.isEmpty()) {
             window.chrome.runtime.onMessage.addListener(this._onEvent);
         }
-        this._pages.set(pageName, callback);
+        this._callback = callback;
     },
 
     /**
      * Удалить подписку
-     * @param {string} [page] название страницы
      */
-    removeListener(page) {
-        page ? this._pages.remove(page) : this._pages.removeAll();
-
-        if (this._pages.isEmpty()) {
+    removeListener() {
+        if (this._callback) {
             window.chrome.runtime.onMessage.removeListener(this._onEvent);
+            delete this._callback;
         }
     },
 
@@ -123,8 +125,8 @@ app.browserApi.runtime.onMessage = {
             }
         }
 
-        if (valid && this._pages.has(request.page)) {
-            return this._pages.get(request.page)(request, sender, sendResponse);
+        if (valid) {
+            return this._callback(request, sender, sendResponse);
         }
 
         return false;

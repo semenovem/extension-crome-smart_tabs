@@ -69,11 +69,6 @@ store сохраненные данные окна
 ---
 
 
-setState
-Обновление объекта view -> model
-kit.setState(rawEvent)
-
-
 conjunction
 добавление сохраненных данных в модель: store -> model
 kit.conjunction(rawSaving) 

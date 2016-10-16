@@ -2,21 +2,28 @@
  *
  *
  * @param {object} opts
+ * {
+ *      delay: {number}         кол-во ms ожидания
+ *      callback {function}     вызвать по истечении времении dalay
+ * }
  *
  * @return {function}
  * Статичесткие методы
- * clear()              сбросить значение в false
+ * clear()              привести объект в первоначальное состояние, сбросить текущий отсчет времени
  * run([arg, [arg]])    выполнить callback
  * desctroy()           удаление объекта
  *
+ * suspend()            остановить таймер (если был запущен)
+ * resume()             восстановить срабатывания по таймеру
+ *
  *
  * Свойство:
- * is   true / false  модифицирован / нет
- * timeCall
+ * is           true / false  модифицирован / нет
+ * timeCall     время последнего вызова
  *
  * @constructor
  */
-app.Modify = function(opts) {
+function Modify(opts) {
 
     //  Внутренный контекст
     let ctx = Object.create(null);
@@ -25,8 +32,12 @@ app.Modify = function(opts) {
     ctx.callback = opts.callback;
     ctx.is = false;
     ctx.timeCall = 0;
+    // имитация стека приостановленных комманд
+    // не нужно хранить какие либо данные - просто кол-во раз остановлено, должно равнятся кол-ву раз запуска
+    ctx.stackSuspended = 0;
 
     /**
+     * Этой функции добавляем статические методы
      *
      * @param a
      */
@@ -35,7 +46,7 @@ app.Modify = function(opts) {
         ctx.timeCall = Date.now();
         if (!ctx.is) {
             ctx.is = true;
-            timeout(ctx.delay);
+            ctx.stackSuspended || timeout(ctx.delay);
         }
     }
 
@@ -79,6 +90,40 @@ app.Modify = function(opts) {
             clearTimeout(ctx.timer);
         }
         run();
+    };
+
+    /**
+     * Установить задержку
+     * @param delay
+     */
+    modify.setDelay = (delay) => {
+        ctx.delay = delay;
+    };
+
+    /**
+     * Установить задержку
+     * @param callback
+     */
+    modify.setCallback = (callback) => {
+        ctx.callback = callback;
+    };
+
+    /**
+     * Приостановить таймер
+     */
+    modify.suspend = () => {
+        if (ctx.stackSuspended++ === 0 && ctx.is) {
+            clearTimeout(ctx.timer);
+        }
+    };
+
+    /**
+     * Запустить таймер (если был остановлен ранее)
+     */
+    modify.resume = () => {
+        if (ctx.stackSuspended > 0 && --ctx.stackSuspended === 0 && ctx.is) {
+            setTimeout(timeoutCheck, 1);
+        }
     };
 
     // ################################################
@@ -145,4 +190,4 @@ app.Modify = function(opts) {
     }
 
     return modify;
-};
+}

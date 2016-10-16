@@ -2,17 +2,17 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    let node = document.getElementById('status');
-
-    node.innerHTML = Math.random();
-
-
-    let elButtomBlank = document.getElementById('blank');
-    if (elButtomBlank) {
-
-        elButtomBlank.addEventListener('click', popup.createBlank);
-
-    }
+    //let node = document.getElementById('status');
+    //
+    //node.innerHTML = Math.random();
+    //
+    //
+    //let elButtomBlank = document.getElementById('blank');
+    //if (elButtomBlank) {
+    //
+    //    elButtomBlank.addEventListener('click', popup.createBlank);
+    //
+    //}
 
 
 });
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * @type {object}
  */
-let popup = {
+let options = {
 
     /**
      *
@@ -39,8 +39,8 @@ let popup = {
      */
     createBlank() {
         console.log (2345234);
-
-        this._message.msg('create.blank');
+//
+  //      this._message.msg('create.blank');
 
 
 
@@ -50,7 +50,7 @@ let popup = {
      * Объект для обмена данными с backend
      * @type {object}
      */
-    _message: new Message('popup')
+    _message: new Message('options')
 
 
 
@@ -69,4 +69,4 @@ let popup = {
 };
 
 
-popup.init();
+options.init();

@@ -27,14 +27,23 @@ app.tabCollect = {
 
     /**
      * Создание экземпляра
-     * @param {object} raw
+     * @param {object} view
      * @return {object}
      */
-    createItem(raw) {
+    createItem(view) {
         let item;
-        item = new this._app.TabItem(raw);
+        item = new this._app.TabItem(view);
         this._items[item.id] = item;
         return item;
+    },
+
+    /**
+     * Получить или создать запись
+     * @param {object} view
+     * @return {object}
+     */
+    getByView(view) {
+        return this.getById(view.id) || this.createItem(view);
     },
 
     /**

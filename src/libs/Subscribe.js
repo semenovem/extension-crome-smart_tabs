@@ -3,7 +3,7 @@
  *
  * @constructor
  */
-app.Subscribe = function() {
+function Subscribe() {
 
     /**
      * Список событий
@@ -18,12 +18,12 @@ app.Subscribe = function() {
     this.removeEvent = this.removeEvent.bind(this);
     this.removeAll = this.removeAll.bind(this);
     this.eventCall = this.eventCall.bind(this);
-};
+}
 
 /**
  * @type {object} прототип
  */
-app.Subscribe.prototype = {
+Subscribe.prototype = {
 
     /**
      * Подписка на событие

@@ -60,21 +60,27 @@ app.browserApi.tabs.onUpdated = {
      * Обработчик
      * @param {number} tabId
      * @param {object} changeInfo изменения
-     * @param {object} eDataTab данные вкладки
+     * @param {object} tabEvent данные вкладки
      * @private
      */
-    _onEvent(tabId, changeInfo, eDataTab) {
+    _onEvent(tabId, changeInfo, tabEvent) {
         tabId = +tabId;
 
-        //console.log (tabId, changeInfo)
+        // пропустить только события, которые сообщают об изменении свойств:
+        // url, title, favIconUrl
+
+        if ('url' in changeInfo === false && 'title' in changeInfo === false && 'favIconUrl' in changeInfo === false) {
+            return;
+        }
+
+        //console.log (tabId, changeInfo);
 
         // большего разбора пока не требуется. Есть данные по вкладке
 
-        if (isFinite(tabId) && tabId > 0 && eDataTab && typeof eDataTab === 'object') {
-            const windowId = +eDataTab.windowId;
+        if (isFinite(tabId) && tabId > 0 && tabEvent && typeof tabEvent === 'object') {
+            const windowId = +tabEvent.windowId;
 
             if (isFinite(windowId) && windowId > 0) {
-
                 this._callback({
                     tabId,
                     kitId: windowId

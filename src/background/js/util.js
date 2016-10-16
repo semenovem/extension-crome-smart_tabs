@@ -41,8 +41,8 @@ app.util = {
     /**
      * Рекурсивное объединение всех свойств двух объектов в новый объект
      *
-     * @param {object} target
-     * @param {object} source
+     * @param {object} target к этому объекту добавить свойства из source
+     * @param {object} source добавляются его свойства
      * @return {object} возвращает новый объект
      */
     objectMerge(target, source) {
@@ -53,7 +53,7 @@ app.util = {
             if (!source.hasOwnProperty(key)) {
                 continue;
             }
-            if (source[key] && typeof source[key] === 'object') {
+            if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
                 result[key] = this.objectMerge(result[key], source[key]);
 
             } else {
@@ -63,10 +63,4 @@ app.util = {
         return result;
     }
 
-
-
-
 };
-
-
-

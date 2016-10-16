@@ -1,14 +1,18 @@
 /**
  * @type {object} получение данных всех открытых окон
  *
+ * @param {object} [params] параметры
  * @return {Promise.<Array>}
  */
-app.browserApi.windows.getAll = function() {
+app.browserApi.windows.getAll = function(params) {
     let timer;
 
-    const queryParams = {
+    // параметры по умолчанию
+    const paramsOrig = {
         populate: false
     };
+
+    const queryParams = params ? Object.assign(paramsOrig, params) : paramsOrig;
 
     return new Promise((resolve, reject) => {
         timer = setTimeout(
@@ -21,15 +25,15 @@ app.browserApi.windows.getAll = function() {
         .then(kitsEvent => {
             clearTimeout(timer);
 
-            const kitsView = kitsEvent
-                .map(kitsEvent =>  this.conv(kitsEvent))
-                .filter(eKit => eKit);
+            const views = kitsEvent
+                .map(kitsEvent => this.conv(kitsEvent))
+                .filter(kitView => kitView);
 
-            if (!kitsView.length) {
+            if (!views.length) {
                 throw {
                     name: 'Данные всех окон не прошли валидацию'
                 };
             }
-            return kitsView;
+            return views;
         });
 };

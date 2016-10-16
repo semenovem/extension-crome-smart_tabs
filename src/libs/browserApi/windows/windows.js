@@ -49,36 +49,6 @@ app.browserApi.windows = {
         this._app.binding(this);
     },
 
-    // ################################################
-    // конвертация данных для api
-    // ################################################
-
-    /**
-     * Подготовка параметров для открытия окна браузера
-     * @param {object} model
-     * @return {object}
-     * @private
-     */
-    recordKitToOpen(model) {
-        const params = {
-            url: model.tabs.map(tab => tab.url)
-        };
-        switch (model.state) {
-            case 'minimized':
-            case 'maximized':
-            case 'fullscreen':
-                params.state = model.state;
-                break;
-            default:
-                'left' in model && (params.left = model.left);
-                'top' in model && (params.top = model.top);
-                'width' in model && (params.width = model.width);
-                'height' in model && (params.height = model.height);
-                break
-        }
-        return params;
-    },
-
 
 
     // ################################################
@@ -114,44 +84,48 @@ app.browserApi.windows = {
         }
         const kitView = {};
         const raw = {
-            id         : kitEvent.id,
+            id         : +kitEvent.id,
        //     focused    : kitEvent.focused,
-            left       : kitEvent.left,
-            top        : kitEvent.top,
-            width      : kitEvent.width,
-            height     : kitEvent.height,
-            state      : kitEvent.state    // "fullscreen" "minimized" "maximized" "normal"
+       //     left       : kitEvent.left,
+       //     top        : kitEvent.top,
+       //     width      : kitEvent.width,
+       //     height     : kitEvent.height,
+       //     state      : kitEvent.state    // "fullscreen" "minimized" "maximized" "normal"
         //    type       : kitEvent.type,
        //     alwaysOnTop: kitEvent.alwaysOnTop
         };
 
-        this._app.kitFields
-            .filter(field => field.view && raw[field.name])
-            .forEach(field => {
-                const name = field.name;
-                const value = field.normalize(raw[name]);
-                if (field.valid(value)) {
-                    kitView[name] = value;
-                }
-            });
+        const valid = true;
 
-        let valid = this._app.kitFields
-            .filter(field => field.requireView)
-            .every(field => kitView[field.name]);
 
-        // валидация вкладок, если есть в объекте события
-        if (valid && Array.isArray(kitEvent.tabs)) {
-            kitView.tabs = this._app.browserApi.tabs.convAll(kitEvent.tabs);
 
-            // определение активной вкладки
-            kitEvent.tabs.some((tabView, index) => tabView.active && (kitView.tabActive = index));
+        //this._app.kitFields
+        //    .filter(field => field.view && raw[field.name])
+        //    .forEach(field => {
+        //        const name = field.name;
+        //        const value = field.normalize(raw[name]);
+        //        if (field.valid(value)) {
+        //            kitView[name] = value;
+        //        }
+        //    });
+        //
+        //let valid = this._app.kitFields
+        //    .filter(field => field.requireView)
+        //    .every(field => kitView[field.name]);
+        //
+        //// валидация вкладок, если есть в объекте события
+        //if (valid && Array.isArray(kitEvent.tabs)) {
+        //    kitView.tabs = this._app.browserApi.tabs.convAll(kitEvent.tabs);
+        //
+        //    // определение активной вкладки
+        //    kitEvent.tabs.some((tabView, index) => tabView.active && (kitView.tabActive = index));
+        //
+        //    // объект окна без вкладок не может существовать
+        //    if (!kitView.tabs.length) {
+        //        valid = false;
+        //    }
+        //}
 
-            // объект окна без вкладок не может существовать
-            if (!kitView.tabs.length) {
-                valid = false;
-            }
-        }
-
-        return valid ? kitView : null;
+        return valid ? raw : null;
     }
 };

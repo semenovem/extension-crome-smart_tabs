@@ -1,0 +1,23 @@
+
+.kit-name {
+	margin: 2vh 0;
+	width: 90vw;
+}
+.kit-name__title {
+	font-size: 0.9rem;
+	color: #cccccc;
+}
+
+.kit-name__wrap {
+	width: 100%;
+	background: #cccccc;
+	padding: 1vh 1vw;
+}
+
+.kit-name__input {
+	font-size: 1rem;
+	border: none;
+	background: transparent;
+	width: 100%;
+}
+

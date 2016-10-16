@@ -37,13 +37,14 @@ app.systemIdle = {
     init() {
         this._subscribe = new this._app.Subscribe;
         this._app.binding(this);
+    },
 
-        // ожидание готовности приложения
-        this._app.ready()
-            .then(() => {
-                this._setup = this._app.setup.get('systemIdle');
-                this._app.browserApi.idle.addListener(this._onStateChanged);
-            });
+    /**
+     * Запуск модуля приложения
+     */
+    run() {
+        this._app.browserApi.idle.addListener(this._onStateChanged);
+        this._setup = this._app.setup.get('systemIdle');
     },
 
     /**

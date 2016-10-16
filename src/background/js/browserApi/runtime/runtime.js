@@ -28,4 +28,34 @@ app.browserApi.runtime = {
         this._app.executionInits.call(this, this._app);
     },
 
+
+
+
+
+
+    // ################################################
+    // конвертация для передачи вкладкам
+    // ################################################
+
+    /**
+     * Конвертирование данных в вид для frontend
+     * @param {object} obj
+     * @return {object}
+     */
+
+    // todo переделать фомирование данных для фронтенда
+
+    storedToDemo(obj) {
+        const newObj = Object.create(null);
+        this._app.kitFields
+            .filter(field => field.name in obj && field.demo)
+            .forEach(field => {
+                const name = field.name;
+                newObj[name] = obj[name];
+            });
+        // вкладки
+        newObj.tabs = obj.tabs.map(tab => tab);
+        return newObj;
+    }
+
 };

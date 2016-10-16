@@ -1,5 +1,5 @@
 /**
- * Получить информацию по окну и вкладкам
+ * Получить информацию по текущему окну и вкладкам
  * Конвертация данных окна
  * на выходе объект:
  *
@@ -24,36 +24,28 @@
  *      ]
  * }
  *
- * @param {number} id идентификатор окна
  * @param {object} [params] параметры
  * @return {Promise.<object>}
  */
-
-// browserApi.windows.get
-
-app.browserApi.windows.get = function(id, params) {
+app.browserApi.windows.getCurrent = function (params) {
     let timer;
 
     // параметры по умолчанию
     const paramsOrig = {
-        populate: true
+        populate: false
     };
 
     const queryParams = params ? Object.assign(paramsOrig, params) : paramsOrig;
 
     return new Promise((resolve, reject) => {
-        timer = setTimeout(
-            reject,
-            this._app.setup.get('browserApi.windows.get.resetQuery')
-        );
-
-        window.chrome.windows.get(id, queryParams, resolve);
+        timer = setTimeout(reject, 1000);
+        window.chrome.windows.getCurrent(queryParams, resolve);
     })
         .then(kitEvent => {
             clearTimeout(timer);
 
             const kitView = this.conv(kitEvent);
-            if (kitView && id === kitView.id && (!queryParams.populate || kitView.tabs)) {
+            if (!queryParams.populate || kitView.tabs) {
                 return kitView;
             } else {
                 throw {

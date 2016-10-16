@@ -4,12 +4,13 @@
 app.tabFields = [
 
     {
-        name        : 'id',
-        type        : 'number',
-        view        : true,
-        model       : true,
-        requireView : true,
-        requireModel: true,
+        name       : 'id',
+        type       : 'number',
+        view       : true,
+        tab        : true,
+        requireView: true,
+        requireTab : true,
+        private    : true,
 
         valid(val) {
             return val > 0;
@@ -19,11 +20,12 @@ app.tabFields = [
             return isFinite(num) ? num : null;
         }
     },
+
     {   // id окна, которому принадлежит вкладка
         name       : 'kitId',
         type       : 'number',
+        private    : true,
         view       : true,
-        model      : true,
         requireView: true,
         valid(val) {
             return val > 0;
@@ -34,26 +36,13 @@ app.tabFields = [
         }
     },
 
-    {   // вкладка закрыта
-        name   : 'closed',
-        type   : 'boolean',
-        default: false,
-        model  : true,
-        store  : true,
-        valid(val) {
-            return typeof val === 'boolean';
-        },
-        normalize(val) {
-            return typeof val === 'boolean' ? val : null;
-        }
-    },
-
     {   // сохранение истории
         name   : 'history',
         type   : 'boolean',
+        private: true,
         default: false,
+        tab    : true,
         model  : true,
-        store  : true,
         valid(val) {
             return typeof val === 'boolean';
         },
@@ -65,8 +54,9 @@ app.tabFields = [
     {   // состояние вкладки - может быть выгружена из памяти
         name   : 'discarded',
         type   : 'boolean',
+        private: true,
         default: false,
-        model  : true
+        tab    : true
     },
 
     {   // адрес
@@ -74,8 +64,10 @@ app.tabFields = [
         type        : 'string',
         default     : '',
         view        : true,
-        store       : true,
+        tab         : true,
+        model       : true,
         requireView : true,
+        requireTab  : true,
         requireStore: true,
         valid(val) {
             return typeof val === 'string';
@@ -86,11 +78,12 @@ app.tabFields = [
     },
 
     {   //
-        name        : 'title',
-        type        : 'string',
-        default     : '',
-        view        : true,
-        store       : true,
+        name   : 'title',
+        type   : 'string',
+        private: true,
+        default: '',
+        view   : true,
+        model  : true,
         valid(val) {
             return typeof val === 'string';
         },
@@ -100,11 +93,12 @@ app.tabFields = [
     },
 
     {   // фавикон
-        name        : 'favIconUrl',
-        type        : 'string',
-        default     : '',
-        view        : true,
-        store       : true,
+        name   : 'favIconUrl',
+        type   : 'string',
+        private: true,
+        default: '',
+        view   : true,
+        model  : true,
         valid(val) {
             return typeof val === 'string';
         },

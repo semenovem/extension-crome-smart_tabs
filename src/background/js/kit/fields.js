@@ -13,15 +13,16 @@ app.kitFields = [
     {   // id окна браузера в системе
         name        : 'id',
         type        : 'number',
+        private     : true,
         // default: 0          // значение по умолчанию
         // где использовать
         view        : true,    // окно браузера
-        model       : true,    // настройки окна
-        store       : false,   // сохраненные данные
+        kit         : true,    // настройки окна
+        model       : false,   // сохраненные данные
         // обязательные
         requireView : true,    // обязательное для объекта события
-        requireStore: false,   // обязательное для сохраненных данных
-        requireModel: true,    // обязательное для создания экземпляра
+        requireKit  : true,    // обязательное для создания экземпляра
+        requireModel: false,   // обязательное для сохраненных данных
 
         /**
          * Валидация
@@ -34,7 +35,7 @@ app.kitFields = [
 
         /**
          * Приводим тип значения к типу поля
-         * Нужен только полям, которые получаем из view и/или store
+         * Нужен только полям, которые получаем из view и/или model
          * @param {*} val
          * @return {number|null}
          */
@@ -45,11 +46,9 @@ app.kitFields = [
     },
 
     {   // вкладки
-        name : 'tabs',
-        type : 'array',
-        //view : true,
-        store: true,
-        requireStore: true,
+        name        : 'tabs',
+        type        : 'array',
+        requireModel: true,
         valid(val) {
             return Array.isArray(val) && !!val.length;
         },
@@ -58,26 +57,13 @@ app.kitFields = [
         }
     },
 
-    {   // есть нужно ли сохранять изменения в view
-        name   : 'isModify',
-        type   : 'boolean',
-        default: false,
-        model  : true
-    },
-
-    {   // время последнего изменения в view
-        name   : 'modifyLastTime',
-        type   : 'number',
-        default: 0,
-        model  : true
-    },
-
     {   // не загружать вкладку, пока она не будет выбрана
         name   : 'tabDiscardCreate',
         type   : 'boolean',
+        private: true,
         default: true,
+        kit    : true,
         model  : true,
-        store  : true,
 
         valid(val) {
             return typeof val === 'boolean';
@@ -95,9 +81,10 @@ app.kitFields = [
     {   // название окна, заданное пользователем
         name   : 'name',
         type   : 'string',
+        private: true,
         default: '',
+        kit    : true,
         model  : true,
-        store  : true,
         valid(val) {
             return typeof val === 'string';
         },
@@ -109,9 +96,10 @@ app.kitFields = [
     {   // заданное пользователем
         name   : 'title',
         type   : 'string',
+        private: true,
         default: '',
+        kit    : true,
         model  : true,
-        store  : true,
         valid(val) {
             return typeof val === 'string';
         },
@@ -123,9 +111,10 @@ app.kitFields = [
     {   // заданное пользователем
         name   : 'note',
         type   : 'string',
+        private: true,
         default: '',
+        kit    : true,
         model  : true,
-        store  : true,
         valid(val) {
             return typeof val === 'string';
         },
@@ -138,7 +127,7 @@ app.kitFields = [
         name   : 'tabActive',
         type   : 'number',
         default: 0,
-        store  : true,
+        model  : true,
         valid(val) {
             return typeof val === 'number' ? val >= 0 : false;
         },
@@ -151,9 +140,10 @@ app.kitFields = [
     {   // сохранять состояние закрытых вкладок
         name   : 'tabClosed',
         type   : 'boolean',
+        private: true,
         default: true,
+        kit    : true,
         model  : true,
-        store  : true,
         valid(val) {
             return typeof val === 'boolean';
         },
@@ -165,9 +155,10 @@ app.kitFields = [
     {   // сохранять историю url
         name   : 'tabHistory',
         type   : 'boolean',
+        private: true,
         default: false,
+        kit    : true,
         model  : true,
-        store  : true,
         valid(val) {
             return typeof val === 'boolean';
         },
@@ -187,8 +178,7 @@ app.kitFields = [
         type   : 'string',
         default: '',
         view   : true,
-        store  : true,
-
+        model  : true,
         options: [
             'fullscreen',
             'minimized',
@@ -210,7 +200,7 @@ app.kitFields = [
         type   : 'number',
         default: 0,
         view   : true,
-        store  : true,
+        model  : true,
         valid(val) {
             return typeof val === 'number' ? val >= 0 : false;
         },
@@ -225,7 +215,7 @@ app.kitFields = [
         type   : 'number',
         default: 0,
         view   : true,
-        store  : true,
+        model  : true,
         valid(val) {
             return typeof val === 'number' ? val >= 0 : false;
         },
@@ -241,7 +231,7 @@ app.kitFields = [
         type   : 'number',
         default: 0,
         view   : true,
-        store  : true,
+        model  : true,
         valid(val) {
             return typeof val === 'number' ? val >= 0 : false;
         },
@@ -256,7 +246,7 @@ app.kitFields = [
         type   : 'number',
         default: 0,
         view   : true,
-        store  : true,
+        model  : true,
         valid(val) {
             return typeof val === 'number' ? val >= 0 : false;
         },

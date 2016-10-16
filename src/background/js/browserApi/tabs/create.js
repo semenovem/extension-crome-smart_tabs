@@ -1,10 +1,12 @@
 /**
  * @type {object} создание новой вкладки
  *
- *
+ * todo не готов метод, не использовать
  */
-app.browserApi.tabs.create = function(recordTab) {
-    const createData = this.recordKitToOpen(recordKit);
+app.browserApi.tabs.create = function(model) {
+    const createData = this.recordKitToOpen(model);
+
+
 
     let timer;
     return new Promise((resolve, reject) => {
