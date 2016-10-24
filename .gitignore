@@ -5,3 +5,6 @@ build/
 !.eslintrc
 !.eslintignore
 node_modules/
+
+#log files
+.log
