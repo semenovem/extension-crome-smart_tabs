@@ -13,26 +13,17 @@ app.controllerMsg = {
     // </debug>
 
     /**
-     * Вызываемые методы
-     * все методы имеют this === этот объект
-     *
-     */
-    methods: {},
-
-    /**
-     *  Биндинг методов объекта
-     *  Биндинг методов на всех уровнях вложенности methods
+     * Указать контекст для метода
      *
      */
     init() {
-        this._app.binding(this);
-        this._app.recursiveBinding(this.methods, this);
+        this._onMessage = this._onMessage.bind(this);
     },
 
     /**
      * Сообщения от вкладок
      */
-    add() {
+    enable() {
         this._app.browserApi.runtime.onMessage.addListener(this._onMessage);
     },
 
@@ -45,27 +36,38 @@ app.controllerMsg = {
      * @private
      */
     _onMessage(request, sender, callback) {
-        const { exist, value } = this._app.util.getDeepProp(request.method, this.methods);
 
-     //   console.log ('controllerMsgPopup', request, sender);
+        //console.log ('controllerMsgPopup', request, sender);
 
-        if (exist && typeof value === 'function') {
-            return value(request.params, callback);
+        const handler = this._app.getMsgHandler(request.method);
+
+        // <dedug>
+        typeof handler === 'function' || console.error('handler можнт быть только функцией', handler);
+        // todo здесь обработать исключение - страница запросила неизвестный метод
+        // </debug>
+
+        if (handler) {
+            handler.call(
+                this._app,
+                request.params
+            )
+                .then(this._success.bind(this, callback))
+                .catch(this._error.bind(this, callback));
+
+            return true;
         }
 
-        callback({
-            error: 'Нет метода: ' + request.method
-        });
+        this._error(callback, 'Нет метода: ' + request.method);
         return false;
     },
 
     /**
      * Подготовка ответа для клиента
-     * @param {*} body данные
      * @param {function} callback
+     * @param {*} body данные
      * @private
      */
-    _success(body, callback) {
+    _success(callback, body) {
         callback({
             success: true,
             body
@@ -74,13 +76,13 @@ app.controllerMsg = {
 
     /**
      * Вернуть ответ ошибки
-     * @param {string} error текст сообщения
      * @param {function} callback
+     * @param {*} body данные
      */
-    _failure(error, callback) {
+    _error(callback, body) {
         callback({
             success: false,
-            error
+            error: body
         });
     }
 };

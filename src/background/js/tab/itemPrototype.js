@@ -77,22 +77,28 @@ app.TabItemPrototype = app.TabItem.prototype = {
     // ################################################
 
     /**
-     * Вкладка закрыта
+     * Вкладка закрыта из-за закрытия окна браузера
      */
-    closed() {
-        if (!this.isClosed) {
-            this.isClosed = true;
-            this.remove();
-        }
+    kitWasClosed() {
+        this.destroy();
     },
 
-
+    /**
+     * Вкладка закрыта
+     */
+    removed() {
+        this.destroy();
+    },
 
     /**
-     * Удаление модели вкладки
+     * Удаление объекта
      */
-    remove() {
-        this._app.tabCollect.removeItem(this.id);
+    destroy() {
+        if (this.status !== 'removed') {
+            this._app.tabCollect.removeItem(this.id);
+            this.status = 'removed';
+
+        }
     },
 
 
@@ -102,8 +108,51 @@ app.TabItemPrototype = app.TabItem.prototype = {
     active() {
         return this._app.browserApi.tabs.update(this.id, { active: true })
             // <debug>
-            .then(tabView => console.log ('tab was activated ', tabView));
+        //    .then(tabView => console.log ('tab was activated ', tabView));
         // </debug>
     },
+
+    /**
+     * Вкладка была активирована
+     */
+    activated() {
+        console.log ('tab activated');
+        if (this.discarded) {
+
+        }
+    },
+
+    /**
+     * Выгрузить вкладку
+     */
+    discard() {
+        if (!this.discarded) {
+            this.discarded = true;
+        }
+    },
+
+
+    /**
+     * setter установить статус
+     * @param status
+     * @return {object}
+     */
+    setStatus(status) {
+        if (this.status !== status) {
+            this.status = status;
+        }
+        return this;
+    },
+
+    /**
+     * getter получение статуса
+     * @return {object}
+     */
+    getStatus() {
+        return this.status;
+    }
+
+
+
 
 };

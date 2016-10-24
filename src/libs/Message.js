@@ -1,14 +1,16 @@
 /**
  * Объект сообщений для передачи / получения данных с фоновой страницей расширения
  *
- * @return {Function}
+ * @return {function}
  */
 function Message(page) {
     /**
      * Выполнение запроса к фоновой странице
      * @param {string} method какой метод вызывается
-     * @param {object} params объект с параметрами
-     * @return {Promise.<T>}
+     * @param {object} [params] объект с параметрами
+     * @return {Promise.<*>}
+     *
+     *
      */
     function msg(method, params) {
         return new Promise((resolve, reject) => {
@@ -38,15 +40,18 @@ function Message(page) {
     /**
      * Подготовка параметров для запроса
      * @param {string} method
-     * @param {object} params
+     * @param {object} [params]
      * @return {object}
      */
     function prepProps(method, params) {
-        return {
+        const result = {
             page,
-            method,
-            params
+            method
+        };
+        if (params) {
+            result.params = params;
         }
+        return result;
     }
 
 
@@ -59,21 +64,11 @@ function Message(page) {
      */
     function prepResponse(resolve, reject, data) {
         if (data && typeof data === 'object' && Array.isArray(data) === false && data.success) {
-            const body = data.body && typeof data.body === 'object' && !Array.isArray(data.body) ?
-                data.body : { body: data.body };
 
-            resolve({
-                success: true,
-                error: data.error,
-                body: body
-            });
+            resolve(data.body);
         } else {
-            reject({
-                // <debug>
-                error: data,
-                // </debug>
-                success: false
-            });
+
+            reject(data);
         }
     }
 }

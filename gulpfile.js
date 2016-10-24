@@ -40,8 +40,8 @@ gulp.task('build', ['build-clear'], function() {
     // ################################################
     // icon for omnibox
     // ################################################
-    gulp.src('src/omnibox/icon.png')
-    	.pipe(gulp.dest('build/'));
+    //gulp.src('src/omnibox/icon.png')
+    //	.pipe(gulp.dest('build/'));
 
 
     // ################################################

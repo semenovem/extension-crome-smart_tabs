@@ -13,25 +13,38 @@
       <link href="popup.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <div class="title">окно настроек и быстрых действий</div>
 
 
     <div id="status0"></div>
     <div id="status"></div>
 
 
-    <div> Открыть пустое окно </div>
-    <button class="open-blank" id="blank">Открыть</button>
-
-
-
-
+    <!-- -->
     <div class="kit-name">
         <div class="kit-name__title">Название окна</div>
-        <div class="kit-name__wrap">
-            <input class="kit-name__input" type="text">
+            <div class="kit-name__wrap">
+                <input class="kit-name__input" type="text">
+            </div>
         </div>
     </div>
+
+
+    <!-- кнопка создания пустого окна -->
+    <div class="tab-create-blank">
+        <div class="tab-create-blank__title">Открыть пустое окно</div>
+        <button class="tab-create-blank__create">Открыть</button>
+    </div>
+
+
+    <!-- открытые окна -->
+    <div class="open-kits">
+        <div class="open-kits__title">Открытые окна</div>
+        <div class="open-kits__container">
+            <!-- сюда помещаются загруженные превью открытых окон -->
+        </div>
+    </div>
+
+
 
 
     <section>

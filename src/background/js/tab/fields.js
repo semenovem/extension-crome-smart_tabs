@@ -6,12 +6,11 @@ app.tabFields = [
     {
         name       : 'id',
         type       : 'number',
+        private    : true,
         view       : true,
         tab        : true,
         requireView: true,
         requireTab : true,
-        private    : true,
-
         valid(val) {
             return val > 0;
         },
@@ -35,6 +34,27 @@ app.tabFields = [
             return isFinite(num) ? num : null;
         }
     },
+
+
+    // состояние объекта
+    {
+        name   : 'status',
+        type   : 'string',
+        default: 'loading',
+        tab    : true,
+        options: [
+            'loading',
+            'removed',
+            'complete'
+        ],
+        valid(val) {
+            return typeof val === 'string' ? this.options.indexOf(val) !== -1 : false
+        },
+        normalize(val) {
+            return this.valid(val) ? val : null;
+        }
+    },
+
 
     {   // сохранение истории
         name   : 'history',
@@ -62,6 +82,7 @@ app.tabFields = [
     {   // адрес
         name        : 'url',
         type        : 'string',
+        private     : true,
         default     : '',
         view        : true,
         tab         : true,
@@ -77,12 +98,13 @@ app.tabFields = [
         }
     },
 
-    {   //
+    {   // оглавление страницы
         name   : 'title',
         type   : 'string',
         private: true,
         default: '',
         view   : true,
+        tab    : true,
         model  : true,
         valid(val) {
             return typeof val === 'string';
@@ -98,6 +120,7 @@ app.tabFields = [
         private: true,
         default: '',
         view   : true,
+        tab    : true,
         model  : true,
         valid(val) {
             return typeof val === 'string';

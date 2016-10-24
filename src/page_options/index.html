@@ -1,32 +1,42 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Options</title>
-      <script src="libs/Message.js" defer></script>
-      <script src="options.js" defer></script>
-      <link href="options.css" rel="stylesheet" type="text/css">
-  </head>
-  <body>
-    <h2>Настройки</h2>
+    <script src="libs/Message.js" defer></script>
+    <script src="options.js" defer></script>
+    <link href="options.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h2>Настройки</h2>
+<div>
+    <input type="number" min="0" max="100000">
+    (ms) задержка перед стартом расширения
+</div>
+<div>
+    <input type="checkbox">
+    отслеживать перемещение вкладок внутри окна (chrome.tabs.onMoved)
+</div>
 
-    <div>
-        <input type="number" min="0" max="100000">
-        (ms) задержка перед стартом расширения
-    </div>
-
-    <div>
-        <input type="checkbox">
-        отслеживать перемещение вкладок внутри окна (chrome.tabs.onMoved)
-    </div>
+<div>
+    <input type="checkbox">
+    сохранять историю у каждой вкладки, при восстановлении будет работать переход "вперед-назад"
+</div>
 
 
-    Favorite color:
+<div>
     <select id="color">
         <option value="red">red</option>
         <option value="green">green</option>
         <option value="blue">blue</option>
         <option value="yellow">yellow</option>
-    </select>
+    </select> цвет чего либо
+</div>
 
-  </body>
+
+<div>
+    <input type="checkbox">
+    отслеживать закрытие вкладок (chrome.tabs.onRemoved)
+</div>
+
+</body>
 </html>

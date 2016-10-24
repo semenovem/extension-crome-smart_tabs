@@ -24,7 +24,7 @@
 14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:215:5)
 15 verbose pkgid smart-tabs@0.0.0
 16 verbose cwd /Users/join/www/extensions/chrome/smart_tabs
-17 error Darwin 15.6.0
+17 error Darwin 16.0.0
 18 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "run" "dev"
 19 error node v6.3.1
 20 error npm  v3.10.6

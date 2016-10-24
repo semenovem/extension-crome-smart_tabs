@@ -17,16 +17,16 @@ const app = {
     },
 
     /**
-     * @type {object} модель текущего окна
+     * @type {object} модель текущего окна (это данные: название окна, нужно ли сохранять историю вкладок и т.д.)
+     * Эти данные передает расширение (страница background)
      */
     _model: null,
 
     /**
-     *
+     * точка старта
      */
     init() {
         this.msg = Message('popup');
-        //this.ready = Ready();
         this.binding(this, this);
 
         this.browserApi.windows.getCurrent()
@@ -34,20 +34,18 @@ const app = {
                 this._kitId = info.id;
 
                 // todo для отладки
-                document.querySelector('#status')
-                    .innerHTML = 'info ID: ' + info.id;
+                document.querySelector('#status').innerHTML = 'info ID: ' + info.id;
 
                 // получение информации по окну
-                return this.msg('kit.get.model', {
+                return this.msg('kit.model.get', {
                     kitId: this._kitId
                 });
             })
-            .then(data => {
-                this._model = data.body.model;
+            .then(model => {
+                this._model = model;
             })
             .then(this.executionInits)
-            .catch(e => console.warn(e));
-
+            .catch(e => console.warn(e, 'popup init error. Не прошла инициализация'));
     },
 
     /**
@@ -138,4 +136,4 @@ const app = {
 
 };
 
-window.addEventListener('DOMContentLoaded', app.init.bind(app))
+window.addEventListener('DOMContentLoaded', app.init.bind(app));

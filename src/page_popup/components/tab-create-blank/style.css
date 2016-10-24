@@ -1,0 +1,17 @@
+
+.tab-create-blank {
+	margin: 2vh 0;
+	width: 90vw;
+}
+
+.tab-create-blank__title {
+	font-size: 0.9rem;
+	color: #cccccc;
+}
+
+
+
+.tab-create-blank__create {
+	font-size: 1.2rem;
+}
+

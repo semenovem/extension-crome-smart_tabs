@@ -23,7 +23,6 @@ app.kitFields = [
         requireView : true,    // обязательное для объекта события
         requireKit  : true,    // обязательное для создания экземпляра
         requireModel: false,   // обязательное для сохраненных данных
-
         /**
          * Валидация
          * @param {number} val
@@ -42,6 +41,25 @@ app.kitFields = [
         normalize(val) {
             const num = +val;
             return isFinite(num) ? num : null;
+        }
+    },
+
+    // состояние объекта
+    {
+        name   : 'status',
+        type   : 'string',
+        default: 'loading',
+        kit    : true,
+        options: [
+            'loading',      // у окна с таким статусом не обрабатываем события вкладок onActive, onMoved
+            'removed',
+            'complete'      // от момента создания
+        ],
+        valid(val) {
+            return typeof val === 'string' ? this.options.indexOf(val) !== -1 : false
+        },
+        normalize(val) {
+            return this.valid(val) ? val : null;
         }
     },
 
@@ -64,7 +82,6 @@ app.kitFields = [
         default: true,
         kit    : true,
         model  : true,
-
         valid(val) {
             return typeof val === 'boolean';
         },

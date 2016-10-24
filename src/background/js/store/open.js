@@ -85,9 +85,6 @@ app.storeOpen = {
         return this._getItemKey();
     },
 
-
-
-
     /**
      * Сохранение записи
      * @param {string} itemKey ключ, по которому записать в localStorage
@@ -111,10 +108,6 @@ app.storeOpen = {
         });
     },
 
-
-
-
-
     /**
      * Перенос записи в store для хранения недавно закрытых окон
      * @param {string} itemKey ключ записи
@@ -125,11 +118,6 @@ app.storeOpen = {
             .then(this._app.storeRecent.add)
         //       .then(() => this._removeItem(itemKey))
     },
-
-
-
-
-
 
     // ################################################
     // сереализация / десереализация данных
@@ -147,13 +135,13 @@ app.storeOpen = {
         catch (e) {
             data = null;
             this._app.log({
-                name: 'Не удалось преобразовать в json', model,
+                name : 'Не удалось преобразовать в json',
+                model,
                 event: e
             });
         }
         return data;
     },
-
 
     /**
      * Достаем данные из сохранения
@@ -176,28 +164,28 @@ app.storeOpen = {
 
             // валидировать вкладки
             kitModel.tabs = kitRaw.tabs.map(tabRaw => {
-                const tabModel = {};
+                    const tabModel = {};
 
-                this._app.tabFields
-                    .filter(field => field.model && field.name in tabRaw)
-                    .forEach(field => {
-                        const name = field.name;
-                        const value = field.normalize(tabRaw[name]);
-                        if (field.valid(value)) {
-                            tabModel[name] = value;
-                        }
-                    });
+                    this._app.tabFields
+                        .filter(field => field.model && field.name in tabRaw)
+                        .forEach(field => {
+                            const name = field.name;
+                            const value = field.normalize(tabRaw[name]);
+                            if (field.valid(value)) {
+                                tabModel[name] = value;
+                            }
+                        });
 
-                let valid = this._app.tabFields
-                    .filter(field => field.requireStore)
-                    .every(field => field.name in tabModel);
-                return valid ? tabModel : null;
-            })
+                    let valid = this._app.tabFields
+                        .filter(field => field.requireStore)
+                        .every(field => field.name in tabModel);
+                    return valid ? tabModel : null;
+                })
                 .filter(tabModel => tabModel);
 
             const valid = kitModel.tabs.length && this._app.kitFields
-                .filter(field => field.requireModel)
-                .every(field => field.name in kitModel);
+                    .filter(field => field.requireModel)
+                    .every(field => field.name in kitModel);
 
             if (valid) {
                 return kitModel;
@@ -211,11 +199,6 @@ app.storeOpen = {
         }
         return null;
     },
-
-
-
-
-
 
     // ################################################
     // низко-уровневые операции чтения / изменения данных

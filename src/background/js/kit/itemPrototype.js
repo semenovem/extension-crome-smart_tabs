@@ -141,7 +141,10 @@ app.KitItemPrototype = app.KitItem.prototype = {
             .filter(field => field.model && field.name in tmp)
             .filter(field => 'default' in field === false || field.default !== tmp[field.name])
             .forEach(field => model[field.name] = tmp[field.name]);
-
+        
+        // <debug>
+        Array.isArray(view.tabs) || console.warn('view.tabs должет быть массивом. view: ', view);
+        // </debug>
         // данные вкладок
         model.tabs = view.tabs.map(tabView => this._app.tabCollect
             .getByView(tabView)
@@ -183,18 +186,23 @@ app.KitItemPrototype = app.KitItem.prototype = {
     // ################################################
 
     /**
-     * Окно закрыто
+     * Событие удаление окна
      */
-    closed() {
+    removed() {
+        console.log('event onRemoved window', this.id);
 
-        console.log('event close window', this.id);
-        this.modify.destroy();
+        if (this.status !== 'removed') {
+            this.status = 'removed';
 
-        this._app.kitCollect.removeItem(this.id);
-        if (this._itemKey) {
-            this._app.storeOpen.moveToRecent(this._itemKey);
+            this.modify.destroy();
+
+            this._app.kitCollect.removeItem(this.id);
+            if (this._itemKey) {
+                this._app.storeOpen.moveToRecent(this._itemKey);
+            }
         }
     },
+
 
     /**
      * setter Установить имя окна
@@ -215,6 +223,26 @@ app.KitItemPrototype = app.KitItem.prototype = {
      */
     getName() {
         return this.name;
+    },
+
+    /**
+     * setter установить статус
+     * @param status
+     * @return {object}
+     */
+    setStatus(status) {
+        if (this.status !== status) {
+            this.status = status;
+        }
+        return this;
+    },
+
+    /**
+     * getter получение статуса
+     * @return {object}
+     */
+    getStatus() {
+        return this.status;
     }
 
 };

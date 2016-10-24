@@ -169,20 +169,6 @@ var app = {
     },
 
     /**
-     * Рекурсивный биндинг методов объекта
-     * @param {object} obj ообъект, методам которого биндим контекст
-     * @param {object} [scope] контекст
-     */
-    recursiveBinding(obj, scope) {
-        this.binding(obj, scope);
-        for (let key in obj) {
-            if (obj.hasOwnProperty(key) && obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-                this.recursiveBinding(obj[key], scope);
-            }
-        }
-    },
-
-    /**
      * Задержка перед запуском приложения
      * @return {Promise<void>}
      * @private
@@ -194,36 +180,28 @@ var app = {
     },
 
     /**
-     * Список свойств, которые нужно добавить в объекты
+     * Методы для обработки сообщений от окон
      */
-    _propsToObj: [],
+    _msgHandlers: Object.create(null),
 
     /**
-     * Добавить свойство в объект
-     * Добавление будет когда все данные(файлы) будут загружены
+     * Добавить функцию в список
+     * Функции являются обработчиками сообщений от окон
      *
-     * @param {string} path путь / имя метода(или объекта)
-     * @param {*} content
+     * @param {string} name путь-название обработчка
+     * @param {*} handler содержимое обработчика
      */
-    defineProp(path, content) {
-        this._propsToObj.push({
-            path   : path,
-            content: content
-        });
+    defineMsgHandler(name, handler) {
+        this._msgHandlers[name] = handler;
     },
 
     /**
-     * Добавление свойств в объект
-     * @private
+     * Получить обработчик с именем
+     * @param {string} name путь-название обработчка
+     * @return {function}
      */
-    _addPropsToObj() {
-        this._propsToObj.forEach(item => {
-            const pathKeys = item.path.split('.');
-            const propName = pathKeys.pop();
-            pathKeys.reduce((obj, key) => {
-                return obj[key] && typeof obj[key] === 'object' && obj[key] || (obj[key] = {});
-            }, this)[propName] = item.content;
-        });
+    getMsgHandler(name) {
+        return this._msgHandlers[name]
     },
 
     /**
@@ -240,7 +218,6 @@ var app = {
         }
 
         this.ready = this.Ready();
-        this._addPropsToObj();
 
         this.executionInits();                      // инициализация
 
@@ -248,8 +225,8 @@ var app = {
             .then(this._timeout.bind(this))
             .then(this.ready.resolve)               // здесь подготовлен необходимый минимум приложения
             .then(() => {
-                this.controllerEvent.add();
-                this.controllerMsg.add();
+                this.controllerEvent.enable();
+                this.controllerMsg.enable();
                 //this.controllerMsgPopup.add();
                 //this.controllerMsgOptions.add();
                 this.systemIdle.run();
@@ -305,9 +282,6 @@ var app = {
             })
             // удаление не используемых методов
             .then(() => {
-                this.defineProp = null;
-                this._addPropsToObj = null;
-                this._propsToObj = null;
                 this.init = null;
                 this._timeout = null;
                 this.executionInits = null;

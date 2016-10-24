@@ -55,7 +55,20 @@ app.create = {
         //    }
         //];
 
-        //console.log ('app.create.kit:: record', record.model);
+        /*
+
+          проверить состояние вкладки:
+          если вкладка discarded
+          поставить адрес пустой страницы
+
+          ----
+          при записи - не записывать url пустой страницы, сохраняя тот, который был до подмены
+
+
+         */
+
+
+      //  console.log ('app.create.kit:: record', record.model);
 
         //console.log (111, this._app.browserApi.windows.recordKitToOpen(record.model))
 
@@ -74,7 +87,7 @@ app.create = {
                     model: record.model
                 });
 
-                // активация вкладки
+                // активация вкладки (переключение на сохраненную активную)
                 if (record.model.tabActive) {
                     const tabView = view.tabs[record.model.tabActive];
                     if (tabView) {
@@ -82,6 +95,11 @@ app.create = {
                         tab && tab.active();
                     }
                 }
-            });
+
+                return kit;
+            })
+            .then(kit => {
+                kit.setStatus('complete');
+            })
     }
 };
