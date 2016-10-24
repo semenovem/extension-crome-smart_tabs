@@ -72,12 +72,10 @@ app.controllerEvent = {
 
 
 
-
-
     /**
      * Добавление обработчиков событий
      */
-    add() {
+    enable() {
         const api = this._app.browserApi;
 
         api.tabs.onCreated.addListener(this._createdTab);
@@ -135,9 +133,9 @@ app.controllerEvent = {
         const tab = this._app.tabCollect.getById(info.tabId);
 
         if (info.isKitClosing) {
-            tab && tab.remove();
+            tab && tab.kitWasClosed();
         } else {
-            tab && tab.closed();
+            tab && tab.removed();
             const kit = this._app.kitCollect.getById(info.kitId);
             kit && kit.modify();
         }
@@ -150,7 +148,7 @@ app.controllerEvent = {
      */
     _removedKit(id) {
         const kit = this._app.kitCollect.getById(id);
-        kit && kit.closed();
+        kit && kit.removed();
     },
 
 
@@ -166,17 +164,27 @@ app.controllerEvent = {
 
     /**
      * Вкладка получила фокус
+     * Обрабатывать окна только со статусом "complete"
      * @param {object} info
      */
     _activatedTab(info) {
         const kit = this._app.kitCollect.getById(info.kitId);
 
-//        console.log('tab _onActivated', info);
-
         // есть объект окна
         if (kit) {
+            if (kit.getStatus() !== 'complete') {
+                return;
+            }
             kit.modify();
         }
+        const tab = this._app.tabCollect.getById(info.tabId);
+    //    console.log('tab _onActivated', kit.getStatus(),  info);
+
+        if (tab) {
+            tab.activated();
+        }
+
+
     },
 
     /**
@@ -187,6 +195,9 @@ app.controllerEvent = {
         //console.log('tab _onMoved', info);
         const kit = this._app.kitCollect.getById(info.kitId);
         if (kit) {
+            if (kit.getStatus() !== 'complete') {
+                return;
+            }
             kit.modify();
         }
     },

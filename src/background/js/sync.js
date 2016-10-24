@@ -32,7 +32,10 @@ app.sync = {
             .then(views => views.map(this._app.kitCollect.getByView))
 
             // ожидание готовности окон - когда их состояние станет resolve
-            .then(kits => Promise.all(kits.map(kit => kit.ready())))
+            .then(kits => Promise.all(kits.map(kit => {
+                kit.setStatus('complete');
+                return kit.ready();
+            })))
             .catch(e => {
                 console.warn('sync.openedKits', e);
                 console.warn('Не удалось получение текущего состояния открытых окон и вкладок');

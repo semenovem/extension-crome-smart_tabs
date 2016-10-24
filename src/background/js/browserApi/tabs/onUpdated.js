@@ -51,7 +51,7 @@ app.browserApi.tabs.onUpdated = {
 
     // <debug>
     // поля объекта события
-    // tabId, changeInfo, eDataTab
+    // tabId, changeInfo, tabEvent
     // </debug>
 
 
@@ -68,12 +68,11 @@ app.browserApi.tabs.onUpdated = {
 
         // пропустить только события, которые сообщают об изменении свойств:
         // url, title, favIconUrl
+     //   console.log (tabId, changeInfo, tabEvent);
 
         if ('url' in changeInfo === false && 'title' in changeInfo === false && 'favIconUrl' in changeInfo === false) {
             return;
         }
-
-        //console.log (tabId, changeInfo);
 
         // большего разбора пока не требуется. Есть данные по вкладке
 

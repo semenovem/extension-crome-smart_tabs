@@ -2,7 +2,7 @@
  * @type {object} получение данных всех открытых окон
  *
  * @param {object} [params] параметры
- * @return {Promise.<Array>}
+ * @return {Promise.<Array>} массив view открытых окон
  */
 app.browserApi.windows.getAll = function(params) {
     let timer;

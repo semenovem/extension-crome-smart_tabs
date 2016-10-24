@@ -1,9 +1,9 @@
 /**
- * Создание пустого окна
+ * Получить недавно закрытые окна
  * @param {object} params
  * @param {function} callback
  */
-app.defineProp('controllerMsg.methods.tab.create.blank', function(params, callback) {
+app.defineMsgHandler('recent.kits.get', function(params, callback) {
     let valid;
     const kit = this._app.kitCollect.getById(+params.kitId);
 
@@ -33,14 +33,22 @@ app.defineProp('controllerMsg.methods.tab.create.blank', function(params, callba
     }
 });
 
-
-
-/*
- chrome.tabs.create(
- {
- url: 'chrome-extension://ekekhdhcpbbhfldpaoelpcpebkcmnkjh/blank.html',
- active: false
- },
- sendResponse
- );
- */
+//
+///*
+//
+// /**
+// * Данные недавно закрытых окон для demo
+// * @param [params]
+// * @returns {Promise.<T>}
+// * @private
+// */
+//_kitRecent(params) {
+//    return this._app.storeRecent.getRecords()
+//        .then(records => records.map(record => {
+//                record.demoKit = this._app.kitConv.storedToDemo(record.storedKit);
+//                delete record.storedKit;
+//                return record;
+//            })
+//        );
+//}
+// */

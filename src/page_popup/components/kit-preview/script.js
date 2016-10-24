@@ -1,9 +1,9 @@
 /**
- * Название текущего окна
+ * Превью окна
  *
  *
  */
-app.addCmp('kit-name', {
+app.addCmp('kit-preview', {
     // <debug>
     /**
      * Объект приложения
@@ -22,24 +22,24 @@ app.addCmp('kit-name', {
      */
     init() {
         this._app.binding(this);
-
-        this.modify = Modify({
-            delay   : 1000,
-            callback: this.save
-        });
-
-        // при клике на компонент передать фокус полю ввода
-        document.querySelector('.kit-name').addEventListener('click', this.active);
-
-        // обработчикик на события поля воода
-        this._elInput = document.querySelector('.kit-name__input');
-
-        // установить значение в поле. текущее навание окна получим из модели
-        this._elInput.value = this.normalize(this._app.getPropModel('name'));
-
-        // обработчкики событий поля ввода
-        this._elInput.addEventListener('blur', this.modify.run);
-        this._elInput.addEventListener('input', this.modify);
+        //
+        //this.modify = Modify({
+        //    delay   : 1000,
+        //    callback: this.save
+        //});
+        //
+        //// при клике на компонент передать фокус полю ввода
+        //document.querySelector('.kit-name').addEventListener('click', this.active);
+        //
+        //// обработчикик на события поля воода
+        //this._elInput = document.querySelector('.kit-name__input');
+        //
+        //// установить значение в поле. текущее навание окна получим из модели
+        //this._elInput.value = this.normalize(this._app.getPropModel('name'));
+        //
+        //// обработчкики событий поля ввода
+        //this._elInput.addEventListener('blur', this.modify.run);
+        //this._elInput.addEventListener('input', this.modify);
     },
 
     /**
@@ -82,7 +82,7 @@ app.addCmp('kit-name', {
             .then(data => {
                 // todo сделать валидацию ожидаемого значения
 
-                this._app.setPropModel('name', data.nameNew);
+                this._app.setPropModel('name', data.body.nameNew);
             })
             .catch(e => console.warn('kit name save msg catch', e))
     },
