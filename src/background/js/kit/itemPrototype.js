@@ -141,7 +141,7 @@ app.KitItemPrototype = app.KitItem.prototype = {
             .filter(field => field.model && field.name in tmp)
             .filter(field => 'default' in field === false || field.default !== tmp[field.name])
             .forEach(field => model[field.name] = tmp[field.name]);
-        
+
         // <debug>
         Array.isArray(view.tabs) || console.warn('view.tabs должет быть массивом. view: ', view);
         // </debug>

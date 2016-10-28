@@ -1,0 +1,28 @@
+.kit-action-mac {
+	display: flex;
+}
+
+.kit-action-mac__close,
+.kit-action-mac__collapse,
+.kit-action-mac__expand {
+	border-radius: 50%;
+	border: 1px solid;
+	width: 12px;
+	height: 12px;
+	margin-right: 5px;
+}
+
+.kit-action-mac__close {
+	background-color: #fc635d;
+	border-color: #de4643;
+}
+
+.kit-action-mac__collapse {
+	background-color: #fdbe41;
+	border-color: #dd9e33;
+}
+
+.kit-action-mac__expand {
+	background-color: #36cf4c;
+	border-color: #26a934;
+}

@@ -43,7 +43,7 @@ app.util = {
      *
      * @param {object} target к этому объекту добавить свойства из source
      * @param {object} source добавляются его свойства
-     * @return {object} возвращает новый объект
+     * @return {object} новый объект
      */
     objectMerge(target, source) {
         const result = target && typeof target === 'object' ? Object.assign({}, target) : {};
