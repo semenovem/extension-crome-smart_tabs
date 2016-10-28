@@ -31,10 +31,10 @@ app.addCmp('tab-create-blank', {
      * Сохранение изменений
      */
     create() {
-        return this._app.msg('tab.create.blank', {})
+        return this._app.msg('tab.blank.create', {})
             .then(data => {
             })
-            .catch(e => console.warn('tab.create.blank catch', e))
+            .catch(e => console.warn('tab.blank.create catch', e))
     }
 
 });

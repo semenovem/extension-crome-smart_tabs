@@ -1,76 +1,74 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Getting Started Extension's Popup</title>
-      <script src="popup.js"></script>
-      <script src="libs/Message.js"></script>
-      <script src="libs/Modify.js"></script>
-      <script src="libs/Ready.js"></script>
-      <script src="libs/browserApi/browserApi.js"></script>
-      <script src="libs/browserApi/windows/windows.js"></script>
-      <script src="libs/browserApi/windows/getCurrent.js"></script>
-
-      <link href="popup.css" rel="stylesheet" type="text/css">
-  </head>
-  <body>
-
-
+    <script src="popup.js"></script>
+    <script src="libs/Message.js"></script>
+    <script src="libs/Modify.js"></script>
+    <script src="libs/Ready.js"></script>
+    <script src="libs/browserApi/browserApi.js"></script>
+    <script src="libs/browserApi/windows/windows.js"></script>
+    <script src="libs/browserApi/windows/getCurrent.js"></script>
+    <link href="popup.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<nav class="nav">
+    <div class="nav__logo">logo</div>
+    <div class="nav__item nav__item_current">окна</div>
+    <div class="nav__item">настройки</div>
     <div id="status0"></div>
-    <div id="status"></div>
-
-
-    <!-- -->
-    <div class="kit-name">
-        <div class="kit-name__title">Название окна</div>
-            <div class="kit-name__wrap">
-                <input class="kit-name__input" type="text">
-            </div>
-        </div>
+    <div id="status" style="text-align:right; margin-left: 20px; color: #cccccc"></div>
+</nav>
+<!-- открытые окна -->
+<div class="open-kits">
+    <div class="open-kits__title">Открытые окна</div>
+    <div class="open-kits__container">
+        <!-- сюда помещаются загруженные превью открытых окон -->
     </div>
-
-
-    <!-- кнопка создания пустого окна -->
-    <div class="tab-create-blank">
-        <div class="tab-create-blank__title">Открыть пустое окно</div>
-        <button class="tab-create-blank__create">Открыть</button>
+</div>
+<!-- недавно закрытые окна -->
+<div class="recent-kits">
+    <div class="recent-kits__title">Недавно закрытые окна</div>
+    <div class="recent-kits__container">
+        <!-- сюда помещаются загруженные превью недавно закрытых окон -->
+        <template id="recent-kits"></template>
     </div>
+</div>
 
 
-    <!-- открытые окна -->
-    <div class="open-kits">
-        <div class="open-kits__title">Открытые окна</div>
-        <div class="open-kits__container">
-            <!-- сюда помещаются загруженные превью открытых окон -->
-        </div>
+
+
+
+
+<!-- прототип -->
+
+<section>
+    <div class="section-title">Недавно закрытые окна</div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+    <div class="kit-open"></div>
+</section>
+
+
+<!-- name of window (called kit) -->
+<div class="kit-name">
+    <div class="kit-name__title">Название окна</div>
+    <div class="kit-name__wrap">
+        <input class="kit-name__input" type="text">
     </div>
+</div>
 
-
-
-
-    <section>
-        <div class="section-title">Открытые окна</div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-
-    </section>
-
-    <section>
-        <div class="section-title">Недавно закрытые окна</div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-        <div class="kit-open"></div>
-    </section>
-
-  </body>
+<!-- the button to create  blank window (called kit) -->
+<div class="tab-create-blank">
+    <div class="tab-create-blank__title">Открыть пустое окно</div>
+    <button class="tab-create-blank__create">Открыть</button>
+</div>
+</body>
 </html>

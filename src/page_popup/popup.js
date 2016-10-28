@@ -61,8 +61,8 @@ const app = {
         if (!app) {
             app = this;
         }
-        for (key in this._cmp) {
-            obj = this._cmp[key];
+        for (key in this._cmps) {
+            obj = this._cmps[key];
             if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
                 continue;
             }
@@ -99,7 +99,7 @@ const app = {
     /**
      * @type {object} список компонентов
      */
-    _cmp: Object.create(null),
+    _cmps: Object.create(null),
 
     /**
      * Добавление компонента
@@ -111,7 +111,16 @@ const app = {
         // <debug>
         obj['$className'] = name;
         // </debug>
-        this._cmp[name] = obj;
+        this._cmps[name] = obj;
+    },
+
+    /**
+     * Получить компонент
+     * @param {string} name название компонента
+     * @return {object}
+     */
+    getCmp(name) {
+        return this._cmps[name];
     },
 
     /**

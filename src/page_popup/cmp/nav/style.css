@@ -1,0 +1,25 @@
+.nav {
+	background-color: #f3f3f3;
+	height: 2rem;
+	display: flex;
+	justify-content: left;
+	align-items: center;
+	padding: 0.5rem;
+}
+.nav__log {
+
+}
+
+.nav__item {
+	font-size: 1.8em;
+	margin-left: 15px;
+	color: #999999;
+}
+
+
+.nav__item_current {
+	color: #000000;
+}
+
+
+

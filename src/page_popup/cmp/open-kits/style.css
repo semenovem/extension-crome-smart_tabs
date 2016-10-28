@@ -11,9 +11,5 @@
 
 .open-kits__container {
 	display: flex;
-	flex-direction: column;
-
-	/* todo для видимости */
-	background-color: red;
 }
 

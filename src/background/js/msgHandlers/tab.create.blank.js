@@ -1,11 +1,20 @@
 /**
  * Создание пустого окна
+ * context = app
+ *
+ * implementation
+ * подготавливаем параметры открытия нового окна для browserApi
+ * открываем новое окно
+ *
+ *
+ *
+ *
  * @param {object} params
- * @param {function} callback
+ * @param {Promise<object>} модель нового окна
  */
-app.defineMsgHandler('tab.create.blank', function(params, callback) {
-    let valid = true;
+app.defineMsgHandler('tab.blank.create', function(params) {
 
+    // todo переделать на работу с browserApi
     window.chrome.tabs.create(
         {
             url: 'chrome-extension://ekekhdhcpbbhfldpaoelpcpebkcmnkjh/blank.html',
@@ -13,12 +22,5 @@ app.defineMsgHandler('tab.create.blank', function(params, callback) {
         }
     );
 
-    this._success({}, callback);
-
-    return valid ? true : false;
-
-    function failure(e) {
-        this._failure('Не удалось получить данные окна', callback);
-        this._app.log('Не удалось получить данные окна', e);
-    }
+    return Promise.resolve();
 });
