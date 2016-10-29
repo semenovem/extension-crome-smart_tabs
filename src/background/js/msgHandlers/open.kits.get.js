@@ -9,7 +9,7 @@
  * добавление в объект модели дополнительных свойств: id окна
  *
  * @param {object} params {*} не обрабатываем
- * @param {Promise<Array>} массив моделей окон
+ * @param {Promise<Array>} массив dto @class app.dto.kitForPopupOpen
  */
 app.defineMsgHandler('open.kits.get', function() {
     return this.browserApi.windows.getAll({ populate: true })

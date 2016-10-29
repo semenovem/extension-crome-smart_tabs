@@ -144,52 +144,12 @@ app.storeOpen = {
     },
 
     /**
-     * Достаем данные из сохранения
-     * @return {object|null}
+     *
+     * @return {dto.kitTabModel|null}
      */
     unserialization(data) {
         try {
-            const kitRaw = JSON.parse(data);
-            const kitModel = {};
-
-            this._app.kitFields
-                .filter(field => field.model && field.name in kitRaw)
-                .forEach(field => {
-                    const name = field.name;
-                    const value = field.normalize(kitRaw[name]);
-                    if (field.valid(value)) {
-                        kitModel[name] = value;
-                    }
-                });
-
-            // валидировать вкладки
-            kitModel.tabs = kitRaw.tabs.map(tabRaw => {
-                    const tabModel = {};
-
-                    this._app.tabFields
-                        .filter(field => field.model && field.name in tabRaw)
-                        .forEach(field => {
-                            const name = field.name;
-                            const value = field.normalize(tabRaw[name]);
-                            if (field.valid(value)) {
-                                tabModel[name] = value;
-                            }
-                        });
-
-                    let valid = this._app.tabFields
-                        .filter(field => field.requireStore)
-                        .every(field => field.name in tabModel);
-                    return valid ? tabModel : null;
-                })
-                .filter(tabModel => tabModel);
-
-            const valid = kitModel.tabs.length && this._app.kitFields
-                    .filter(field => field.requireModel)
-                    .every(field => field.name in kitModel);
-
-            if (valid) {
-                return kitModel;
-            }
+            return this._app.dto.kitTabModel(JSON.parse(data));
         }
         catch (e) {
             this._app.log({
@@ -242,7 +202,7 @@ app.storeOpen = {
 
                 } else {
                     // удалить не валидные данные
-                    localStorage._removeItem(itemKey);
+                    localStorage.removeItem(itemKey);
                 }
             }
             resolve(records);

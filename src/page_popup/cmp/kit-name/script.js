@@ -119,10 +119,18 @@ app.addCmp('kit-name', {
                 name : nameNew,
                 kitId: this._kitId
             })
-            .then(data => {
-                this._name = data.nameNew;
-                console.log(data);
-            })
+            .then(data => this._name = data.nameNew)
             .catch(e => console.warn('kit name save msg catch', e))
+    },
+
+    /**
+     * Удаление компонента
+     */
+    destroy() {
+        this._el.remove();
+
+        for (const key in this) {
+            this.hasOwnProperty(key) && delete this[key];
+        }
     }
 });

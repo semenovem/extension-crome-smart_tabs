@@ -67,16 +67,16 @@ app.addCmp('kit-preview', {
 
         // кнопки
         instance._cmpAction = this._app.createCmp('kit-action-mac', {
-            elRoot  : el.querySelector('.kit-preview__action'),
-            kitId   : props.id,
+            elRoot: el.querySelector('.kit-preview__action'),
+            kitId : props.id,
 
             close   : this.close.bind(instance),
             closeUse: true,
 
-            collapse: this.collapse.bind(instance),
+            collapse   : this.collapse.bind(instance),
             collapseUse: props.state !== 'minimized',
 
-            expand  : this.expand.bind(instance),
+            expand   : this.expand.bind(instance),
             expandUse: props.state === 'minimized'
         });
 
@@ -103,8 +103,6 @@ app.addCmp('kit-preview', {
         return instance;
     },
 
-
-
     /**
      * Компонент активен
      */
@@ -123,10 +121,22 @@ app.addCmp('kit-preview', {
         }
     },
 
-    // закрыть
+    /**
+     * Закрыть окно браузера
+     * @return {Promise.<T>}
+     */
     close() {
-        console.log('close', this._kitId);
         this._el.classList.add('kit-preview_closed');
+        if (!this._isClosed) {
+            this._isClosed = true;
+        }
+
+        return this._app.msg('kit.remove', {
+                kitId: this._kitId
+            })
+            .then(() => new Promise(fn => setTimeout(fn, 200)))
+            .then(this.destroy.bind(this))
+            .catch(e => console.warn(e));
     },
 
     /**
@@ -138,14 +148,14 @@ app.addCmp('kit-preview', {
             return Promise.resolve();
         }
         return this._app.msg('kit.state.minimized', {
-            kitId: this._kitId
-        })
+                kitId: this._kitId
+            })
             .then(data => {
                 this._state = data.stateNew;
                 this._cmpAction.use({
-                    closeUse: true,
+                    closeUse   : true,
                     collapseUse: false,
-                    expandUse: true
+                    expandUse  : true
                 });
             })
             .catch(e => console.warn(e));
@@ -165,19 +175,33 @@ app.addCmp('kit-preview', {
             .then(data => {
                 this._state = data.stateNew;
                 this._cmpAction.use({
-                    closeUse: true,
+                    closeUse   : true,
                     collapseUse: true,
-                    expandUse: false
+                    expandUse  : false
                 });
 
                 // здесь возвращаем фокус текущему окну,
                 // поскольку при разворачивании окна другого окна, фокус переходит к нему
                 return this._app.msg('kit.focused.set', {
-                    kitId: this._app.getKitId(),
+                    kitId  : this._app.getKitId(),
                     focused: true
                 })
             })
             .catch(e => console.warn(e));
     },
+
+    /**
+     * Удаление компонента
+     */
+    destroy() {
+        this._cmpAction.destroy();
+        this._cmpName.destroy();
+
+        this._el.remove();
+
+        for (const key in this) {
+            this.hasOwnProperty(key) && delete this[key];
+        }
+    }
 
 });

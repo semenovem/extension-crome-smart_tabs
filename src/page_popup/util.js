@@ -17,6 +17,4 @@ app.util = {
         elTmp.innerHTML = html;
         return elTmp.firstElementChild;
     }
-
-
 };

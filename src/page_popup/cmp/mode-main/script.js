@@ -26,7 +26,7 @@ app.addCmp('mode-main', {
             <div class="mode-main__open-kits"></div>
             <div class="mode-main__recent-kits"></div>
         </div>
-   `,
+     `,
 
     /**
      * Создание экземпляра компонента
@@ -43,6 +43,9 @@ app.addCmp('mode-main', {
         this._cmpOpenKits = this._app.createCmp('open-kits', {
             elRoot: el.querySelector('.mode-main__open-kits')
         });
+
+        // недавние окна
+
 
         props.elRoot && props.elRoot.appendChild(instance._el);
 

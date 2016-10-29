@@ -13,7 +13,6 @@ app.addCmp('kit-action-mac', {
     _app: null,
     // </debug>
 
-
     /**
      * шаблон компонента
      */
@@ -40,7 +39,6 @@ app.addCmp('kit-action-mac', {
         instance.active = this.active.bind(instance);
         instance.deactive = this.deactive.bind(instance);
         instance.use = this.use.bind(instance);
-
 
         // dom
         const el = instance._el = this._app.util.htmlToEl(this._html);
@@ -73,7 +71,6 @@ app.addCmp('kit-action-mac', {
         this._elBtnExpand.classList[props.expandUse ? 'add' : 'remove']('kit-action-mac__expand_use');
     },
 
-
     /**
      *
      */
@@ -86,6 +83,17 @@ app.addCmp('kit-action-mac', {
      */
     deactive() {
         this._el.classList.remove('kit-action-mac_active');
+    },
+
+    /**
+     * Удаление компонента
+     */
+    destroy() {
+        this._el.remove();
+
+        for (const key in this) {
+            this.hasOwnProperty(key) && delete this[key];
+        }
     }
 
 });
