@@ -1,6 +1,6 @@
 /**
  * Кнопки для окна
- * mac
+ * ОС mac
  *
  *
  */
@@ -17,7 +17,7 @@ app.addCmp('kit-action-mac', {
     /**
      * шаблон компонента
      */
-    _TEMPLATE: `
+    _html: `
         <div class="kit-action-mac">
             <div class="kit-action-mac__close"></div>
             <div class="kit-action-mac__collapse"></div>
@@ -26,35 +26,66 @@ app.addCmp('kit-action-mac', {
     `,
 
     /**
+     * Создание экземпляра компонента
      *
+     *
+     * @param {object} props
+     * @return {object}
      */
-    init() {
-        this._app.binding(this);
+    createInstance(props) {
+        const instance = Object.create(this);
+        instance._name = props.name;
+        instance._kitId = props.kitId;
 
-        const elTmp = document.createElement('DIV');
-        elTmp.innerHTML = this._TEMPLATE;
-        this._el = elTmp.firstElementChild;
+        instance.active = this.active.bind(instance);
+        instance.deactive = this.deactive.bind(instance);
+        instance.use = this.use.bind(instance);
 
-        delete this._TEMPLATE;
+
+        // dom
+        const el = instance._el = this._app.util.htmlToEl(this._html);
+
+        // buttons
+        instance._elBtnClose = el.querySelector('.kit-action-mac__close');
+        instance._elBtnCollapse = el.querySelector('.kit-action-mac__collapse');
+        instance._elBtnExpand = el.querySelector('.kit-action-mac__expand');
+
+        // handlers
+        instance._elBtnClose.addEventListener('click', props.close);
+        instance._elBtnCollapse.addEventListener('click', props.collapse);
+        instance._elBtnExpand.addEventListener('click', props.expand);
+
+        // use
+        instance.use(props);
+
+        props.elRoot && props.elRoot.appendChild(instance._el);
+
+        return instance;
     },
 
     /**
-     * Создание компонента
-     *
-     *
-     * @param {object} params свойства
-     * @return {object} dom элемент
+     * Установить состояние кнопкам
+     * @param {object} props
      */
-    create(params) {
-        const el = this._el.cloneNode(true);
-
-        el.querySelector('.kit-action-mac__close').addEventListener('click', params.close);
-        el.querySelector('.kit-action-mac__collapse').addEventListener('click', params.collapse);
-        el.querySelector('.kit-action-mac__expand').addEventListener('click', params.expand);
-
-
-        return el;
+    use(props) {
+        this._elBtnClose.classList[props.closeUse ? 'add' : 'remove']('kit-action-mac__close_use');
+        this._elBtnCollapse.classList[props.collapseUse ? 'add' : 'remove']('kit-action-mac__collapse_use');
+        this._elBtnExpand.classList[props.expandUse ? 'add' : 'remove']('kit-action-mac__expand_use');
     },
 
+
+    /**
+     *
+     */
+    active() {
+        this._el.classList.add('kit-action-mac_active');
+    },
+
+    /**
+     *
+     */
+    deactive() {
+        this._el.classList.remove('kit-action-mac_active');
+    }
 
 });

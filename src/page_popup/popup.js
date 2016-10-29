@@ -4,6 +4,26 @@
 const app = {
 
     /**
+     * @type {string} режим работы
+     */
+    _mode: 'main',
+
+    /**
+     * @type {Object} Компонент навигации nav
+     */
+    _cmpNav: null,
+
+    /**
+     * @type {Object} Компонент режима "основной" mode-main
+     */
+    _cmpModeMain: null,
+
+    /**
+     * @type {Object} Компонент режима настроек mode-setup
+     */
+    _cmpModeSetup: null,
+
+    /**
      *
      */
     _kitId: 0,
@@ -24,61 +44,79 @@ const app = {
 
     /**
      * точка старта
+     * создание компонента навигации
+     * получение kitId для текущего окна
+     *
+     * создание компонетов на странице
+     *
+     *
      */
     init() {
         this.msg = Message('popup');
-        this.binding(this, this);
+        this.binding(this, this);       // указать контекст функциям из списка
 
         this.browserApi.windows.getCurrent()
             .then(info => {
                 this._kitId = info.id;
 
-                // todo для отладки
-                document.querySelector('#status').innerHTML = 'info ID: ' + info.id;
-
-                // получение информации по окну
-                return this.msg('kit.model.get', {
-                    kitId: this._kitId
+                // навигация
+                this._cmpNav = this.createCmp('nav', {
+                    setMode: this.setMode,
+                    getMode: this.getMode
                 });
+
+                // основной режим
+                this._cmpModeMain = this.createCmp('mode-main', {
+                    elRoot: document.querySelector('body')
+                });
+
             })
-            .then(model => {
-                this._model = model;
-            })
-            .then(this.executionInits)
             .catch(e => console.warn(e, 'popup init error. Не прошла инициализация'));
     },
 
     /**
-     * Дочерним объектам устанавливаем ссылку на объект приложения
-     * Если есть метод init - синхронно выполняем
-     * После выполнения удаляем init
-     *
-     * @param {object} [app] объект, устанавливаемый в качестве объекта приложения
-     * @private
+     * Установлен новый режим
+     * @param {string} mode
      */
-    executionInits(app) {
-        let key, obj;
-        if (!app) {
-            app = this;
+    setMode(mode) {
+        if (this._mode === mode) {
+            return;
         }
-        for (key in this._cmps) {
-            obj = this._cmps[key];
-            if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
-                continue;
-            }
 
-            obj._app = app;
+        // скрыть текущий
+        switch (this._mode) {
+            case 'main':
+                this._cmpModeMain.hide();
+                break;
+            case 'setup':
 
-            if (typeof obj.init === 'function') {
-                obj.init.call(obj);
-                delete obj.init;
-            }
+                break;
         }
+
+        // показать новый
+        switch (mode) {
+            case 'main':
+                this._cmpModeMain.show();
+                break;
+            case 'setup':
+
+                break;
+        }
+
+        this._mode = mode;
+    },
+
+    /**
+     * Получить режим
+     * @return {string}
+     */
+    getMode() {
+        return this._mode;
     },
 
     /**
      * Биндинг методов объекта
-     * @param {object} obj ообъект, методам которого биндим контекст
+     * @param {object} obj объект, методам которого биндим контекст
      * @param {object} [scope] контекст
      * @private
      */
@@ -91,56 +129,45 @@ const app = {
     },
 
     /**
-     * Объект для обмена данными с backend
+     * Обмен данными с page background
      * @type {object}
      */
     msg: null,
 
     /**
+     * helpers
+     * @type {object}
+     */
+    util: null,
+
+    /**
      * @type {object} список компонентов
      */
-    _cmps: Object.create(null),
+    _cmps: {},
 
     /**
      * Добавление компонента
-     * @param {string} name название
-     * @param {object} obj
+     * @param {string} name название компонента
+     * @param {object} cmp
      * @return {undefined}
      */
-    addCmp(name, obj) {
+    addCmp(name, cmp) {
         // <debug>
-        obj['$className'] = name;
+        cmp['$cmpName'] = name;
         // </debug>
-        this._cmps[name] = obj;
+        this._cmps[name] = cmp;
+        cmp._app = this;
     },
 
     /**
-     * Получить компонент
-     * @param {string} name название компонента
-     * @return {object}
+     * Создание компонента
+     * @param {String} name название
+     * @param {*} args аргументы, передаваемые компоненту
+     * @return {Object}
      */
-    getCmp(name) {
-        return this._cmps[name];
-    },
-
-    /**
-     * Получить данные по модели окна
-     * @param {string} prop поле, по которому вернуть содержимое
-     * @return {*}
-     */
-    getPropModel(prop) {
-        return this._model[prop];
-    },
-
-    /**
-     * Установить значение свойству модели
-     * @param {string} prop название свойства
-     * @param {*} val новое значение
-     * @return {object}
-     */
-    setPropModel(prop, val) {
-        this._model[prop] = val;
-        return this;
+    createCmp(name, ...args) {
+        const cmp = this._cmps[name];
+        return cmp.createInstance.apply(cmp, args);
     }
 
 };

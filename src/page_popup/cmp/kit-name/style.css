@@ -1,23 +1,18 @@
 
 .kit-name {
-	margin: 2vh 0;
-	width: 90vw;
-}
-.kit-name__title {
-	font-size: 1rem;
-	color: #cccccc;
+	background-color: #ffffff;
+	border-radius: 5px;
+	border: 1px solid #b7b7b7;
+	padding: 2px 3px;
 }
 
-.kit-name__wrap {
-	width: 100%;
-	background: #cccccc;
-	padding: 1vh 1vw;
-}
-
-.kit-name__input {
-	font-size: 1rem;
+/* поле для ввода имени окна */
+.kit-name__field {
+	color: #999;
 	border: none;
-	background: transparent;
+	margin: 0;
+	padding: 0;
+	font-size: 1rem;
+	background-color: transparent;
 	width: 100%;
 }
-

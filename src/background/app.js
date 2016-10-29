@@ -201,7 +201,7 @@ var app = {
      * @return {function}
      */
     getMsgHandler(name) {
-        return this._msgHandlers[name]
+        return this._msgHandlers[name];
     },
 
     /**

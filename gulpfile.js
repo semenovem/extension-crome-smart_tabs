@@ -93,6 +93,8 @@ gulp.task('build', ['build-clear'], function() {
         .pipe(gulp.dest('build/'));
 
     gulp.src([
+        'src/page_popup/popup.js',
+        'src/page_popup/util.js',
         'src/page_popup/**/*.js'
     ])
         .pipe(plugins.concat('popup.js'))

@@ -42,7 +42,7 @@ app.controllerMsg = {
         const handler = this._app.getMsgHandler(request.method);
 
         // <dedug>
-        typeof handler === 'function' || console.error('handler можнт быть только функцией', handler);
+        typeof handler === 'function' || console.error('handler может быть только функцией', handler);
         // todo здесь обработать исключение - страница запросила неизвестный метод
         // </debug>
 
