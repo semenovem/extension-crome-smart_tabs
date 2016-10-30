@@ -8,7 +8,7 @@ app.browserApi.windows = {
     $className: 'browserApi.windows',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 
@@ -39,10 +39,16 @@ app.browserApi.windows = {
 
     // </debug>
 
+    _STATE: {
+        'fullscreen': 'fullscreen',
+        'minimized' : 'minimized',
+        'maximized' : 'maximized',
+        'normal'    : 'normal'
+    },
+
     /**
      * Инициализация дочерних объектов
      * Биндинг контекста всех методов
-     * Получение настроек
      */
     init() {
         this._app.executionInits.call(this, this._app);
@@ -58,6 +64,8 @@ app.browserApi.windows = {
      * @param {object} model
      * @return {object}
      * @private
+     *
+     * todo разобраться  со входными данными
      */
     recordKitToOpen(model) {
         const params = {
@@ -79,79 +87,91 @@ app.browserApi.windows = {
         return params;
     },
 
-
-
     // ################################################
     // конвертация данных, полученных от api
     // ################################################
 
     /**
-     * Конвертация объекта, возвращенного событием браузерного api в программный
-     * который будет использоватся дальше
-     * {
-     *      id:             {number}    id окна
-     *      width:          {number}
-     *      height:         {number}
-     *      left:           {number}
-     *      top:            {number}
-     *      alwaysOnTop:    {boolean}
-     *      focused:        {boolean}
-     *      type:           {string}
-     *      [tabs]          {Array}   если данные будут в объекте события
-     * }
      *
-     * Если ни одна вкладка не пройдет валидацию, весь объект окна не пройдет валидацию
-     *
-     *
-     *
-     * @param {object} kitEvent
-     * @return {object|null}
-     * @private
+     * @param arrKitEvent
+     * @return {app.dto.KitView[]}
      */
-    conv(kitEvent) {
-        if (!kitEvent || typeof kitEvent !== 'object') {
-            return null;
+    convDtoArrKitView(arrKitEvent) {
+        try {
+            return arrKitEvent.map(this.convDtoKitView);
         }
-        const kitView = {};
-        const raw = {
-            id         : kitEvent.id,
-       //     focused    : kitEvent.focused,
-            left       : kitEvent.left,
-            top        : kitEvent.top,
-            width      : kitEvent.width,
-            height     : kitEvent.height,
-            state      : kitEvent.state    // "fullscreen" "minimized" "maximized" "normal"
-        //    type       : kitEvent.type,
-       //     alwaysOnTop: kitEvent.alwaysOnTop
-        };
+        catch (e) {
+            throw 'Не удалось' + e;
+        }
+    },
 
-        this._app.kitFields
-            .filter(field => field.view && raw[field.name])
-            .forEach(field => {
-                const name = field.name;
-                const value = field.normalize(raw[name]);
-                if (field.valid(value)) {
-                    kitView[name] = value;
-                }
+    /**
+     *
+     * @param {*} kitEvent
+     * @return {app.dto.KitView}
+     */
+    convDtoKitView(kitEvent) {
+        try {
+            return this._app.dto.kitView({
+                kitId : +kitEvent.id,
+                //     focused    : kitEvent.focused,
+                left  : +kitEvent.left,
+                top   : +kitEvent.top,
+                width : +kitEvent.width,
+                height: +kitEvent.height,
+                state : this._STATE[kitEvent.state]
+                //    type       : kitEvent.type,
+                //     alwaysOnTop: kitEvent.alwaysOnTop
             });
-
-        let valid = this._app.kitFields
-            .filter(field => field.requireView)
-            .every(field => kitView[field.name]);
-
-        // валидация вкладок, если есть в объекте события
-        if (valid && Array.isArray(kitEvent.tabs)) {
-            kitView.tabs = this._app.browserApi.tabs.convAll(kitEvent.tabs);
-
-            // определение активной вкладки
-            kitEvent.tabs.some((tabView, index) => tabView.active && (kitView.tabActive = index));
-
-            // объект окна без вкладок не может существовать
-            if (!kitView.tabs.length) {
-                valid = false;
-            }
         }
+        catch (e) {
+            throw 'Не удалось' + e;
+        }
+    },
 
-        return valid ? kitView : null;
+    /**
+     *
+     * @param arrKitEvent
+     * @return {app.dto.KitTabView[]}
+     */
+    convDtoArrKitTabView(arrKitEvent) {
+        try {
+            return arrKitEvent.map(this.convDtoKitTabView);
+        }
+        catch (e) {
+            throw 'Не удалось' + e;
+        }
+    },
+
+    /**
+     *
+     * @param {*} kitTabEvent
+     * @return {app.dto.KitTabView}
+     */
+    convDtoKitTabView(kitTabEvent) {
+        try {
+            const raw = {
+                id    : +kitTabEvent.id,   // todo удалить после полной замены
+                kitId : +kitTabEvent.id,
+                //     focused    : kitTabEvent.focused,
+                left  : +kitTabEvent.left,
+                top   : +kitTabEvent.top,
+                width : +kitTabEvent.width,
+                height: +kitTabEvent.height,
+                state : this._STATE[kitTabEvent.state]
+                //    type       : kitTabEvent.type,
+                //     alwaysOnTop: kitTabEvent.alwaysOnTop
+            };
+
+            raw.tabs = this._app.browserApi.tabs.normalizeArr(kitTabEvent.tabs);
+            // определение активной вкладки
+            raw.tabActive = this._app.browserApi.tabs.getIndexActive(raw.tabs);
+
+            return this._app.dto.kitTabView(raw);
+        }
+        catch (e) {
+            throw 'Не удалось' + e;
+        }
     }
+
 };

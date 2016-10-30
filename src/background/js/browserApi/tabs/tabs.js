@@ -8,7 +8,7 @@ app.browserApi.tabs = {
     $className: 'browserApi.tabs',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 
@@ -40,6 +40,68 @@ app.browserApi.tabs = {
     // ################################################
     // конвертация данных, полученных от api
     // ################################################
+
+    /**
+     * Определить индекс активной вкладки в массиве вкладок
+     * @param {Array} tabs
+     * @returns {number}
+     */
+    getIndexActive(tabs) {
+        return tabs.reduce((index, tab, indexInArr) => {
+            return tab.active ? indexInArr : index;
+        }, 0);
+    },
+
+
+
+    /**
+     *
+     */
+    normalizeArr(tabs) {
+        try {
+            return tabs.map(this.normalize);
+        }
+        catch (e) {
+            console.error('--', e);
+            throw '--' + e;
+        }
+    },
+
+    /**
+     *
+     */
+    normalize(tabEvent) {
+        try {
+            return {
+                id        : +tabEvent.id,
+                tabId        : +tabEvent.id,
+                active: tabEvent.active,
+                audible: tabEvent.audible,
+                favIconUrl: tabEvent.favIconUrl,
+                //highlighted: tabEvent.highlighted,
+                //incognito: tabEvent.incognito,
+                //index: tabEvent.index,
+                //pinned: tabEvent.pinned,
+                //selected: tabEvent.selected,
+                //status: tabEvent.status,
+                title     : tabEvent.title,
+                url       : tabEvent.url,
+                kitId     : +tabEvent.windowId
+            }
+        }
+        catch (e) {
+            console.error('--', e);
+            throw '--' + e;
+        }
+    },
+
+
+
+
+
+
+
+
 
     /**
      * Конвертация массива вкладок

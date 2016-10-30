@@ -6,8 +6,7 @@ app.browserApi = {
     $className: 'browserApi',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {app} the application object
      */
     _app: null,
 
@@ -31,10 +30,7 @@ app.browserApi = {
      */
     rintime: null,
 
-
-
     // </debug>
-
 
     /**
      *

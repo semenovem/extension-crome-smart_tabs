@@ -1,48 +1,94 @@
 /**
  * объект окна для записи в DB
- * context = app.dto
  *
- * @return {dto.kitTabModel}
+ * @context app.dto
+ *
+ * @return {app.dto.KitTabModel}
  */
 app.dto.kitTabModel = function(data) {
+    return new this._app.dto.KitTabModel(data, this);
+};
+
+/**
+ * @constructor
+ */
+app.dto.KitTabModel = function(data, dto) {
     try {
-        const obj = {};
 
         // the size and position of the window
-        if (this.notNegative(data.left)) {
-            obj.left = data.left;
+        if (dto.notNegative(data.left) && data.left !== 0) {
+            this.left = data.left;
         }
-        if (this.notNegative(data.top)) {
-            obj.top = data.top;
+        if (dto.notNegative(data.top) && data.top !== 0) {
+            this.top = data.top;
         }
-        if (this.notNegative(data.width)) {
-            obj.width = data.width;
+        if (dto.notNegative(data.width) && data.width !== 0) {
+            this.width = data.width;
         }
-        if (this.notNegative(data.height)) {
-            obj.height = data.height;
-        }
-
-        // the number of the active tab
-        if (this.notNegative(data.tabActive)) {
-            obj.tabActive = data.tabActive;
+        if (dto.notNegative(data.height) && data.height !== 0) {
+            this.height = data.height;
         }
 
         // state of window
-        if (this.kitState(data.state)) {
-            obj.state = data.state;
+        if (dto.kitState(data.state) && data.state !== dto.kitStateDefault) {
+            this.state = data.state;
         }
 
         // tabs of window
-        obj.tabs = data.tabs.map(this.tabModel).filter(tabModel => tabModel);
-        if (!obj.tabs.length) {
+        this.tabs = data.tabs.map(dto.tabModel);
+        if (!this.tabs.length) {
             throw 'Нет данных вкладок';
         }
 
+        // the number of the active tab
+        if (dto.notNegative(data.tabActive) && data.tabActive !== 0) {
+            this.tabActive = data.tabActive;
+        }
+
+
+
+        // название окна, заданное пользователем
+        if (typeof data.name === 'string' && data.name.length <= 300 && data.name) {
+            this.name = data.name;
+        }
+
+        // описание окна
+        if (typeof data.note === 'string' && data.note.length <= 300 && data.note) {
+            this.note = data.note;
+        }
+
+
+        try {
+            const setTab = data.setTab;
+            const dtoSetTab = {};
+
+            // не загружать вкладку, пока она не будет выбрана
+            if (typeof setTab.discardCreate === 'boolean' && setTab.discardCreate !== true) {
+                this.setTab.discardCreate = setTab.discardCreate;
+            }
+
+            // сохранять состояние закрытых вкладок
+            if (typeof setTab.watchClose === 'boolean' && setTab.watchClose !== true) {
+                this.setTab.watchClose = setTab.watchClose;
+            }
+
+            // сохранять историю url
+            if (typeof setTab.watchHistory === 'boolean' && setTab.watchHistory !== true) {
+                this.setTab.watchHistory = setTab.watchHistory;
+            }
+
+            if (Object.keys(dtoSetTab).length) {
+                this.setTab = dtoSetTab;
+            }
+        }
+        catch(e) {}
+
+
 
         // required fields
+        // ----
 
 
-        return obj;
     }
     catch (e) {
         throw 'Unable to create dto.kitTabModel.' + e;

@@ -3,7 +3,7 @@
  * context = app
  *
  * @param {object} params    { kitId: {number}, focused: {boolean} }
- * @return {Promise<{Object}>} @class app.dto.kitView
+ * @return {Promise.<{ focused: {boolean} }>}
  */
 app.defineMsgHandler('kit.focused.set', function(params) {
     const kit = this.kitCollect.getById(+params.kitId);

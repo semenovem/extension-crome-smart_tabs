@@ -1,32 +1,9 @@
 /**
- * Получить информацию по окну и вкладкам
- * Конвертация данных окна
- * на выходе объект:
- *
- * {
- *      id: {number}    id окна
- *      width:
- *      height:
- *      left:
- *      top:
- *      alwaysOnTop:
- *      focused:
- *      type:
- *
- *      // опционально, если передан параметр populate: true
- *      [tabs]: [
- *          {
- *              active:
- *              url:
- *              title:
- *              favIconUrl:
- *          }
- *      ]
- * }
+ * Получить информацию по окну
  *
  * @param {number} kitId идентификатор окна
  * @param {object} [params] параметры
- * @return {Promise.<object>}
+ * @return {Promise.<app.dto.KitView|app.dto.KitTabView>}
  */
 app.browserApi.windows.get = function(kitId, params) {
     let timer;
@@ -48,14 +25,10 @@ app.browserApi.windows.get = function(kitId, params) {
     })
         .then(kitEvent => {
             clearTimeout(timer);
-
-            const kitView = this.conv(kitEvent);
-            if (kitView && kitId === kitView.id && (!queryParams.populate || kitView.tabs)) {
-                return kitView;
-            } else {
-                throw {
-                    name: 'Данные окна не прошли валидацию'
-                };
-            }
-        });
+            return queryParams.populate ? this.convDtoKitTabView(kitEvent) : this.convDtoKitView(kitEvent);
+        })
+        .catch(e => {
+            console.error('--', e);
+            throw '--' + e;
+        })
 };

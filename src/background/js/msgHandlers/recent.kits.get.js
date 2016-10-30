@@ -9,8 +9,7 @@ app.defineMsgHandler('recent.kits.get', function(params, callback) {
 
     if (kit) {
         valid = true;
-        kit.getView()
-            .then(kit.getModel)
+        kit.getModel()
             .then(model => {
 
                 this._success({

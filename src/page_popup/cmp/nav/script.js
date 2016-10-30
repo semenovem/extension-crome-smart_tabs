@@ -6,7 +6,7 @@
 app.addCmp('nav', {
     // <debug>
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
     // </debug>

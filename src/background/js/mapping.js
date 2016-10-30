@@ -1,13 +1,12 @@
 /**
- * @type {object} сопоставление вкладок сохраненного окна с реально открытым
- *
+ * @type {app.mapping} сопоставление вкладок сохраненного окна с реально открытым
  */
 app.mapping = {
     // <debug>
-    $className: 'mapping',
+    $className: 'app.mapping',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
     // </debug>
@@ -30,7 +29,6 @@ app.mapping = {
      *      view: {object}
      *      itemKey: {string},
      *      model: {object}
-     *
      *  }
      */
     model(kit) {
@@ -41,30 +39,37 @@ app.mapping = {
             .then(data => {
                 const view = data[0];
 
+
+
                 // Поиск наилучшего совпадения в куче записей store
                 let mapping = this._app.storeOpen.getHeap()
-                    .reduce((mapping, record)=> {
-                        const result = this.compare(view.tabs, record.model.tabs);
+                    .reduce((mapping, dtoRecord)=> {
+                        const result = this.compare(view.tabs, dtoRecord.dtoKitTabModel.tabs);
+
+
 
                         if (result.relevant && (!mapping || result.relevant > mapping.relevant)) {
                             mapping = result;
-                            mapping.record = record;
-
+                            mapping.dtoRecord = dtoRecord;
                         }
                         return mapping;
                     }, null);
 
+
+                //console.log ('mapping', kit.getId(), mapping);
+
+                // объект ответа
                 const result = {
                     view
                 };
 
                 // соответствующая запись найдена
                 if (mapping) {
-                    result.model = mapping.record.model;
-                    result.itemKey = mapping.record.itemKey;
+                    result.dtoKitTabModel = mapping.dtoRecord.dtoKitTabModel;
+                    result.itemKey = mapping.dtoRecord.itemKey;
                     result.relevant = mapping.relevant;
 
-                    this._app.storeOpen.heapExclude(mapping.record.itemKey);
+                    this._app.storeOpen.heapExclude(mapping.dtoRecord.itemKey);
 
                     // объединить с model все вкладки
                     mapping.equalTabs.forEach(item => {
@@ -73,14 +78,21 @@ app.mapping = {
                             .joinModel(item.tabM);
                     });
                 }
-
                 // окно не было сохранено ранее, создаем новую запись
                 else {
+                    //console.log ('not found ', result, mapping);
+
                     result.itemKey = this._app.storeOpen.createModel();
                     result.relevant = 0;
                 }
 
+           //     console.log ('99 ', this._app.storeOpen.getHeap());
+
                 return result;
+            })
+            .catch(e => {
+                console.error('--', e);
+
             });
     },
 
@@ -175,8 +187,8 @@ app.mapping = {
             });
 
         //console.log(match);
-        //console.log('left:: ', left);
-        //console.log('right:: ', right);
+        //console.log('left:: ', _tabsView);
+        //console.log('right:: ', _tabsModel);
 
         return match;
     },
@@ -195,7 +207,7 @@ app.mapping = {
 
     /**
      * Частичное соовпадение вкладок (сравнение по host)
-     * todo пока просто первые сиволы - не менее 12 символов считаем совпадением
+     * todo пока просто первые символы - не менее 12 символов считаем совпадением
      * потом сделать нормальный парсинг url
      * @param {object} tabLeft
      * @param {object} tabRight

@@ -6,7 +6,7 @@ app.storeOpen = {
     $className: 'storeOpen',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 
@@ -22,14 +22,13 @@ app.storeOpen = {
     // </debug>
 
     /**
-     * @type {Array} все сохраненные записи на момент запуска приложения. данные формата: kitModel
+     * @type {app.dto.Record[]} все сохраненные записи на момент запуска приложения
      */
-    _heap: [],
+    _dtoArrRecord: null,
 
     /**
      * Получить настройки
      * Прочитать все записи view, положить в "кучу" heap для разбора по view
-     *
      */
     init() {
         this._app.binding(this);
@@ -40,8 +39,8 @@ app.storeOpen = {
                 this._PREFIX = this._app.setup.get('store.open.prefix');
                 return this._readItemAll();
             })
-            .then(records => {
-                this._heap = records;
+            .then(dtoArrRecord => {
+                this._dtoArrRecord = dtoArrRecord;
                 this.ready.resolve();
             });
     },
@@ -52,10 +51,10 @@ app.storeOpen = {
      * или открыть новое окно
      *
      * Получить записи, которые нужно разобрать по view
-     * @return {Array}
+     * @return {app.dto.Record[]}
      */
     getHeap() {
-        return this._heap;
+        return this._dtoArrRecord;
     },
 
     /**
@@ -63,19 +62,19 @@ app.storeOpen = {
      * @param {string} itemKey
      */
     heapExclude(itemKey) {
-        this._heap.reduceRight((notUse, record, i) => {
-            if (record.itemKey === itemKey) {
-                this._heap.splice(i, 1);
+        this._dtoArrRecord.reduceRight((notUse, dtoRecord, i) => {
+            if (dtoRecord.itemKey === itemKey) {
+                this._dtoArrRecord.splice(i, 1);
             }
         }, null);
     },
 
     /**
      * Получить сохраненные окна которые нужно открыть
-     * @return {Promise} массив записей (сохраненные окна) которые нужно открыть
+     * @return {Promise.<app.dto.Record[]>}
      */
     getSaved() {
-        return this.ready().then(() => this._heap);
+        return this.ready().then(() => this._dtoArrRecord);
     },
 
     /**
@@ -88,11 +87,11 @@ app.storeOpen = {
     /**
      * Сохранение записи
      * @param {string} itemKey ключ, по которому записать в localStorage
-     * @param {object} raw
+     * @param {app.dto.KitTabModel} dtoKitTabModel
      */
-    save(itemKey, raw) {
+    save(itemKey, dtoKitTabModel) {
         return new Promise((resolve, reject) => {
-            const text = this.serialization(raw);
+            const text = this.serialization(dtoKitTabModel);
             if (text) {
 
                 console.log('\n...saveRecordOpen...\n', { d: text }, '\n');
@@ -100,7 +99,7 @@ app.storeOpen = {
                 localStorage.setItem(itemKey, text);
                 resolve();
             } else {
-                console.error('не удалось записать', itemKey, raw);
+                console.error('не удалось записать', itemKey, dtoKitTabModel);
                 reject({
                     name: 'не удалось записать'
                 });
@@ -115,7 +114,7 @@ app.storeOpen = {
      */
     moveToRecent(itemKey) {
         return this._readItem(itemKey)
-            .then(this._app.storeRecent.add)
+            .then(this._app.storeRecent.add);
         //       .then(() => this._removeItem(itemKey))
     },
 
@@ -125,27 +124,27 @@ app.storeOpen = {
 
     /**
      * Получить данные в виде строки для сохранения
-     * @returns {string|null}
+     * @param {app.dto.KitTabModel} dtoKitTabModel
+     * @return {string|null}
      */
-    serialization(model) {
-        let data;
+    serialization(dtoKitTabModel) {
         try {
-            data = JSON.stringify(model);
+            return JSON.stringify(dtoKitTabModel);
         }
         catch (e) {
-            data = null;
             this._app.log({
                 name : 'Не удалось преобразовать в json',
-                model,
+                dtoKitTabModel,
                 event: e
             });
+            return null;
         }
-        return data;
     },
 
     /**
-     *
-     * @return {dto.kitTabModel|null}
+     * распаковка сохраненных данных в dto
+     * @param {string} data
+     * @return {app.dto.KitTabModel|null}
      */
     unserialization(data) {
         try {
@@ -156,8 +155,8 @@ app.storeOpen = {
                 e,
                 data
             });
+            return null;
         }
-        return null;
     },
 
     // ################################################
@@ -178,13 +177,13 @@ app.storeOpen = {
 
     /**
      * Прочитать все сохраненные записи
-     * @return {Promise} прочитанные записи
+     * @return {Promise.<app.dto.KitTabModel[]>} массив прочитанные записи
      * @private
      */
     _readItemAll() {
         return new Promise(resolve => {
             const regexp = new RegExp('^' + this._PREFIX);
-            const records = [];
+            const dtoArrRecord = [];
 
             for (let i = 0; i < localStorage.length; i++) {
                 const itemKey = localStorage.key(i);
@@ -192,20 +191,23 @@ app.storeOpen = {
                     continue;
                 }
 
-                let model = this.unserialization(localStorage.getItem(itemKey));
+                const dtoKitTabModel = this.unserialization(localStorage.getItem(itemKey));
 
-                if (model) {
-                    records.push({
-                        model,
-                        itemKey
-                    });
+                if (dtoKitTabModel) {
+
+                    dtoArrRecord.push(
+                        this._app.dto.record({
+                            dtoKitTabModel,
+                            itemKey
+                        })
+                    );
 
                 } else {
                     // удалить не валидные данные
                     localStorage.removeItem(itemKey);
                 }
             }
-            resolve(records);
+            resolve(dtoArrRecord);
         });
     },
 

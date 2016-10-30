@@ -7,8 +7,7 @@ app.setup = {
     $className: 'Setup',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {app} the application object
      */
     _app: null,
 

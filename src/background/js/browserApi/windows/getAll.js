@@ -2,7 +2,7 @@
  * @type {object} получение данных всех открытых окон
  *
  * @param {object} [params] параметры
- * @return {Promise.<Array>} массив view открытых окон
+ * @return {Promise.<app.dto.KitView[]>}
  */
 app.browserApi.windows.getAll = function(params) {
     let timer;
@@ -22,18 +22,8 @@ app.browserApi.windows.getAll = function(params) {
 
         window.chrome.windows.getAll(queryParams, resolve);
     })
-        .then(kitsEvent => {
-            clearTimeout(timer);
-
-            const views = kitsEvent
-                .map(kitsEvent => this.conv(kitsEvent))
-                .filter(kitView => kitView);
-
-            if (!views.length) {
-                throw {
-                    name: 'Данные всех окон не прошли валидацию'
-                };
-            }
-            return views;
-        });
+        .then(this.convDtoArrKitView)
+        .catch(e => {
+            throw 'Данные окон не прошли валидацию' + e;
+        })
 };

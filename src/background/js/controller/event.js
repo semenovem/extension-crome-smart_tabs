@@ -6,8 +6,7 @@ app.controllerEvent = {
     $className: 'controllerEvent',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {app} the application object
      */
     _app: null,
 
@@ -116,7 +115,7 @@ app.controllerEvent = {
         }
 
         const kit = this._app.kitCollect.getById(tabView.kitId) || this._app.kitCollect.createItem({
-                id: tabView.kitId
+                kitId: tabView.kitId
             });
         kit.modify();
 
@@ -143,11 +142,11 @@ app.controllerEvent = {
 
     /**
      * Закрытие окна браузера
-     * @param {number} id идентификатор окна браузера
+     * @param {number} kitId идентификатор окна браузера
      * @private
      */
-    _removedKit(id) {
-        const kit = this._app.kitCollect.getById(id);
+    _removedKit(kitId) {
+        const kit = this._app.kitCollect.getById(kitId);
         kit && kit.removed();
     },
 

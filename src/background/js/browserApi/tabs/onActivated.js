@@ -8,7 +8,7 @@ app.browserApi.tabs.onActivated = {
     $className: 'browserApi.tabs.onActivated',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 

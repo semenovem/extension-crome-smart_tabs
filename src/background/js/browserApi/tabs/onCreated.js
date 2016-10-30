@@ -8,7 +8,7 @@ app.browserApi.tabs.onCreated = {
     $className: 'browserApi.tabs.onCreated',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 

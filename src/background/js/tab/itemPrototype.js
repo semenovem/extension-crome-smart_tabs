@@ -4,11 +4,10 @@
 app.TabItemPrototype = app.TabItem.prototype = {
     // <debug>
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
     // </debug>
-
 
     /**
      * Доставить настройки
@@ -101,13 +100,12 @@ app.TabItemPrototype = app.TabItem.prototype = {
         }
     },
 
-
     /**
      * Активация вкладки (была выбрана в своем окне)
      */
     active() {
         return this._app.browserApi.tabs.update(this.id, { active: true })
-            // <debug>
+        // <debug>
         //    .then(tabView => console.log ('tab was activated ', tabView));
         // </debug>
     },
@@ -116,7 +114,7 @@ app.TabItemPrototype = app.TabItem.prototype = {
      * Вкладка была активирована
      */
     activated() {
-        console.log ('tab activated');
+        console.log('tab activated');
         if (this.discarded) {
 
         }
@@ -130,7 +128,6 @@ app.TabItemPrototype = app.TabItem.prototype = {
             this.discarded = true;
         }
     },
-
 
     /**
      * setter установить статус
@@ -151,8 +148,5 @@ app.TabItemPrototype = app.TabItem.prototype = {
     getStatus() {
         return this.status;
     }
-
-
-
 
 };

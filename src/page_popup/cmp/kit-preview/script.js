@@ -6,8 +6,7 @@
 app.addCmp('kit-preview', {
     // <debug>
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {app} the application object
      */
     _app: null,
 

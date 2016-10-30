@@ -6,8 +6,6 @@
 app.browserApi.windows.update = function(kitId, params) {
     let timer;
 
-    // todo сделать нормальное преобразование входных данных в формат браузерного api
-
     const dataUpdate = {};
 
     if ('state' in params) {
@@ -28,16 +26,9 @@ app.browserApi.windows.update = function(kitId, params) {
 
         window.chrome.windows.update(kitId, dataUpdate, resolve);
     })
-        .then(kitEvent => {
-            clearTimeout(timer);
-
-            const kitView = this.conv(kitEvent);
-            if (kitView) {
-                return kitView;
-            } else {
-                throw {
-                    name: 'Данные окна не прошли валидацию'
-                };
-            }
-        });
+        .then(this.convDtoKitView)
+        .catch(e => {
+            console.error('--', e);
+            throw '--' + e;
+        })
 };

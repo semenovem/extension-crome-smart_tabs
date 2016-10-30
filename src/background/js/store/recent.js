@@ -6,7 +6,7 @@ app.storeRecent = {
     $className: 'storeOpen',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 
@@ -22,9 +22,9 @@ app.storeRecent = {
     // </debug>
 
     /**
-     * @type {Array} список записей. данные формата: model
+     * @type {app.dto.Record[]} список записей
      */
-    _records: [],
+    _dtoArrRecord: null,
 
     /**
      * актуальность данных
@@ -47,15 +47,15 @@ app.storeRecent = {
     },
 
 
-    // перемещение записи в storeOpen
-    moveToOpen(itemKey) {
-
-    },
+    //// перемещение записи в storeOpen
+    //moveToOpen(itemKey) {
+    //
+    //},
 
     /**
      * Добавление данных на хранение
      * @param {string} data данные окна в виде стороки
-     * @return {Promise}
+     * @return {Promise.<>}
      */
     add(data) {
    //     console.log('storeRecent storedKit', data);
@@ -77,7 +77,7 @@ app.storeRecent = {
     /**
      * Получение записей. Вернуть копию данных
      * @param {object} [opts]
-     * @return {Promise.<>}
+     * @return {Promise.<app.dto.Record[]>}
      */
     getRecords(opts) {
         return this.ready()
@@ -85,7 +85,7 @@ app.storeRecent = {
                 return this.isActual ? true : this._readRecordAll();
             })
             // todo получить копию данных
-            .then(() => JSON.parse(JSON.stringify(this._records)));
+            .then(() => JSON.parse(JSON.stringify(this._dtoArrRecord)));
     },
 
 
@@ -96,8 +96,8 @@ app.storeRecent = {
      */
     _readRecordAll() {
         return this._readItemAll()
-            .then(records => {
-                this._records = records;
+            .then(dtoArrRecord => {
+                this._dtoArrRecord = dtoArrRecord;
                 this.isActual = true;
             });
     },
@@ -124,14 +124,15 @@ app.storeRecent = {
 
     /**
      * Прочитать все сохраненные записи
-     * @return {Promise} прочитанные записи
+     * @return {Promise.<app.dto.KitTabModel[]>} прочитанные записи
      * @private
      */
     _readItemAll() {
         return new Promise(resolve => {
             const regexp = new RegExp('^' + this._PREFIX);
+
             const unserialization = this._app.storeOpen.unserialization;    // todo пока пользуемся им, потомперенести на общий слой абстракции
-            const records = [];
+            const dtoArrRecord = [];
 
             for (let i = 0; i < localStorage.length; i++) {
                 const itemKey = localStorage.key(i);
@@ -139,19 +140,22 @@ app.storeRecent = {
                 if (!regexp.test(itemKey)) {
                     continue;
                 }
-                const model = unserialization(localStorage.getItem(itemKey));
+                const dtoKitTabModel = unserialization(localStorage.getItem(itemKey));
 
-                if (model) {
-                    records.push({
-                        model,
-                        itemKey
-                    });
+                if (dtoKitTabModel) {
+                    dtoArrRecord.push(
+                        this._app.dto.record({
+                            model: dtoKitTabModel,
+                            dtoKitTabModel,
+                            itemKey
+                        })
+                     );
                 } else {
                     // удалить не валидные данные
                     localStorage.removeItem(itemKey);
                 }
             }
-            resolve(records);
+            resolve(dtoArrRecord);
         });
     },
 
@@ -162,26 +166,26 @@ app.storeRecent = {
      */
     _readItem(itemKey) {
         return Promise.resolve(localStorage.getItem(itemKey));
-    },
-
-    /**
-     *
-     * @param itemKey
-     * @param data
-     * @returns {Promise.<T>}
-     */
-    _saveItem(itemKey, data) {
-        localStorage.setItem(itemKey, data);
-        return Promise.resolve();
-    },
-
-    /**
-     * Удалить элемент
-     * @param {string} itemKey ключ записи
-     */
-    _removeItem(itemKey) {
-        localStorage.removeItem(itemKey);
-        return Promise.resolve();
     }
+
+    ///**
+    // *
+    // * @param itemKey
+    // * @param data
+    // * @returns {Promise.<T>}
+    // */
+    //_saveItem(itemKey, data) {
+    //    localStorage.setItem(itemKey, data);
+    //    return Promise.resolve();
+    //},
+    //
+    ///**
+    // * Удалить элемент
+    // * @param {string} itemKey ключ записи
+    // */
+    //_removeItem(itemKey) {
+    //    localStorage.removeItem(itemKey);
+    //    return Promise.resolve();
+    //}
 
 };

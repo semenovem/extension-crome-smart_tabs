@@ -1,10 +1,10 @@
 /**
  * @type {object} прототип @class KitItem
  */
-app.KitItemPrototype = app.KitItem.prototype = {
+app.KitItemPrototype = app.Kit.prototype = {
     // <debug>
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 
@@ -69,12 +69,12 @@ app.KitItemPrototype = app.KitItem.prototype = {
             this.modify.setDelay(this._TIMEOUT_BEFORE_SAVE);
             this.modify.setCallback(this.save);
 
-            result.model && this.joinModel(result.model);
+            result.dtoKitTabModel && this.joinModel(result.dtoKitTabModel);
             this._itemKey = result.itemKey;
 
             this.modify.clear();
 
-            return (result.relevant === 1 ? Promise.resolve() : this._save(this.getModel(result.view)))
+            return (result.relevant === 1 ? Promise.resolve() : this._save(this._getModel(result.view)))
                 .then(this.ready.resolve);
         }
         catch (e) {
@@ -84,13 +84,12 @@ app.KitItemPrototype = app.KitItem.prototype = {
         }
     },
 
-
     /**
-     * Вернуть id записи
+     * Вернуть kitId записи
      * @return {string}
      */
     getId() {
-        return this.id;
+        return this._kitId;
     },
 
     // ################################################
@@ -102,8 +101,7 @@ app.KitItemPrototype = app.KitItem.prototype = {
      * @return {Promise.<T>}
      */
     save() {
-        return this.getView()
-            .then(this.getModel)
+        return this.getModel()
             .then(this._save);
     },
 
@@ -114,59 +112,37 @@ app.KitItemPrototype = app.KitItem.prototype = {
      */
     _save(model) {
         this.modify.is && this.modify.clear();
-        return this._app.storeOpen.save(this._itemKey, model);
+        return this._app.storeOpen.save(this._itemKey, model)
+
+            // todo убрать = для тестов
+            .then(() => console.log ('kit: ', this._kitId))
     },
 
     /**
      * Получение view окна браузера
-     * @return {Promise.<T>}
+     * @return {Promise.<app.dto.kitTabView>}
      */
     getView() {
-        return app.browserApi.windows.get(this.id);
+        return app.browserApi.windows.get(this._kitId);
     },
 
     /**
      * Получить модель
-     * @param view
-     * @return {object}
+     * @return {Promise.<app.dto.KitTabModel>}
      */
-    getModel(view) {
-        const model = {};
-        const tmp = this._app.util.objectMerge(
-            this._getDataToModel(),
-            view
-        );
-
-        this._app.kitFields
-            .filter(field => field.model && field.name in tmp)
-            .filter(field => 'default' in field === false || field.default !== tmp[field.name])
-            .forEach(field => model[field.name] = tmp[field.name]);
-
-        // <debug>
-        Array.isArray(view.tabs) || console.warn('view.tabs должет быть массивом. view: ', view);
-        // </debug>
-        // данные вкладок
-        model.tabs = view.tabs.map(tabView => this._app.tabCollect
-            .getByView(tabView)
-            .getModel(tabView)
-        );
-
-        return model;
+    getModel() {
+        return this.getView().then(this._getModel);
     },
 
     /**
-     * Добавление в объект сохраненных данных
-     * @param {object} model
+     * Получить модель
+     * @param {app.dto.KitTabView} view
+     * @return {app.dto.KitTabModel}
      */
-    joinModel(model) {
-        this._app.kitFields
-            .filter(field => field.kit && model[field.name])
-            .forEach(field => {
-                const name = field.name;
-                if (this[name] !== model[name]) {
-                    this[name] = model[name];
-                }
-            });
+    _getModel(view) {
+        return this._app.dto.kitTabModel(
+            Object.assign(this._getDataToModel(), view)
+        );
     },
 
     /**
@@ -174,11 +150,48 @@ app.KitItemPrototype = app.KitItem.prototype = {
      * @return {object}
      */
     _getDataToModel() {
-        const model = {};
-        this._app.kitFields
-            .filter(field => field.model && field.name in this)
-            .forEach(field => model[field.name] = this[field.name]);
-        return model;
+        return {
+            name     : this._name,
+            note     : this._note,
+            tabActive: this._tabActive,
+            state    : this._state,
+            setTab   : this._setTab
+        }
+    },
+
+    /**
+     * Добавление в объект данных из модели
+     * @param {app.dto.KitTabModel} model
+     */
+    joinModel(model) {
+        if ('name' in model) {
+            this._name = model.name;
+        }
+
+        if ('note' in model) {
+            this._note = model.note;
+        }
+
+        if ('tabActive' in model) {
+            this._tabActive = model.tabActive;
+        }
+
+        // setting tabs
+        try {
+            if ('discardCreate' in model.setTab) {
+                this._setTab.discardCreate = model.setTab.discardCreate;
+            }
+
+            if ('closed' in model.setTab) {
+                this._setTab.closed = model.setTab.closed;
+            }
+
+            if ('history' in model.setTab) {
+                this._setTab.history = model.setTab.history;
+            }
+        }
+        catch (e) {}
+
     },
 
     // ################################################
@@ -189,60 +202,59 @@ app.KitItemPrototype = app.KitItem.prototype = {
      * Событие удаление окна
      */
     removed() {
-        console.log('event onRemoved window', this.id);
+        console.log('event onRemoved window', this._kitId);
 
-        if (this.status !== 'removed') {
-            this.status = 'removed';
+        if (this._status !== 'removed') {
+            this._status = 'removed';
 
             this.modify.destroy();
 
-            this._app.kitCollect.removeItem(this.id);
+            this._app.kitCollect.removeItem(this._kitId);
             if (this._itemKey) {
                 this._app.storeOpen.moveToRecent(this._itemKey);
             }
         }
     },
 
-
     /**
-     * setter Установить имя окна
+     * setter имя окна
      * @param {string} name
-     * @returns {object}
+     * @return {app.Kit}
      */
     setName(name) {
-        if (name !== this.name) {
-            this.name = name;
+        if (name !== this._name) {
+            this._name = name;
             this.modify();
         }
         return this;
     },
 
     /**
-     * getter название окна
+     * getter имя окна
      * @return {string}
      */
     getName() {
-        return this.name;
+        return this._name;
     },
 
     /**
-     * setter установить статус
-     * @param status
-     * @return {object}
+     * setter статус
+     * @param {String} status
+     * @return {app.Kit}
      */
     setStatus(status) {
-        if (this.status !== status) {
-            this.status = status;
+        if (this._status !== status) {
+            this._status = status;
         }
         return this;
     },
 
     /**
-     * getter получение статуса
-     * @return {object}
+     * getter статуса
+     * @return {String}
      */
     getStatus() {
-        return this.status;
+        return this._status;
     }
 
 };

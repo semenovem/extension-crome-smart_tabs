@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Объект приложения
+ *  the application object
  */
 var app = {
     /**
@@ -185,7 +185,7 @@ var app = {
     },
 
     /**
-     * Методы для обработки сообщений от окон
+     * Ообработчики сообщений от окон
      */
     _msgHandlers: Object.create(null),
 
@@ -232,8 +232,6 @@ var app = {
             .then(() => {
                 this.controllerEvent.enable();
                 this.controllerMsg.enable();
-                //this.controllerMsgPopup.add();
-                //this.controllerMsgOptions.add();
                 this.systemIdle.run();
             })
             .then(this.sync.all)
@@ -241,42 +239,13 @@ var app = {
             .then(
                 () => {
                     console.log('\n-----------------------------------\n\n');
-                    console.log('(heap):  ', this.storeOpen._heap);
+                    console.log('(heap):  ', this.storeOpen._dtoArrRecord);
                     console.log('(kits):  ', this.kitCollect._items);
                     console.log('(tabs):  ', this.tabCollect._items);
                     console.log('\n-----------------------------------\n');
                 }
             )
-            .then(() => {
 
-                //       this.init = null;
-                //       this.binding = null;
-                //       this._timeout = null;
-                //       this.executionInits = null;
-
-                //function randomInteger(min, max) {
-                //    var rand = min - 0.5 + Math.random() * (max - min + 1)
-                //    rand = Math.round(rand);
-                //    return rand;
-                //}
-
-                //window.chrome.tabs.query({}, tabs => {
-                //
-                //    let num = 0;
-                //    const length = tabs.length - 1;
-                //
-                //    setInterval(() => {
-                //
-                //        window.chrome.tabs.update(
-                //            tabs[randomInteger(0, length)].id,
-                //            {
-                //                active: true
-                //            }
-                //        )
-                //    }, 500);
-                //})
-
-            })
 
             .catch(e => {
                 this.log({

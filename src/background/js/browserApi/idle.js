@@ -13,7 +13,7 @@ app.browserApi.idle = {
     $className: 'browserApi.idle',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 

@@ -29,7 +29,7 @@ const app = {
     _kitId: 0,
 
     /**
-     * Получить id окна
+     * Получить kitId
      * @return {number}
      */
     getKitId() {

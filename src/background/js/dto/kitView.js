@@ -1,18 +1,18 @@
 /**
  * объект окна из событий browser api
- *
  * @context app.dto
  *
- * @return {app.dto.KitTabView}
+ * @return {app.dto.KitView}
  */
-app.dto.kitTabView = function(data) {
-    return new app.dto.KitTabView(data, this);
+app.dto.kitView = function(data) {
+    return new app.dto.KitView(data, this);
 };
+
 
 /**
  * @constructor
  */
-app.dto.KitTabView = function(data, dto) {
+app.dto.KitView = function(data, dto) {
     try {
         //
         if (dto.moreZero(data.kitId)) {
@@ -43,11 +43,6 @@ app.dto.KitTabView = function(data, dto) {
             this.state = data.state;
         }
 
-        // tabs of window
-        this.tabs = data.tabs.map(dto.tabView);
-        if (!this.tabs.length) {
-            throw 'Нет данных вкладок';
-        }
 
         // required fields
         if (!this.kitId) {
@@ -55,6 +50,6 @@ app.dto.KitTabView = function(data, dto) {
         }
     }
     catch (e) {
-        throw 'Unable to create app.dto.KitTabView.' + e;
+        throw 'Unable to create dto.KitView.' + e;
     }
 };

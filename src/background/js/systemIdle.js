@@ -15,7 +15,7 @@ app.systemIdle = {
     $className: 'systemIdle',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 

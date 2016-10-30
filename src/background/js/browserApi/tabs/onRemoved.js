@@ -12,7 +12,7 @@ app.browserApi.tabs.onRemoved = {
     $className: 'browserApi.tabs.onRemoved',
 
     /**
-     * @type {object} объект приложения
+     * @type {app} the application object
      */
     _app: null,
 

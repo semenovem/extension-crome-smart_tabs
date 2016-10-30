@@ -6,8 +6,7 @@ app.tabCollect = {
     $className: 'tabCollect',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {app} the application object
      */
     _app: null,
     // </debug>
