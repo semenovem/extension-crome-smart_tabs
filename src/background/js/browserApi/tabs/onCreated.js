@@ -1,4 +1,6 @@
 /**
+ *
+ *
  * @type {object} событие браузерного api создание новой вкладки
  *
  *
@@ -8,7 +10,7 @@ app.browserApi.tabs.onCreated = {
     $className: 'browserApi.tabs.onCreated',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 
@@ -16,7 +18,6 @@ app.browserApi.tabs.onCreated = {
      * обработчик события
      */
     _callback: null,
-
     // </debug>
 
     /**
@@ -48,39 +49,20 @@ app.browserApi.tabs.onCreated = {
         }
     },
 
-    // <debug>
-    // поля объекта события
-    __i: {
-        active     : true,
-        audible    : false,
-        height     : 0,
-        highlighted: false,
-        id         : 3106,
-        incognito  : false,
-        index      : 3,
-        mutedInfo  : {},
-        openerTabId: 3100,
-        pinned     : false,
-        selected   : true,
-        status     : "loading",
-        title      : "New Tab",
-        url        : "chrome://newtab/",
-        width      : 0,
-        windowId   : 2905
-    },
-    // </debug>
-
     /**
-     * Обработчик
-     * @param {object} eDataTab
+     * Обработчик события создание новой вкладки
+     * @param {*} tabEvent
      * @private
      */
-    _onEvent(eDataTab) {
-        if (eDataTab && typeof eDataTab === 'object' && typeof this._callback !== 'function') {
+    _onEvent(tabEvent) {
+        if (typeof this._callback !== 'function') {
             return;
         }
-
-        const eTab = this._app.browserApi.tabs.conv(eDataTab);
-        eTab && this._callback(eTab);
+        try {
+            this._callback(this._app.browserApi.tabs.convDtoTabView(tabEvent));
+        }
+        catch (e) {
+            console.error('--', e);
+        }
     }
 };

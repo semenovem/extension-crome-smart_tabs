@@ -8,7 +8,7 @@ app.browserApi.runtime = {
     $className: 'browserApi.runtime',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 
@@ -24,5 +24,6 @@ app.browserApi.runtime = {
      */
     init() {
         this._app.executionInits.call(this, this._app);
+        // this._app.binding(this);  todo проверить работу с биндингом и без него
     }
 };

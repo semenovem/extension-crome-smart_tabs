@@ -6,14 +6,14 @@ app.kitCollect = {
     $className: 'kitCollect',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
     // </debug>
 
     /**
      * Список окон
-     * @type {object}
+     * @type {app.Kit[]}
      */
     _items: Object.create(null),
 
@@ -48,7 +48,7 @@ app.kitCollect = {
     /**
      * Удаление объекта (окно браузера) при его закрытии
      * @param {number} kitId
-     * @return {object}
+     * @return {app.Kit|null}
      */
     removeItem(kitId) {
         const item = this._items[kitId];

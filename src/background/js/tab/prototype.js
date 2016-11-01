@@ -1,10 +1,10 @@
 /**
- * @type {object} прототип @class TabItem
+ * @type {object} прототип @class Tab
  */
-app.TabItemPrototype = app.TabItem.prototype = {
+app.TabPrototype = app.Tab.prototype = {
     // <debug>
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
     // </debug>
@@ -15,11 +15,11 @@ app.TabItemPrototype = app.TabItem.prototype = {
     init() {},
 
     /**
-     * Вернуть id записи
-     * @return {string}
+     * getter tabId
+     * @return {Number}
      */
     getId() {
-        return this.id;
+        return this._tabId;
     },
 
     /**
@@ -41,19 +41,42 @@ app.TabItemPrototype = app.TabItem.prototype = {
             .filter(field => 'default' in field === false || field.default !== tmp[field.name])
             .forEach(field => model[field.name] = tmp[field.name]);
 
+        //console.log (model)
+
         return model;
     },
+
+    /**
+     *
+     * @param {app.dto.TabView} view
+     * @return {*}
+     */
+    prepDtoModel(view) {
+        return Object.assign(
+            {},
+            view)
+    },
+
+    /**
+     * Получить модель с использованием данных view
+     * @param {app.dto.TabView} view
+     * @return {app.dto.TabModel}
+     */
+    getModelUsingView(view) {
+        return this._app.dto.TabModel(
+            Object.assign(this._getDataToModel(), view)
+        );
+    },
+
 
     /**
      * Формирует данные для сохранения
      * @return {object}
      */
     _getDataToModel() {
-        const model = {};
-        this._app.tabFields
-            .filter(field => field.model && field.name in this)
-            .forEach(field => model[field.name] = this[field.name]);
-        return model;
+        return {
+            // пока никаких данных
+        };
     },
 
     /**
@@ -93,9 +116,9 @@ app.TabItemPrototype = app.TabItem.prototype = {
      * Удаление объекта
      */
     destroy() {
-        if (this.status !== 'removed') {
-            this._app.tabCollect.removeItem(this.id);
-            this.status = 'removed';
+        if (this._status !== 'removed') {
+            this._app.tabCollect.removeItem(this._tabId);
+            this._status = 'removed';
 
         }
     },
@@ -104,7 +127,7 @@ app.TabItemPrototype = app.TabItem.prototype = {
      * Активация вкладки (была выбрана в своем окне)
      */
     active() {
-        return this._app.browserApi.tabs.update(this.id, { active: true })
+        return this._app.browserApi.tabs.update(this._tabId, { active: true })
         // <debug>
         //    .then(tabView => console.log ('tab was activated ', tabView));
         // </debug>
@@ -124,29 +147,29 @@ app.TabItemPrototype = app.TabItem.prototype = {
      * Выгрузить вкладку
      */
     discard() {
-        if (!this.discarded) {
-            this.discarded = true;
+        if (!this._discarded) {
+            this._discarded = true;
         }
     },
 
     /**
      * setter установить статус
-     * @param status
+     * @param {String} status
      * @return {object}
      */
     setStatus(status) {
-        if (this.status !== status) {
-            this.status = status;
+        if (this._status !== status) {
+            this._status = status;
         }
         return this;
     },
 
     /**
-     * getter получение статуса
-     * @return {object}
+     * getter статуса
+     * @return {String}
      */
     getStatus() {
-        return this.status;
+        return this._status;
     }
 
 };

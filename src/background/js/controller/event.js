@@ -6,7 +6,7 @@ app.controllerEvent = {
     $className: 'controllerEvent',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 
@@ -107,21 +107,21 @@ app.controllerEvent = {
 
     /**
      * Событие. Создана новая вкладка
-     * @param {object} tabView объект tab
+     * @param {app.dto.TabView} dtoTabView объект tab
      */
-    _createdTab(tabView) {
+    _createdTab(dtoTabView) {
         if (this._suspendEvents.onCreatedTab) {
             return;
         }
 
-        const kit = this._app.kitCollect.getById(tabView.kitId) || this._app.kitCollect.createItem({
-                kitId: tabView.kitId
+        const kit = this._app.kitCollect.getById(dtoTabView.kitId) || this._app.kitCollect.createItem({
+                kitId: dtoTabView.kitId
             });
         kit.modify();
 
-        //console.log ('001, create tab ', tabView);
+        //console.log ('001, create tab ', dtoTabView);
 
-        const tab = this._app.tabCollect.getByView(tabView);
+        const tab = this._app.tabCollect.getByView(dtoTabView);
     },
 
     /**

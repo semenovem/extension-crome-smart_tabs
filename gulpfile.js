@@ -56,8 +56,8 @@ gulp.task('build', ['build-clear'], function() {
             'src/background/*.js',
 
             // нужно включить в первую очередь
-            'src/background/js/kit/Item.js',
-            'src/background/js/tab/Item.js',
+            'src/background/js/kit/Kit.js',
+            'src/background/js/tab/Kit.js',
             'src/background/js/browserApi/browserApi.js',
             'src/background/js/browserApi/runtime/runtime.js',
             'src/background/js/browserApi/tabs/tabs.js',

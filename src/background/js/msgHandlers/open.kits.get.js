@@ -1,6 +1,6 @@
 /**
  * Получить данные по открытым окнам
- * context = app
+ * @context app
  *
  * implementation
  * получение views всех открытых окон

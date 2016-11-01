@@ -1,10 +1,10 @@
 /**
  * @type {object} прототип @class KitItem
  */
-app.KitItemPrototype = app.Kit.prototype = {
+app.KitPrototype = app.Kit.prototype = {
     // <debug>
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 
@@ -74,7 +74,7 @@ app.KitItemPrototype = app.Kit.prototype = {
 
             this.modify.clear();
 
-            return (result.relevant === 1 ? Promise.resolve() : this._save(this._getModel(result.view)))
+            return (result.relevant === 1 ? Promise.resolve() : this._save(this.getModelUsingView(result.view)))
                 .then(this.ready.resolve);
         }
         catch (e) {
@@ -131,22 +131,59 @@ app.KitItemPrototype = app.Kit.prototype = {
      * @return {Promise.<app.dto.KitTabModel>}
      */
     getModel() {
-        return this.getView().then(this._getModel);
+        return this.getView().then(this.getModelUsingView);
     },
 
     /**
-     * Получить модель
+     * Получить модель с использованием данных view
      * @param {app.dto.KitTabView} view
      * @return {app.dto.KitTabModel}
      */
-    _getModel(view) {
+    getModelUsingView(view) {
+        // подготовить данные для создания модели - объединить данные объекта <-> с данными view
+        const raw = {
+            name     : this._name,
+            note     : this._note,
+            tabActive: this._tabActive,
+            state    : this._state,
+            setTab   : this._setTab
+        };
+
+
+        // todo остановился здесь
+
+
+
+        return view;
         return this._app.dto.kitTabModel(
-            Object.assign(this._getDataToModel(), view)
+            Object.assign(
+                this._getDataToModel(),
+                view,
+                {
+                    tabs: view.tabs.map(tabView => this._app.tabCollect.getByView(tabView).prepDtoModel(tabView))
+                }
+            )
         );
     },
 
     /**
-     * Формирует данные для сохранения
+     * Объект данных объекта
+     */
+    getData() {
+        return this.getView().then(this.getDataUsingView);
+    },
+
+    /**
+     * Объект dto с существующим view
+     * @param view
+     */
+    getDataUsingView(view) {
+        return view;
+    },
+
+
+    /**
+     * Формирует данные для создания модели
      * @return {object}
      */
     _getDataToModel() {
@@ -191,8 +228,12 @@ app.KitItemPrototype = app.Kit.prototype = {
             }
         }
         catch (e) {}
-
     },
+
+
+    // todo добавить метод для получения даннх по окну с другими данными - новое dto для frontend
+
+
 
     // ################################################
     //

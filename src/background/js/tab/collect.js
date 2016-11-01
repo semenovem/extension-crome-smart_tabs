@@ -6,14 +6,14 @@ app.tabCollect = {
     $className: 'tabCollect',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
     // </debug>
 
     /**
      * Список tabs
-     * @type {object}
+     * @type {app.Tab[]}
      */
     _items: Object.create(null),
 
@@ -26,44 +26,44 @@ app.tabCollect = {
 
     /**
      * Создание экземпляра
-     * @param {object} view
-     * @return {object}
+     * @param {app.dto.TabView} view
+     * @return {app.Tab}
      */
     createItem(view) {
         let item;
-        item = new this._app.TabItem(view);
-        this._items[item.id] = item;
+        item = new this._app.Tab(view);
+        this._items[item.getId()] = item;
         return item;
     },
 
     /**
      * Получить или создать запись
-     * @param {object} view
-     * @return {object}
+     * @param {app.dto.TabView} view
+     * @return {app.Tab}
      */
     getByView(view) {
-        return this.getById(view.id) || this.createItem(view);
+        return this.getById(view.tabId) || this.createItem(view);
     },
 
     /**
      * Удаление объекта вкладки
-     * @param {number} id
-     * @return {object|null}
+     * @param {number} tabId
+     * @return {app.Tab|null}
      */
-    removeItem(id) {
-        const item = this._items[id];
+    removeItem(tabId) {
+        const item = this._items[tabId];
         if (item) {
-            delete this._items[id];
+            delete this._items[tabId];
         }
         return item || null;
     },
 
     /**
-     * Получить tab по id
-     * @param {number} id
-     * @return {object|undefined}
+     * Получить tab
+     * @param {number} tabId
+     * @return {app.Tab|undefined}
      */
-    getById(id) {
-        return this._items[id];
+    getById(tabId) {
+        return this._items[tabId];
     }
 };

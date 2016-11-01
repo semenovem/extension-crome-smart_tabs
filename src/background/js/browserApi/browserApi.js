@@ -6,7 +6,7 @@ app.browserApi = {
     $className: 'browserApi',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 

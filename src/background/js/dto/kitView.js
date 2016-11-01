@@ -8,7 +8,6 @@ app.dto.kitView = function(data) {
     return new app.dto.KitView(data, this);
 };
 
-
 /**
  * @constructor
  */
@@ -42,7 +41,6 @@ app.dto.KitView = function(data, dto) {
         if (dto.kitState(data.state)) {
             this.state = data.state;
         }
-
 
         // required fields
         if (!this.kitId) {

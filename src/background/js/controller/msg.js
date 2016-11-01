@@ -6,7 +6,7 @@ app.controllerMsg = {
     $className: 'controllerMsg',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
     // </debug>

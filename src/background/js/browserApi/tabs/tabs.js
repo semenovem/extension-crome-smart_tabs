@@ -8,7 +8,7 @@ app.browserApi.tabs = {
     $className: 'browserApi.tabs',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 
@@ -35,6 +35,7 @@ app.browserApi.tabs = {
      */
     init() {
         this._app.executionInits.call(this, this._app);
+        this._app.binding(this);
     },
 
     // ################################################
@@ -73,10 +74,9 @@ app.browserApi.tabs = {
     normalize(tabEvent) {
         try {
             return {
-                id        : +tabEvent.id,
-                tabId        : +tabEvent.id,
-                active: tabEvent.active,
-                audible: tabEvent.audible,
+                tabId     : +tabEvent.id,
+                active    : tabEvent.active,
+                audible   : tabEvent.audible,
                 favIconUrl: tabEvent.favIconUrl,
                 //highlighted: tabEvent.highlighted,
                 //incognito: tabEvent.incognito,
@@ -94,6 +94,24 @@ app.browserApi.tabs = {
             throw '--' + e;
         }
     },
+
+    /**
+     *
+     * @param {*} tabEvent
+     * @return {app.dto.TabView}
+     */
+    convDtoTabView(tabEvent) {
+        try {
+            return this._app.dto.tabView(
+                this.normalize(tabEvent)
+            );
+        }
+        catch (e) {
+            throw 'Не удалось' + e;
+        }
+    },
+
+
 
 
 
@@ -133,7 +151,7 @@ app.browserApi.tabs = {
         }
         const tabView = {};
         const tabRaw = {
-            id        : tabEvent.id,
+            tabId        : +tabEvent.id,
             //active: tabEvent.active,
             //audible: tabEvent.audible,
             favIconUrl: tabEvent.favIconUrl,
@@ -145,7 +163,7 @@ app.browserApi.tabs = {
             //status: tabEvent.status,
             title     : tabEvent.title,
             url       : tabEvent.url,
-            kitId     : tabEvent.windowId       // todo проверить, используется ли где либо это
+            kitId     : +tabEvent.windowId
         };
 
         this._app.tabFields

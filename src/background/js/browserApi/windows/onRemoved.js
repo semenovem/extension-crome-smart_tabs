@@ -7,7 +7,7 @@ app.browserApi.windows.onRemoved = {
     $className: 'browserApi.windows.onRemoved',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 

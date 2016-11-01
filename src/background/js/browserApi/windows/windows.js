@@ -8,7 +8,7 @@ app.browserApi.windows = {
     $className: 'browserApi.windows',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 
@@ -131,7 +131,7 @@ app.browserApi.windows = {
 
     /**
      *
-     * @param arrKitEvent
+     * @param {*} arrKitEvent
      * @return {app.dto.KitTabView[]}
      */
     convDtoArrKitTabView(arrKitEvent) {

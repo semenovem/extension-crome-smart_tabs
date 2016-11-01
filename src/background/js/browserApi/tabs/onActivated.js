@@ -8,7 +8,7 @@ app.browserApi.tabs.onActivated = {
     $className: 'browserApi.tabs.onActivated',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 
@@ -47,14 +47,6 @@ app.browserApi.tabs.onActivated = {
             delete this._callback;
         }
     },
-
-
-    // <debug>
-    // поля объекта события
-
-    // </debug>
-
-
 
     /**
      * Обработчик

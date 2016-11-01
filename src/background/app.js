@@ -1,6 +1,6 @@
 "use strict";
 /**
- *  the application object
+ * @type {object} the application object
  */
 var app = {
     /**
@@ -32,17 +32,17 @@ var app = {
 
     /**
      * Constructor for tab
-     * @file js/tab/Item.js
+     * @file js/tab/Tab.js
      * @constructor
      */
-    TabItem: null,
+    Tab: null,
 
     /**
      * Constructor win
-     * @file js/kit/Item.js
+     * @file js/kit/Kit.js
      * @constructor
      */
-    KitItem: null,
+    Kit: null,
 
     /**
      * Коллекция вкладок
@@ -105,12 +105,14 @@ var app = {
 
     /**
      * Ведение логов, регистрация ошибок
+     * @type {Function}
      * @file js/log.js
      */
     log: null,
 
     /**
      * Cостояние активности системы
+     * @type {Object}
      * @file js/systemIdle.js
      */
     systemIdle: null,
@@ -119,6 +121,7 @@ var app = {
 
     /**
      * @type {Object} data transport object
+     * @file js/dto/dto.js
      */
     dto: {},
 
@@ -127,7 +130,7 @@ var app = {
      * Если есть метод init - синхронно выполняем
      * После выполнения удаляем init
      *
-     * @param {object} [app] объект, устанавливаемый в качестве объекта приложения
+     * @param {Object} [app] объект, устанавливаемый в качестве объекта приложения
      * @private
      */
     executionInits(app) {

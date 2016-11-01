@@ -12,7 +12,7 @@ app.browserApi.runtime.onMessage = {
     $className: 'browserApi.runtime.onMessage',
 
     /**
-     * @type {app} the application object
+     * @type {object} the application object
      */
     _app: null,
 

@@ -21,16 +21,12 @@ app.dto.TabView = function(data, dto) {
             this.url = data.url;
         }
 
-        if (typeof data.title === 'string' && data.title.length <= 300) {
+        if (typeof data.title === 'string' && data.title.length <= 300 && data.title) {
             this.title = data.title;
         }
 
-        if (typeof data.favIconUrl === 'string' && data.favIconUrl.length <= 300) {
+        if (typeof data.favIconUrl === 'string' && data.favIconUrl.length <= 300 && data.favIconUrl) {
             this.favIconUrl = data.favIconUrl;
-        }
-
-        if (typeof data.history === 'boolean') {
-            this.history = data.history;
         }
 
         if (dto.moreZero(data.tabId)) {

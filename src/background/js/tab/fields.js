@@ -1,5 +1,5 @@
 /**
- * @type {object} прототип @class TabItem
+ * @type {object} прототип @class Tab
  */
 app.tabFields = [
 
