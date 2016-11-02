@@ -1,6 +1,5 @@
 /**
  * Получить данные по открытым окнам
- * context = app
  *
  * implementation
  * получение views всех открытых окон
@@ -8,8 +7,9 @@
  * получение моделей (model)
  * добавление в объект модели дополнительных свойств: id окна
  *
+ * @context app
  * @param {object} params {*} не обрабатываем
- * @param {Promise<Array>} массив моделей окон
+ * @param {Promise<Array>} массив dto @class app.dto.kitForPopupOpen
  */
 app.defineMsgHandler('open.kits.get', function() {
     return this.browserApi.windows.getAll({ populate: true })

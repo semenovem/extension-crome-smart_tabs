@@ -1,10 +1,14 @@
 /**
- * @type {object} создание нового окна браузера
  *
+ * @context app.browserApi.windows
+ *
+ * @type {app.dto.kitTabModel} создание нового окна браузера
+ * @return {Promise.<app.dto.KitTabView>}
  */
 app.browserApi.windows.create = function(model) {
     const createData = this.recordKitToOpen(model);
     let timer;
+
     return new Promise((resolve, reject) => {
         timer = setTimeout(
             reject,
@@ -13,17 +17,9 @@ app.browserApi.windows.create = function(model) {
 
         window.chrome.windows.create(createData, resolve);
     })
-        .then(kitEvent => {
-            clearTimeout(timer);
-
-            const view = this.conv(kitEvent);
-
-            if (view && view.tabs) {
-                return view;
-            } else {
-                throw {
-                    name: 'Данные окна не прошли валидацию'
-                };
-            }
-        });
+        .then(this.convDtoKitTabView)
+        .catch(e => {
+            console.error('--', e);
+            throw 'error' + e;
+        })
 };

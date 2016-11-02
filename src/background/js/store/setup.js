@@ -6,8 +6,7 @@ app.storeSetup = {
     $className: 'StoreSetup',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {object} the application object
      */
     _app: null,
     // </debug>

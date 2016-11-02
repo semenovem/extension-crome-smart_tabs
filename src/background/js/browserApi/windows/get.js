@@ -1,37 +1,11 @@
 /**
- * Получить информацию по окну и вкладкам
- * Конвертация данных окна
- * на выходе объект:
+ * Получить информацию по окну
  *
- * {
- *      id: {number}    id окна
- *      width:
- *      height:
- *      left:
- *      top:
- *      alwaysOnTop:
- *      focused:
- *      type:
- *
- *      // опционально, если передан параметр populate: true
- *      [tabs]: [
- *          {
- *              active:
- *              url:
- *              title:
- *              favIconUrl:
- *          }
- *      ]
- * }
- *
- * @param {number} id идентификатор окна
+ * @param {number} kitId идентификатор окна
  * @param {object} [params] параметры
- * @return {Promise.<object>}
+ * @return {Promise.<app.dto.KitView|app.dto.KitTabView>}
  */
-
-// browserApi.windows.get
-
-app.browserApi.windows.get = function(id, params) {
+app.browserApi.windows.get = function(kitId, params) {
     let timer;
 
     // параметры по умолчанию
@@ -47,18 +21,14 @@ app.browserApi.windows.get = function(id, params) {
             this._app.setup.get('browserApi.windows.get.resetQuery')
         );
 
-        window.chrome.windows.get(id, queryParams, resolve);
+        window.chrome.windows.get(kitId, queryParams, resolve);
     })
         .then(kitEvent => {
             clearTimeout(timer);
-
-            const kitView = this.conv(kitEvent);
-            if (kitView && id === kitView.id && (!queryParams.populate || kitView.tabs)) {
-                return kitView;
-            } else {
-                throw {
-                    name: 'Данные окна не прошли валидацию'
-                };
-            }
-        });
+            return queryParams.populate ? this.convDtoKitTabView(kitEvent) : this.convDtoKitView(kitEvent);
+        })
+        .catch(e => {
+            console.error('--', e);
+            throw '--' + e;
+        })
 };

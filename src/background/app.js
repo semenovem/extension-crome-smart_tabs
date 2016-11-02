@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Объект приложения
+ * @type {object} the application object
  */
 var app = {
     /**
@@ -32,17 +32,17 @@ var app = {
 
     /**
      * Constructor for tab
-     * @file js/tab/Item.js
+     * @file js/tab/Tab.js
      * @constructor
      */
-    TabItem: null,
+    Tab: null,
 
     /**
      * Constructor win
-     * @file js/kit/Item.js
+     * @file js/kit/Kit.js
      * @constructor
      */
-    KitItem: null,
+    Kit: null,
 
     /**
      * Коллекция вкладок
@@ -105,12 +105,14 @@ var app = {
 
     /**
      * Ведение логов, регистрация ошибок
+     * @type {Function}
      * @file js/log.js
      */
     log: null,
 
     /**
      * Cостояние активности системы
+     * @type {Object}
      * @file js/systemIdle.js
      */
     systemIdle: null,
@@ -118,11 +120,17 @@ var app = {
     // </debug>
 
     /**
+     * @type {Object} data transport object
+     * @file js/dto/dto.js
+     */
+    dto: {},
+
+    /**
      * Дочерним объектам устанавливаем ссылку на объект приложения
      * Если есть метод init - синхронно выполняем
      * После выполнения удаляем init
      *
-     * @param {object} [app] объект, устанавливаемый в качестве объекта приложения
+     * @param {Object} [app] объект, устанавливаемый в качестве объекта приложения
      * @private
      */
     executionInits(app) {
@@ -180,7 +188,7 @@ var app = {
     },
 
     /**
-     * Методы для обработки сообщений от окон
+     * Ообработчики сообщений от окон
      */
     _msgHandlers: Object.create(null),
 
@@ -201,7 +209,7 @@ var app = {
      * @return {function}
      */
     getMsgHandler(name) {
-        return this._msgHandlers[name]
+        return this._msgHandlers[name];
     },
 
     /**
@@ -227,8 +235,6 @@ var app = {
             .then(() => {
                 this.controllerEvent.enable();
                 this.controllerMsg.enable();
-                //this.controllerMsgPopup.add();
-                //this.controllerMsgOptions.add();
                 this.systemIdle.run();
             })
             .then(this.sync.all)
@@ -236,42 +242,13 @@ var app = {
             .then(
                 () => {
                     console.log('\n-----------------------------------\n\n');
-                    console.log('(heap):  ', this.storeOpen._heap);
+                    console.log('(heap):  ', this.storeOpen._dtoArrRecord);
                     console.log('(kits):  ', this.kitCollect._items);
                     console.log('(tabs):  ', this.tabCollect._items);
                     console.log('\n-----------------------------------\n');
                 }
             )
-            .then(() => {
 
-                //       this.init = null;
-                //       this.binding = null;
-                //       this._timeout = null;
-                //       this.executionInits = null;
-
-                //function randomInteger(min, max) {
-                //    var rand = min - 0.5 + Math.random() * (max - min + 1)
-                //    rand = Math.round(rand);
-                //    return rand;
-                //}
-
-                //window.chrome.tabs.query({}, tabs => {
-                //
-                //    let num = 0;
-                //    const length = tabs.length - 1;
-                //
-                //    setInterval(() => {
-                //
-                //        window.chrome.tabs.update(
-                //            tabs[randomInteger(0, length)].id,
-                //            {
-                //                active: true
-                //            }
-                //        )
-                //    }, 500);
-                //})
-
-            })
 
             .catch(e => {
                 this.log({

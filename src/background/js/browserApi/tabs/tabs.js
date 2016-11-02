@@ -8,7 +8,7 @@ app.browserApi.tabs = {
     $className: 'browserApi.tabs',
 
     /**
-     * @type {object} объект приложения
+     * @type {object} the application object
      */
     _app: null,
 
@@ -26,7 +26,6 @@ app.browserApi.tabs = {
      * Событие активации вкладки (пользователь переключился на вкладку)
      */
     onActivated: null,
-
     // </debug>
 
     /**
@@ -35,6 +34,7 @@ app.browserApi.tabs = {
      */
     init() {
         this._app.executionInits.call(this, this._app);
+        this._app.binding(this);
     },
 
     // ################################################
@@ -42,67 +42,71 @@ app.browserApi.tabs = {
     // ################################################
 
     /**
-     * Конвертация массива вкладок
-     * @param {Array} tabsEvent
-     * @return {Array}
-     * @private
+     * Определить индекс активной вкладки в массиве вкладок
+     * @param {Array} tabs
+     * @return {number}
      */
-    convAll(tabsEvent) {
-        return tabsEvent
-            .map(tabsEvent => this.conv(tabsEvent)).filter(tabView => tabView);
+    getIndexActive(tabs) {
+        return tabs.reduce((index, tab, indexInArr) => {
+            return tab.active ? indexInArr : index;
+        }, 0);
+    },
+
+
+
+    /**
+     *
+     */
+    normalizeArr(tabs) {
+        try {
+            return tabs.map(this.normalize);
+        }
+        catch (e) {
+            console.error('--', e);
+            throw '--' + e;
+        }
     },
 
     /**
-     * Конвертация данных вкладки
-     *  {
-     *      active:
-     *      url:
-     *      title:
-     *      favIconUrl:
-     *  }
      *
-     * @param {object} tabEvent
-     * @return {object|null}
-     * @private
      */
-    conv(tabEvent) {
-        if (!tabEvent || typeof tabEvent !== 'object') {
-            return null;
+    normalize(tabEvent) {
+        try {
+            return {
+                tabId     : +tabEvent.id,
+                active    : tabEvent.active,
+                audible   : tabEvent.audible,
+                favIconUrl: tabEvent.favIconUrl,
+                //highlighted: tabEvent.highlighted,
+                //incognito: tabEvent.incognito,
+                //index: tabEvent.index,
+                //pinned: tabEvent.pinned,
+                //selected: tabEvent.selected,
+                //status: tabEvent.status,
+                title     : tabEvent.title,
+                url       : tabEvent.url,
+                kitId     : +tabEvent.windowId
+            }
         }
-        const tabView = {};
-        const tabRaw = {
-            id        : tabEvent.id,
-            //active: tabEvent.active,
-            //audible: tabEvent.audible,
-            favIconUrl: tabEvent.favIconUrl,
-            //highlighted: tabEvent.highlighted,
-            //incognito: tabEvent.incognito,
-            //index: tabEvent.index,
-            //pinned: tabEvent.pinned,
-            //selected: tabEvent.selected,
-            //status: tabEvent.status,
-            title     : tabEvent.title,
-            url       : tabEvent.url,
-            kitId     : tabEvent.windowId       // todo проверить, используется ли где либо это
-        };
+        catch (e) {
+            console.error('--', e);
+            throw '--' + e;
+        }
+    },
 
-        this._app.tabFields
-            .filter(field => field.view && field.name in tabRaw)
-            .forEach(field => {
-                const name = field.name;
-                const value = field.normalize(tabRaw[name]);
-                if (field.valid(value)) {
-                    tabView[name] = value;
-                }
-            });
-
-        // валидация обязательных значений
-        let valid = this._app.tabFields
-            .filter(field => field.requireView)
-            .every(field => tabView[field.name]);
-
-        return valid ? tabView : null;
-        
-        // todo сделать логгирование ошибок валидации
+    /**
+     *
+     * @param {*} tabEvent
+     * @return {app.dto.TabView}
+     */
+    convDtoTabView(tabEvent) {
+        try {
+            return this._app.dto.tabView(
+                this.normalize(tabEvent)
+            );
+        }
+        catch (e) {
+            throw 'Не удалось' + e;
+        }
     }
 };

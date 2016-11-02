@@ -8,7 +8,7 @@ app.browserApi.tabs.onUpdated = {
     $className: 'browserApi.tabs.onUpdated',
 
     /**
-     * @type {object} объект приложения
+     * @type {object} the application object
      */
     _app: null,
 

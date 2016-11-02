@@ -6,15 +6,14 @@ app.kitCollect = {
     $className: 'kitCollect',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {object} the application object
      */
     _app: null,
     // </debug>
 
     /**
      * Список окон
-     * @type {object}
+     * @type {app.Kit[]}
      */
     _items: Object.create(null),
 
@@ -27,44 +26,44 @@ app.kitCollect = {
 
     /**
      * Создание экземпляра
-     * @param {object} view
-     * @return {object}
+     * @param {app.dto.KitView|app.dto.KitTabView} view
+     * @return {app.Kit}
      */
     createItem(view) {
         let item;
-        item = new this._app.KitItem(view);
+        item = new this._app.Kit(view);
         this._items[item.getId()] = item;
         return item;
     },
 
     /**
      * Получить или создать запись
-     * @param {object} view
-     * @return {object}
+     * @param {app.dto.KitView|app.dto.KitTabView} view
+     * @return {app.Kit}
      */
     getByView(view) {
-        return this.getById(view.id) || this.createItem(view);
+        return this.getById(view.kitId) || this.createItem(view);
     },
 
     /**
      * Удаление объекта (окно браузера) при его закрытии
-     * @param {number} id
-     * @return {object}
+     * @param {number} kitId
+     * @return {app.Kit|null}
      */
-    removeItem(id) {
-        const item = this._items[id];
+    removeItem(kitId) {
+        const item = this._items[kitId];
         if (item) {
-            delete this._items[id];
+            delete this._items[kitId];
         }
         return item || null;
     },
 
     /**
-     * Получить kit по id
-     * @param {number} id
-     * @return {object|undefined}
+     * Получить kit
+     * @param {number} kitId
+     * @return {app.Kit|undefined}
      */
-    getById(id) {
-        return this._items[id];
+    getById(kitId) {
+        return this._items[kitId];
     }
 };

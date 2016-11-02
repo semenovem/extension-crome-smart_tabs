@@ -1,14 +1,14 @@
 /**
  * Настройки
  * Получение и изменение в синхронном режиме
+ * @type {object}
  */
 app.setup = {
     // <debug>
-    $className: 'Setup',
+    $className: 'setup',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {object} the application object
      */
     _app: null,
 

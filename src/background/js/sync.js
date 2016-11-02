@@ -6,8 +6,7 @@ app.sync = {
     $className: 'sync',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {object} the application object
      */
     _app: null,
     // </debug>
@@ -22,14 +21,11 @@ app.sync = {
     /**
      * Синхронизировать все окна
      *
-     * объекты kit, tab
-     * view kit, tab
-     *
      * @return {Promise<>}
      */
     all() {
         return this._app.browserApi.windows.getAll()
-            .then(views => views.map(this._app.kitCollect.getByView))
+            .then(dtoArrKitView => dtoArrKitView.map(this._app.kitCollect.getByView))
 
             // ожидание готовности окон - когда их состояние станет resolve
             .then(kits => Promise.all(kits.map(kit => {
@@ -43,8 +39,7 @@ app.sync = {
     },
 
 
-
-    kit(id) {
+    kit(kitId) {
 
     },
 

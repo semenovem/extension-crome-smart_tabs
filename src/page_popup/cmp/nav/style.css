@@ -6,6 +6,8 @@
 	align-items: center;
 	padding: 0.5rem;
 }
+
+/* логотип */
 .nav__log {
 
 }
@@ -14,12 +16,19 @@
 	font-size: 1.8em;
 	margin-left: 15px;
 	color: #999999;
+	cursor: default;
 }
 
-
+/* выбранный пункт */
 .nav__item_current {
 	color: #000000;
 }
 
+
+/* пункт меню */
+.nav__item-main {}
+
+/* настройки */
+.nav__item-setup
 
 

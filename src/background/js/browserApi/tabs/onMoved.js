@@ -9,7 +9,7 @@ app.browserApi.tabs.onMoved = {
     $className: 'browserApi.tabs.onMoved',
 
     /**
-     * @type {object} объект приложения
+     * @type {object} the application object
      */
     _app: null,
 

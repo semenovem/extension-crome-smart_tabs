@@ -6,8 +6,7 @@ app.controllerEvent = {
     $className: 'controllerEvent',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {object} the application object
      */
     _app: null,
 
@@ -108,21 +107,21 @@ app.controllerEvent = {
 
     /**
      * Событие. Создана новая вкладка
-     * @param {object} tabView объект tab
+     * @param {app.dto.TabView} dtoTabView объект tab
      */
-    _createdTab(tabView) {
+    _createdTab(dtoTabView) {
         if (this._suspendEvents.onCreatedTab) {
             return;
         }
 
-        const kit = this._app.kitCollect.getById(tabView.kitId) || this._app.kitCollect.createItem({
-                id: tabView.kitId
+        const kit = this._app.kitCollect.getById(dtoTabView.kitId) || this._app.kitCollect.createItem({
+                kitId: dtoTabView.kitId
             });
         kit.modify();
 
-        //console.log ('001, create tab ', tabView);
+        //console.log ('001, create tab ', dtoTabView);
 
-        const tab = this._app.tabCollect.getByView(tabView);
+        const tab = this._app.tabCollect.getByView(dtoTabView);
     },
 
     /**
@@ -143,11 +142,11 @@ app.controllerEvent = {
 
     /**
      * Закрытие окна браузера
-     * @param {number} id идентификатор окна браузера
+     * @param {number} kitId идентификатор окна браузера
      * @private
      */
-    _removedKit(id) {
-        const kit = this._app.kitCollect.getById(id);
+    _removedKit(kitId) {
+        const kit = this._app.kitCollect.getById(kitId);
         kit && kit.removed();
     },
 
@@ -206,7 +205,7 @@ app.controllerEvent = {
      *
      * @param info
      */
-    highlighted(info) {
+    _highlighted(info) {
         console.log('tab _onHighlighted', info);
     },
 

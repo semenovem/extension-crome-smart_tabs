@@ -1,8 +1,12 @@
 /**
+ * Обновление данных вкладки
+ *
+ * @context app.browser.tabs
+ *
  * @type {object} обновление данных вкладки
  * @param {number} tabId
  * @param {object} params
- *
+ * @return {Promise.<app.dto.TabView>}
  */
 app.browserApi.tabs.update = function(tabId, params) {
     const props = {};
@@ -14,25 +18,17 @@ app.browserApi.tabs.update = function(tabId, params) {
         props.active = params.active;
     }
 
-    let timer;
     return new Promise((resolve, reject) => {
-        timer = setTimeout(
+        setTimeout(
             reject,
             this._app.setup.get('browserApi.tab.update.resetQuery')
         );
 
         window.chrome.tabs.update(tabId, props, resolve);
     })
-        .then(tabEvent => {
-            clearTimeout(timer);
-            const tabView = this.conv(tabEvent);
-
-            if (tabView) {
-                return tabView;
-            } else {
-                throw {
-                    name: 'Данные вкладки не прошли валидацию'
-                };
-            }
-        });
+        .then(this.convDtoTabView)
+        .catch(e => {
+            console.error('--', e);
+            throw '--' + e;
+        })
 };

@@ -7,8 +7,7 @@ app.util = {
     $className: 'Util',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {object} the application object
      */
     _app: null,
     // </debug>

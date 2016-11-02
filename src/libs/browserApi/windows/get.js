@@ -24,11 +24,11 @@
  *      ]
  * }
  *
- * @param {number} id идентификатор окна
+ * @param {number} kitId идентификатор окна
  * @param {object} [params] параметры
  * @return {Promise.<object>}
  */
-app.browserApi.windows.get = function (id, params) {
+app.browserApi.windows.get = function (kitId, params) {
     let timer;
 
     // параметры по умолчанию
@@ -40,13 +40,13 @@ app.browserApi.windows.get = function (id, params) {
 
     return new Promise((resolve, reject) => {
         timer = setTimeout(reject, 1000);
-        window.chrome.windows.get(id, queryParams, resolve);
+        window.chrome.windows.get(kitId, queryParams, resolve);
     })
         .then(kitEvent => {
             clearTimeout(timer);
 
             const kitView = this.conv(kitEvent);
-            if (kitView && id === kitView.id && (!queryParams.populate || kitView.tabs)) {
+            if (kitView && kitId === kitView.kitId && (!queryParams.populate || kitView.tabs)) {
                 return kitView;
             } else {
                 throw {

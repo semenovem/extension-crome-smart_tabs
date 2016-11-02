@@ -9,8 +9,7 @@ app.defineMsgHandler('recent.kits.get', function(params, callback) {
 
     if (kit) {
         valid = true;
-        kit.getView()
-            .then(kit.getModel)
+        kit.getModel()
             .then(model => {
 
                 this._success({
@@ -32,23 +31,3 @@ app.defineMsgHandler('recent.kits.get', function(params, callback) {
         this._app.log('Не удалось получить данные окна', e);
     }
 });
-
-//
-///*
-//
-// /**
-// * Данные недавно закрытых окон для demo
-// * @param [params]
-// * @returns {Promise.<T>}
-// * @private
-// */
-//_kitRecent(params) {
-//    return this._app.storeRecent.getRecords()
-//        .then(records => records.map(record => {
-//                record.demoKit = this._app.kitConv.storedToDemo(record.storedKit);
-//                delete record.storedKit;
-//                return record;
-//            })
-//        );
-//}
-// */

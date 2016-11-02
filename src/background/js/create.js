@@ -1,13 +1,12 @@
 /**
- * @type {object} создание окон и вкладок
+ * @type {app.create} создание окон и вкладок
  */
 app.create = {
     // <debug>
     $className: 'create',
 
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {object} the application object
      */
     _app: null,
     // </debug>
@@ -21,22 +20,21 @@ app.create = {
 
     /**
      * Открыть вкладки, сохраненные в storeOpen
-     * @return {Promise.<>} массив объектов окон @class KitItem
+     * @return {Promise.<app.Kit[]>}
      */
     saved() {
         return this._app.storeOpen.getSaved()
-            .then(records => Promise.all(records.map(this.kit)));
+            .then(dtoArrRecord => Promise.all(dtoArrRecord.map(this.kit)));
     },
 
 
     /**
      * Открытие окна
-     * @param {object} record
-     * @return {Promise.<>} объект @class KitItem
+     * @param {app.dto.Record} dtoRecord
+     * @return {Promise.<app.Kit>}
      * @private
      */
-    kit(record) {
-
+    kit(dtoRecord) {
         // несколько вариантов открытия / создания нового окна
         // - с пустыми страницами, которые загрузятся после получения фокуса
         // - с пустыми страницами, которые будут одна за другой загружаться, по мере освобождения канала
@@ -56,40 +54,32 @@ app.create = {
         //];
 
         /*
-
           проверить состояние вкладки:
           если вкладка discarded
           поставить адрес пустой страницы
 
           ----
           при записи - не записывать url пустой страницы, сохраняя тот, который был до подмены
-
-
          */
 
+        return this._app.browserApi.windows.create(dtoRecord.dtoKitTabModel)
+            .then(dtoKitTabView => {
 
-      //  console.log ('app.create.kit:: record', record.model);
+                this._app.storeOpen.heapExclude(dtoRecord.itemKey);
+                const kit = this._app.kitCollect.getByView(dtoKitTabView);
 
-        //console.log (111, this._app.browserApi.windows.recordKitToOpen(record.model))
-
-        //return Promise.resolve();
-
-        return this._app.browserApi.windows.create(record.model)
-
-            .then(view => {
-                this._app.storeOpen.heapExclude(record.itemKey);
-                const kit = this._app.kitCollect.getByView(view);
+                const dtoKitTabModel = dtoRecord.dtoKitTabModel;
 
                 kit.applyMapping({
-                    view,
+                    dtoKitTabView,
                     relevant: 1,
-                    itemKey: record.itemKey,
-                    model: record.model
+                    itemKey: dtoRecord.itemKey,
+                    dtoKitTabModel
                 });
 
                 // активация вкладки (переключение на сохраненную активную)
-                if (record.model.tabActive) {
-                    const tabView = view.tabs[record.model.tabActive];
+                if (dtoKitTabModel.tabActive) {
+                    const tabView = dtoKitTabView.tabs[dtoKitTabModel.tabActive];
                     if (tabView) {
                         const tab = this._app.tabCollect.getById(tabView.id);
                         tab && tab.active();

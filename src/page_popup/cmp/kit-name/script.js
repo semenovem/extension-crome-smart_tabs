@@ -1,53 +1,86 @@
 /**
- * Название текущего окна
+ * Название окна
  *
  *
  */
 app.addCmp('kit-name', {
     // <debug>
     /**
-     * Объект приложения
-     * @type {object}
+     * @type {app} the application object
      */
     _app: null,
     // </debug>
 
     /**
-     * @type {object} dom элемент поля ввода
+     * @type {string} html шаблон компонента
      */
-    _elInput: null,
+    _html: `
+        <div class="kit-name">
+            <input class="kit-name__field">
+        </div>
+    `,
 
     /**
+     * Создание экземпляра компонента
      *
+     * ставим обработчик на получение фокуса
+     * обработчки на изменение поля и запись поставим после получения фокуса элементом
+     *
+     *
+     * @param {object} props
+     * @return {object}
      */
-    init() {
-        this._app.binding(this);
+    createInstance(props) {
+        const instance = Object.create(this);
+        instance._name = props.name;
+        instance._kitId = props.kitId;
+        instance._rootActive = props.active;
+        instance._rootDeactive = props.deactive;
 
-        this.modify = Modify({
-            delay   : 1000,
-            callback: this.save
-        });
+        instance.active = this.active.bind(instance);
+        instance.deactive = this.deactive.bind(instance);
 
-        // при клике на компонент передать фокус полю ввода
-        document.querySelector('.kit-name').addEventListener('click', this.active);
+        // dom
+        instance._el = this._app.util.htmlToEl(this._html);
+        instance._elField = instance._el.querySelector('.kit-name__field');
 
-        // обработчикик на события поля воода
-        this._elInput = document.querySelector('.kit-name__input');
+        // события
+        instance._elField.addEventListener('focus', instance.active);
+        instance._elField.value = this.normalize(props.name);
 
-        // установить значение в поле. текущее навание окна получим из модели
-        this._elInput.value = this.normalize(this._app.getPropModel('name'));
+        props.elRoot && props.elRoot.appendChild(instance._el);
 
-        // обработчкики событий поля ввода
-        this._elInput.addEventListener('blur', this.modify.run);
-        this._elInput.addEventListener('input', this.modify);
+        return instance;
     },
 
     /**
-     * клик по компоненту
-     * передать фокус полю ввода
+     * Начало обработки пользовательского ввода
      */
     active() {
-        this._elInput.focus();
+        this._elField.focus();
+
+        this.modify = Modify({
+            delay   : 1000,
+            callback: this.save.bind(this)
+        });
+
+        this._elField.addEventListener('blur', this.deactive);
+        this._elField.addEventListener('input', this.modify);
+        this._rootActive();
+    },
+
+    /**
+     * Завершение пользователького ввода
+     */
+    deactive() {
+        this._elField.removeEventListener('blur', this.deactive);
+        this._elField.removeEventListener('input', this.modify);
+
+        if (this.modify.is) {
+            this.modify.run();
+        }
+        this.modify.destroy();
+        this._rootDeactive();
     },
 
     /**
@@ -55,7 +88,7 @@ app.addCmp('kit-name', {
      * @return {string}
      */
     getValue() {
-        return this.normalize(this._elInput.value);
+        return this.normalize(this._elField.value);
     },
 
     /**
@@ -68,31 +101,36 @@ app.addCmp('kit-name', {
     },
 
     /**
-     * Сохранение изменений
+     * Сохранение данных
+     * @return {Promise}
      */
     save() {
-        if (!this.isChanged()) {
-            return;
-        }
+        const nameNew = this.getValue();
+        return nameNew !== this._name ? this._save(nameNew) : Promise.resolve();
+    },
 
-        return this._app.msg('kit.name.save', {
-                name : this.getValue(),
-                kitId: this._app.getKitId()
+    /**
+     * Сохранение изменений
+     * @param {string} nameNew новое название окна
+     * @return {Promise}
+     */
+    _save(nameNew) {
+        return this._app.msg('kit.name.set', {
+                name : nameNew,
+                kitId: this._kitId
             })
-            .then(data => {
-                // todo сделать валидацию ожидаемого значения
-
-                this._app.setPropModel('name', data.nameNew);
-            })
+            .then(data => this._name = data.nameNew)
             .catch(e => console.warn('kit name save msg catch', e))
     },
 
     /**
-     * Измены ли данные (нужно ли сохранять)
-     * @return {boolean}
+     * Удаление компонента
      */
-    isChanged() {
-        return this.normalize(this._app.getPropModel('name')) != this.getValue();
-    }
+    destroy() {
+        this._el.remove();
 
+        for (const key in this) {
+            this.hasOwnProperty(key) && delete this[key];
+        }
+    }
 });
