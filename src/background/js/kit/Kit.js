@@ -37,7 +37,7 @@ app.Kit = function(view) {
     /**
      * Поиск соответствия с моделью
      * после нахождения модели - параметры (delay, callback) изменяются для отслеживания модификации view
-     * @type {Function}
+     * @type Function
      */
     this.modify = this._app.Modify({
         delay: this._TIMEOUT_BEFORE_MAPPING,

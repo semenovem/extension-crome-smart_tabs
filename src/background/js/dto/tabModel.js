@@ -1,8 +1,6 @@
 /**
  * объект вкладки для записи в DB
- *
  * @context app.dto
- *
  * @return {app.dto.TabModel}
  */
 app.dto.tabModel = function(data) {

@@ -10,11 +10,6 @@ app.TabPrototype = app.Tab.prototype = {
     // </debug>
 
     /**
-     * Доставить настройки
-     */
-    init() {},
-
-    /**
      * getter tabId
      * @return {Number}
      */
@@ -23,76 +18,42 @@ app.TabPrototype = app.Tab.prototype = {
     },
 
     /**
-     * Формирует данные для сохранения
-     * Готовый объект содержит:
-     * - поля для сохранения, у которых значение отличаются от значений по умолчанию
-     * @param view
-     * @return {object}
-     */
-    getModel(view) {
-        const model = {};
-        const tmp = this._app.util.objectMerge(
-            this._getDataToModel(),
-            view
-        );
-
-        this._app.tabFields
-            .filter(field => field.model && field.name in tmp)
-            .filter(field => 'default' in field === false || field.default !== tmp[field.name])
-            .forEach(field => model[field.name] = tmp[field.name]);
-
-        //console.log (model)
-
-        return model;
-    },
-
-    /**
-     *
-     * @param {app.dto.TabView} view
-     * @return {*}
-     */
-    prepDtoModel(view) {
-        return Object.assign(
-            {},
-            view)
-    },
-
-    /**
      * Получить модель с использованием данных view
      * @param {app.dto.TabView} view
      * @return {app.dto.TabModel}
      */
     getModelUsingView(view) {
-        return this._app.dto.TabModel(
-            Object.assign(this._getDataToModel(), view)
-        );
-    },
-
-
-    /**
-     * Формирует данные для сохранения
-     * @return {object}
-     */
-    _getDataToModel() {
-        return {
+        const raw = {
             // пока никаких данных
         };
+        const data = Object.assign(raw, view);
+
+        return this._app.dto.tabModel(data);
     },
 
     /**
      * Добавление в объект сохраненных данных
-     * @param {object} model
+     * @param {Object} model
+     * @return Boolean
      */
     joinModel(model) {
-        this._app.tabFields
-            .filter(field => field.tab && model[field.name])
-            .forEach(field => {
-                const name = field.name;
-                if (this[name] !== model[name]) {
-                    this[name] = model[name];
-                }
-            });
+
+        if ('history' in model) {
+            this._name = model.name;
+        }
+
+        return true;
     },
+
+
+
+    getDataUsingView() {
+
+    },
+
+
+
+
 
     // ################################################
     // операции с данными

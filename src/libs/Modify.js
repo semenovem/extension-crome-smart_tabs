@@ -7,7 +7,7 @@
  *      callback {function}     вызвать по истечении времении dalay
  * }
  *
- * @return {function}
+ * @return Function
  *
  * Статичесткие методы
  * clear()              привести объект в первоначальное состояние, сбросить текущий отсчет времени
@@ -23,7 +23,7 @@
  * timeCall     время последнего вызова
  *
  *
- * @constructor
+ * constructo
  */
 function Modify(opts) {
 

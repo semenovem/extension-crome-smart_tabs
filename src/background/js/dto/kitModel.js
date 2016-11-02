@@ -1,8 +1,6 @@
 /**
  * DTO передается и возвращается store для сохранения в DB
- *
  * @context app.dto
- *
  * @return {app.dto.KitModel}
  */
 app.dto.kitModel = function(data) {

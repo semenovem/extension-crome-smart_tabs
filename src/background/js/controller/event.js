@@ -205,7 +205,7 @@ app.controllerEvent = {
      *
      * @param info
      */
-    highlighted(info) {
+    _highlighted(info) {
         console.log('tab _onHighlighted', info);
     },
 

@@ -17,13 +17,6 @@ app.KitPrototype = app.Kit.prototype = {
      * @type {number} задержка перед поиском соответствия в store
      */
     _TIMEOUT_BEFORE_MAPPING: 0,
-
-    /**
-     * Произошли изменения в данных
-     * Метод добавляется к экземпляру класса Modify при создании
-     * @method modify
-     * @type {function}
-     */
     // </debug>
 
     /**
@@ -40,6 +33,7 @@ app.KitPrototype = app.Kit.prototype = {
     /**
      * Искать соответствие с сохраненной записью
      * установить новые параметры для
+     * @async
      * @private
      */
     _mappingModel() {
@@ -54,6 +48,7 @@ app.KitPrototype = app.Kit.prototype = {
     /**
      * Установить модель для объекта окна
      * если нет сто процентного совпадения - нужно сохранить
+     * @async
      * @param {object} result
      *
      * result:
@@ -86,6 +81,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Вернуть kitId записи
+     * @sync
      * @return {string}
      */
     getId() {
@@ -98,6 +94,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Сохранение объекта
+     * @async
      * @return {Promise.<T>}
      */
     save() {
@@ -107,6 +104,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Сохранение
+     * @async
      * @param {object} model
      * @return {Promise<>}
      */
@@ -120,6 +118,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Получение view окна браузера
+     * @async
      * @return {Promise.<app.dto.kitTabView>}
      */
     getView() {
@@ -128,6 +127,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Получить модель
+     * @async
      * @return {Promise.<app.dto.KitTabModel>}
      */
     getModel() {
@@ -136,11 +136,14 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Получить модель с использованием данных view
+     * @sync
      * @param {app.dto.KitTabView} view
      * @return {app.dto.KitTabModel}
      */
     getModelUsingView(view) {
-        // подготовить данные для создания модели - объединить данные объекта <-> с данными view
+        /**
+         * @type Object to create the model
+         */
         const raw = {
             name     : this._name,
             note     : this._note,
@@ -149,25 +152,17 @@ app.KitPrototype = app.Kit.prototype = {
             setTab   : this._setTab
         };
 
+        const data = Object.assign(raw, view);
+        data.tabs = view.tabs.map(view => this._app.tabCollect.getByView(view).getModelUsingView(view));
 
-        // todo остановился здесь
-
-
-
-        return view;
-        return this._app.dto.kitTabModel(
-            Object.assign(
-                this._getDataToModel(),
-                view,
-                {
-                    tabs: view.tabs.map(tabView => this._app.tabCollect.getByView(tabView).prepDtoModel(tabView))
-                }
-            )
-        );
+        return this._app.dto.kitTabModel(data);
     },
+
 
     /**
      * Объект данных объекта
+     * @async
+     * @returm app.dto.KitTabData
      */
     getData() {
         return this.getView().then(this.getDataUsingView);
@@ -175,29 +170,32 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Объект dto с существующим view
-     * @param view
+     * @sync
+     * @param {app.dto.KitTabView} view
+     * @return app.dto.KitTabData
      */
     getDataUsingView(view) {
-        return view;
-    },
-
-
-    /**
-     * Формирует данные для создания модели
-     * @return {object}
-     */
-    _getDataToModel() {
-        return {
+        /**
+         * @type object the data object
+         */
+        const raw = {
             name     : this._name,
             note     : this._note,
             tabActive: this._tabActive,
             state    : this._state,
             setTab   : this._setTab
-        }
+        };
+
+        const data = Object.assign(raw, view);
+        data.tabs = view.tabs.map(view => this._app.tabCollect.getByView(view).getDataUsingView(view));
+
+        return this._app.dto.kitTabData(data);
     },
+
 
     /**
      * Добавление в объект данных из модели
+     * @sync
      * @param {app.dto.KitTabModel} model
      */
     joinModel(model) {
@@ -231,9 +229,6 @@ app.KitPrototype = app.Kit.prototype = {
     },
 
 
-    // todo добавить метод для получения даннх по окну с другими данными - новое dto для frontend
-
-
 
     // ################################################
     //
@@ -241,6 +236,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * Событие удаление окна
+     * @sync
      */
     removed() {
         console.log('event onRemoved window', this._kitId);
@@ -259,6 +255,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * setter имя окна
+     * @sync
      * @param {string} name
      * @return {app.Kit}
      */
@@ -272,6 +269,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * getter имя окна
+     * @sync
      * @return {string}
      */
     getName() {
@@ -280,6 +278,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * setter статус
+     * @sync
      * @param {String} status
      * @return {app.Kit}
      */
@@ -292,6 +291,7 @@ app.KitPrototype = app.Kit.prototype = {
 
     /**
      * getter статуса
+     * @sync
      * @return {String}
      */
     getStatus() {

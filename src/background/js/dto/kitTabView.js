@@ -27,4 +27,14 @@ app.dto.KitTabView = function(data, dto) {
     catch (e) {
         throw 'Unable to create app.dto.KitTabView.' + e;
     }
+
+    // Поля объекта для jsDocs. Не используются. Удаляться при сборке.
+    // <debug>
+    this.name = null;
+    this.note = null;
+    this.tabActive = null;
+    this.setTab = null;
+    this.tabs = [];
+    // </debug>
+
 };
