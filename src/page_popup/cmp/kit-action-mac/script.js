@@ -1,4 +1,38 @@
 /**
+ *
+ * @param {{  }} props
+ * @return app.cmp.KitActionMac
+ */
+app.cmp.kitActionMac = function(props) {
+
+
+
+};
+
+/**
+ * @param {{  }} props
+ * @constructor
+ */
+app.cmp.KitActionMac = function(props) {
+
+};
+
+/**
+ *
+ */
+app.cmp.KitActionMac.prototype = {
+
+};
+
+
+
+
+
+
+
+
+
+/**
  * Кнопки для окна
  * ОС mac
  *

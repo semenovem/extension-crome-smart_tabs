@@ -1,4 +1,42 @@
 /**
+ *
+ * @param {{  }} props
+ * @return app.cmp.RecentKits
+ */
+app.cmp.recentKits = function(props) {
+
+
+
+};
+
+/**
+ * @param {{  }} props
+ * @constructor
+ */
+app.cmp.RecentKits = function(props) {
+
+};
+
+/**
+ *
+ */
+app.cmp.RecentKits.prototype = {
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
  * Недавно закрытые окна
  *
  *

@@ -1,10 +1,8 @@
 /**
  * Cохранение измененного названия окна
- * context = app
- *
  * валидация:
  * проверить превышение максимальной длинны строки
- *
+ * @context app
  * @param {object} params { kitId: {number}, name: {string} }
  * @return {Promise<string>} название окна
  */

@@ -1,6 +1,6 @@
 /**
  * Получение данных по окну
- * context = app
+ * @context app
  *
  * @param {object} params { kitId: {number} }
  * @return {Promise.<app.dto.kitTabModel>} модель окна

@@ -1,6 +1,6 @@
 /**
  * Закрытие окна
- * context = app
+ * @context app
  *
  * @param {object} params { kitId: {number} }
  * @return {Promise<>}
