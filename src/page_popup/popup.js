@@ -4,12 +4,30 @@
 const app = {
 
     /**
+     * @type Function Обмен данными с page background
+     */
+    msg: null,
+
+    /**
+     * helpers
+     * @type {object}
+     */
+    util: null,
+
+
+
+    /**
+     * @type Object
+     */
+    cmp: {},
+
+    /**
      * @type {string} режим работы
      */
     _mode: 'main',
 
     /**
-     * @type {Object} Компонент навигации nav
+     * @type app.cmp.Nav компонент навигации
      */
     _cmpNav: null,
 
@@ -23,24 +41,10 @@ const app = {
      */
     _cmpModeSetup: null,
 
-    /**
-     *
-     */
-    _kitId: 0,
+    // данные ткущего окна
+    _data: null,
 
-    /**
-     * Получить kitId
-     * @return {number}
-     */
-    getKitId() {
-        return this._kitId;
-    },
 
-    /**
-     * @type {object} модель текущего окна (это данные: название окна, нужно ли сохранять историю вкладок и т.д.)
-     * Эти данные передает расширение (страница background)
-     */
-    _model: null,
 
     /**
      * точка старта
@@ -54,21 +58,23 @@ const app = {
     init() {
         this.msg = Message('popup');
         this.binding(this, this);       // указать контекст функциям из списка
+        this.cmp._app = this;
 
         this.browserApi.windows.getCurrent()
             .then(info => {
                 this._kitId = info.id;
 
                 // навигация
-                this._cmpNav = this.createCmp('nav', {
+                this._cmpNav = new this.cmp.Nav({
                     setMode: this.setMode,
                     getMode: this.getMode
                 });
 
-                // основной режим
-                this._cmpModeMain = this.createCmp('mode-main', {
+                this._cmpModeMain = new this.cmp.ModeMain({
                     elRoot: document.querySelector('body')
-                });
+                }, this);
+
+                // режим настроек
 
             })
             .catch(e => console.warn(e, 'popup init error. Не прошла инициализация'));
@@ -116,8 +122,8 @@ const app = {
 
     /**
      * Биндинг методов объекта
-     * @param {object} obj объект, методам которого биндим контекст
-     * @param {object} [scope] контекст
+     * @param {Object} obj объект, методам которого биндим контекст
+     * @param {Object} [scope] контекст
      * @private
      */
     binding(obj, scope) {
@@ -128,18 +134,34 @@ const app = {
         }
     },
 
+
+
+
+    // todo перенести в data
     /**
-     * Обмен данными с page background
-     * @type {object}
+     *
      */
-    msg: null,
+    _kitId: 0,
 
     /**
-     * helpers
-     * @type {object}
+     * Получить kitId
+     * @return {number}
      */
-    util: null,
+    getKitId() {
+        return this._kitId;
+    },
 
+    /**
+     * @type Object модель текущего окна (это данные: название окна, нужно ли сохранять историю вкладок и т.д.)
+     * Эти данные передает расширение (страница background)
+     */
+    _model: null,
+
+
+
+
+
+    // todo удалить после переноса компонентов
     /**
      * @type {object} список компонентов
      */

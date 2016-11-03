@@ -1,8 +1,6 @@
 /**
  * Обновление данных вкладки
- *
  * @context app.browser.tabs
- *
  * @type {object} обновление данных вкладки
  * @param {number} tabId
  * @param {object} params

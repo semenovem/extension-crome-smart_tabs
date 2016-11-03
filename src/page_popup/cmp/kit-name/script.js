@@ -1,4 +1,38 @@
 /**
+ *
+ * @param {{  }} props
+ * @return app.cmp.KitName
+ */
+app.cmp.kitName = function(props) {
+
+
+
+};
+
+/**
+ * @param {{  }} props
+ * @constructor
+ */
+app.cmp.KitName = function(props) {
+
+};
+
+/**
+ *
+ */
+app.cmp.KitName.prototype = {
+
+};
+
+
+
+
+
+
+
+
+
+/**
  * Название окна
  *
  *

@@ -1,56 +1,44 @@
 /**
- * Режим основной
- *
- *
+ * @param {{ elRoot }} props
+ * @param {Object} app
+ * @constructor
  */
-app.addCmp('mode-main', {
-    // <debug>
-    /**
-     * @type {app} the application object
-     */
-    _app: null,
+app.cmp.ModeMain = function(props, app) {
+    const el = this._el = app.util.htmlToEl(this._html);
 
     /**
-     * @type {Object} компонент открытых окон open-kits
+     * @type Object компонент открытых окон open-kits
      */
-    _cmpOpenKits: null,
+    this._cmpOpenKits = new app.cmp.OpenKits(
+        {
+            elRoot: el.querySelector('.mode-main__open-kits')
+        },
+        app
+    );
 
     /**
-     * @type {Object} компонент недавно закрытых окон recent-kits
+     * @type Object компонент недавно закрытых окон recent-kits
      */
-    _cmpRecentKits: null,
-    // </debug>
+    this._cmpRecentKits = null;
 
+    // todo добавлять недавно закрытые окна
+
+    props.elRoot && props.elRoot.appendChild(el);
+};
+
+/**
+ * @type Object
+ */
+app.cmp.ModeMain.prototype = {
+    /**
+     * @type String
+     */
     _html: `
         <div class="mode-main">
             <div class="mode-main__open-kits"></div>
             <div class="mode-main__recent-kits"></div>
         </div>
      `,
-
-    /**
-     * Создание экземпляра компонента
-     *
-     * @param {object} props
-     * @return {object}
-     */
-    createInstance(props) {
-        const instance = Object.create(this);
-
-        const el = instance._el = this._app.util.htmlToEl(this._html);
-
-        // открытые окна
-        this._cmpOpenKits = this._app.createCmp('open-kits', {
-            elRoot: el.querySelector('.mode-main__open-kits')
-        });
-
-        // недавние окна
-
-
-        props.elRoot && props.elRoot.appendChild(instance._el);
-
-        return instance;
-    },
 
     /**
      * Скрыть
@@ -65,4 +53,5 @@ app.addCmp('mode-main', {
     show() {
         this._el.style.display = null;
     }
-});
+
+};

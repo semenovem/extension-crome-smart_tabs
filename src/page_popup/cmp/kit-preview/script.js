@@ -1,4 +1,26 @@
 /**
+ * @param {{  }} props
+ * @constructor
+ */
+app.cmp.KitPreview = function(props) {
+
+};
+
+/**
+ *
+ */
+app.cmp.KitPreview.prototype = {
+
+};
+
+
+
+
+
+
+
+
+/**
  * Превью окна
  *
  *

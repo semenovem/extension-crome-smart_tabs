@@ -1,53 +1,36 @@
 /**
- * Навигация на странице
- *
- *
+ * Плашка навигации вверху страницы
+ * @param {{ setMode: Function, getMode: Function }} props
+ * @constructor
  */
-app.addCmp('nav', {
-    // <debug>
-    /**
-     * @type {app} the application object
-     */
-    _app: null,
-    // </debug>
+app.cmp.Nav = function(props) {
+
+    this._rootSetMode = props.setMode;
+    this._rootGetMode = props.getMode;
+
+    const el = this._el = document.querySelector('.nav');
+
+    el.querySelector('.nav__item-main').addEventListener('click', this.setMode.bind(this, 'main'));
+    el.querySelector('.nav__item-setup').addEventListener('click', this.setMode.bind(this, 'setup'));
 
 
-    /**
-     * Создание экземпляра компонента
-     * todo потом отрефакторить этот метод
-     *
-     *
-     * @param {object} props
-     * @return {object}
-     */
-    createInstance(props) {
-        const instance = Object.create(this);
+    // отметить выбранный пункт меню
+    switch (props.getMode()) {
+        case 'main':
+            el.querySelector('.nav__item-main').classList.add('nav__item_current');
+            break;
+        case 'setup':
+            el.querySelector('.nav__item-setup').classList.add('nav__item_current');
+            break;
+    }
+};
 
-        instance._rootSetMode = props.setMode;
-        instance._rootGetMode = props.getMode;
-
-        const el = instance._el = document.querySelector('.nav');
-
-        el.querySelector('.nav__item-main').addEventListener('click', this.setMode.bind(instance, 'main'));
-        el.querySelector('.nav__item-setup').addEventListener('click', this.setMode.bind(instance, 'setup'));
-
-
-        // отметить выбранный пункт меню
-        switch (props.getMode()) {
-            case 'main':
-                el.querySelector('.nav__item-main').classList.add('nav__item_current');
-                break;
-            case 'setup':
-                el.querySelector('.nav__item-setup').classList.add('nav__item_current');
-                break;
-        }
-
-        return instance;
-    },
-
+/**
+ * @type app.cmp.Nav
+ */
+app.cmp.Nav.prototype = {
     /**
      * Изменение режима работы
-     *
      * @param {String} mode
      * @param {Event} e
      */
@@ -62,4 +45,4 @@ app.addCmp('nav', {
 
         this._rootSetMode(mode);
     }
-});
+};

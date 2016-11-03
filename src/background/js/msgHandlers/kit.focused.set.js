@@ -1,7 +1,6 @@
 /**
  * Установить фокус окну браузера
- * context = app
- *
+ * @context app
  * @param {object} params    { kitId: {number}, focused: {boolean} }
  * @return {Promise.<{ focused: {boolean} }>}
  */

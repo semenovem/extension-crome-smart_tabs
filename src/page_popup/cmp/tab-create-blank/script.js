@@ -1,4 +1,41 @@
 /**
+ *
+ * @param {{  }} props
+ * @return app.cmp.TabCreateBlank
+ */
+app.cmp.tabCreateBlank = function(props) {
+
+
+
+};
+
+/**
+ * @param {{  }} props
+ * @constructor
+ */
+app.cmp.TabCreateBlank = function(props) {
+
+};
+
+/**
+ *
+ */
+app.cmp.TabCreateBlank.prototype = {
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+/**
  * Кнопка открыть пустое окно
  *
  *
