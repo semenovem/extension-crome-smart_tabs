@@ -5,6 +5,7 @@ build/
 !.eslintrc
 !.eslintignore
 node_modules/
+npm-debug.log*
 
 #log files
 .log
